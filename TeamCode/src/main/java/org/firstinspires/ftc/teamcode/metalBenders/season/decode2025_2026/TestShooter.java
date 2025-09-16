@@ -21,7 +21,7 @@ public class TestShooter extends LinearOpMode {
         resetRuntime();
         while (opModeIsActive()) {
             if(gamepad1.right_trigger > 0) {
-                shooterMotor.setPower(1);
+                shooterMotor.setPower(-0.75);
             } else {
                 shooterMotor.setPower(0);
             }
