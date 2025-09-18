@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.metalBender.archive.ftc_2025;
+package org.firstinspires.ftc.teamcode.metalBenders.archive.ftc_2025;
 
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
-import static org.firstinspires.ftc.teamcode.metalBender.archive.ftc_2025.DriveModeConstants.*;
+import static org.firstinspires.ftc.teamcode.metalBenders.archive.ftc_2025.DriveModeConstants.*;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 

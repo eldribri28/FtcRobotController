@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.metalBender.archive.ftc_2025;
+package org.firstinspires.ftc.teamcode.metalBenders.archive.ftc_2025;
 
 public enum WristPosition {
     UP(.95),

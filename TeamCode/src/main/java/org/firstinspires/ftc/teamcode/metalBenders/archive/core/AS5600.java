@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.metalBender.archive.core;
+package org.firstinspires.ftc.teamcode.metalBenders.archive.core;
 
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;

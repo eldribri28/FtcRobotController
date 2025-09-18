@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.metalBender.archive.ftc_2024;
+package org.firstinspires.ftc.teamcode.metalBenders.archive.ftc_2024;
 
 import android.graphics.Color;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -23,7 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.metalBender.archive.core.AS5600Block;
+import org.firstinspires.ftc.teamcode.metalBenders.archive.core.AS5600Block;
 
 @TeleOp(name = "FieldCentricDriveMode (Blocks to Java)")
 public class FieldCentricDriveMode extends LinearOpMode {

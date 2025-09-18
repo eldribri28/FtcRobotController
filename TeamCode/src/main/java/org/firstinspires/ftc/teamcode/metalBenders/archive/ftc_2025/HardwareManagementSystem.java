@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.metalBender.archive.ftc_2025;
+package org.firstinspires.ftc.teamcode.metalBenders.archive.ftc_2025;
 
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.DOWN;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
-import static org.firstinspires.ftc.teamcode.metalBender.archive.ftc_2025.DriveModeConstants.*;
+import static org.firstinspires.ftc.teamcode.metalBenders.archive.ftc_2025.DriveModeConstants.*;
 
 import static java.lang.Thread.sleep;
 
@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-import org.firstinspires.ftc.teamcode.metalBender.archive.core.AS5600;
+import org.firstinspires.ftc.teamcode.metalBenders.archive.core.AS5600;
 
 import java.util.List;
 
