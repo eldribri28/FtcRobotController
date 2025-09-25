@@ -29,5 +29,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test:orchestrator:1.5.1'
-    implementation 'org.ftclib.ftclib:core:2.1.1'
+    implementation 'org.ftclib.ftclib:core:2.1.1' // core
 }
