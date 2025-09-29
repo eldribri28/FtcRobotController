@@ -1,32 +1,26 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+public class LaunchCalculator {
 
-@TeleOp(name = "LaunchCalculator")
-public class LaunchCalculator extends LinearOpMode {
-
-    public void runOpMode() {
-
-        waitForStart();
-
-        while (opModeIsActive()) {
+    public static LaunchResult CalculateShot(double targetDistance, double launchHeight, double targetHeight, double flywheelDiameterMeters, double flywheelRPM, double velocityTransferEfficiency) {
 
             // Input Variables
-            double targetDistance = 2.7;
-            double launchHeight = 0.3;
-            double targetHeight = 1.175;
+            //double targetDistance = 2.7;
+            //double launchHeight = 0.3;
+            //double targetHeight = 1.175;
             double g = 9.81;
-            double flywheelDiameterMeters = 0.150;
-            double flywheelRPM = 2000;
-            double velocityTransferEfficiency = 0.43;
-
+            //double flywheelDiameterMeters = 0.150;
+            //double flywheelRPM = 2000;
+            //double velocityTransferEfficiency = 0.43;
 
             // Calculate angular velocity from RPM
             double velocity = (((flywheelRPM * (2 * Math.PI)) / 60) * (flywheelDiameterMeters / 2)) * velocityTransferEfficiency;
 
             // Calculate the launch angle(s) with solutions that don't exceed the max height of 1.524m
             LaunchResult launchResults = calculateLaunchAngle(velocity, targetDistance, launchHeight, targetHeight, g);
+            double launchAngle = Math.toDegrees(launchResults.getLaunchAngle());
+            double landingAngle = Math.toDegrees(launchResults.getLandingAngle());
+            double maxHeight = launchResults.getMaxHeight();
             double launchAngle1 = Math.toDegrees(launchResults.getLaunchAngle1());
             double landingAngle1 = Math.toDegrees(launchResults.getLandingAngle1());
             double maxHeight1 = launchResults.getMaxHeight1();
@@ -36,24 +30,44 @@ public class LaunchCalculator extends LinearOpMode {
             double maxHeight2 = launchResults.getMaxHeight2();
             double solutionViable2 = launchResults.getSolutionViable2();
 
-            // Output Results
-            telemetry.addData("Launch Solution 1", ' ');
-            telemetry.addData("Launch Angle", launchAngle1);
-            telemetry.addData("Landing Angle", landingAngle1);
-            telemetry.addData("Max Height", maxHeight1);
-            telemetry.addData("Solution Viable", solutionViable1);
-            telemetry.addLine();
-            telemetry.addData("Launch Solution 2",' ');
-            telemetry.addData("Launch Angle 2", launchAngle2);
-            telemetry.addData("Landing Angle 2", landingAngle2);
-            telemetry.addData("Max Height", maxHeight2);
-            telemetry.addData("Solution Viable", solutionViable2);
-            telemetry.addLine();
-            telemetry.addData("Launcher Data", ' ');
-            telemetry.addData("Launch Velocity", velocity);
-            telemetry.update();
+            if (solutionViable1 == 1 && solutionViable2 == 0) {
+                launchAngle = launchAngle1;
+                landingAngle = landingAngle1;
+                maxHeight = maxHeight1;
+            } else if (solutionViable1 == 0 && solutionViable2 == 1) {
+                launchAngle = launchAngle2;
+                landingAngle = landingAngle2;
+                maxHeight = maxHeight2;
+            } else if (Math.abs(landingAngle1) > Math.abs(landingAngle2)) {
+                launchAngle = launchAngle1;
+                landingAngle = landingAngle1;
+                maxHeight = maxHeight1;
+            } else if (Math.abs(landingAngle1) < Math.abs(landingAngle2)) {
+                launchAngle = launchAngle2;
+                landingAngle = landingAngle2;
+                maxHeight = maxHeight2;
+            }
 
-        }
+
+            // Output Results
+            //telemetry.addData("Launch Solution 1", ' ');
+            //telemetry.addData("Launch Angle", launchAngle1);
+            //telemetry.addData("Landing Angle", landingAngle1);
+            //telemetry.addData("Max Height", maxHeight1);
+            //telemetry.addData("Solution Viable", solutionViable1);
+            //telemetry.addLine();
+            //telemetry.addData("Launch Solution 2",' ');
+            //telemetry.addData("Launch Angle 2", launchAngle2);
+            //telemetry.addData("Landing Angle 2", landingAngle2);
+            //telemetry.addData("Max Height", maxHeight2);
+            //telemetry.addData("Solution Viable", solutionViable2);
+            //telemetry.addLine();
+            //telemetry.addData("Launcher Data", ' ');
+            //telemetry.addData("Launch Velocity", velocity);
+            //telemetry.update();
+
+            return new LaunchResult(launchAngle1, landingAngle1, maxHeight1, solutionViable1, launchAngle2, landingAngle2, maxHeight2, solutionViable2, launchAngle, landingAngle, maxHeight);
+
     }
 
     public static LaunchResult calculateLaunchAngle(double velocity, double distance, double launchHeight, double targetHeight, double g) {
@@ -81,7 +95,7 @@ public class LaunchCalculator extends LinearOpMode {
             solutionViable2 = 0;
         }
 
-        return new LaunchResult(launchAngle1, landingAngle1, maxHeight1, solutionViable1, launchAngle2, landingAngle2, maxHeight2, solutionViable2);
+        return new LaunchResult(launchAngle1, landingAngle1, maxHeight1, solutionViable1, launchAngle2, landingAngle2, maxHeight2, solutionViable2, 0, 0, 0);
 
     }
 

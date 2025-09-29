@@ -20,18 +20,27 @@ public class TestShooter extends LinearOpMode {
         waitForStart();
         resetRuntime();
         while (opModeIsActive()) {
+            //if(gamepad1.right_trigger > 0) {
+            //    launcherMotor.setPower(-0.75);
+            //} else {
+            //    launcherMotor.setPower(0);
+            //}
+            //if(gamepad1.left_trigger > 0) {
+            //    launcherMotor.setPower(-1);
+            //} else {
+            //    launcherMotor.setPower(0);
+            //}
+            double targetRPM = 3700;
             if(gamepad1.right_trigger > 0) {
-                launcherMotor.setPower(-0.75);
+                launcherMotor.setVelocity(-( targetRPM / 60 ) * 28);
             } else {
-                launcherMotor.setPower(0);
+                launcherMotor.setVelocity(0);
             }
-            if(gamepad1.left_trigger > 0) {
-                launcherMotor.setPower(-1);
-            } else {
-                launcherMotor.setPower(0);
-            }
+
+            double flywheelRPM = (launcherMotor.getVelocity()/28) * 60;
             telemetry.addData("shooter motor1 power", launcherMotor.getPower());
             telemetry.addData("shooter motor1 current (AMPS)", launcherMotor.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("shooter motor1 velocity", flywheelRPM);
             telemetry.update();
         }
     }

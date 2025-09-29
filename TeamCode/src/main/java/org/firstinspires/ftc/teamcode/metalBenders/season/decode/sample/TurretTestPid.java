@@ -45,12 +45,14 @@ public class TurretTestPid extends LinearOpMode {
     }
 
     private void initAprilTagProcessor() {
-        aprilTagProcessor = new AprilTagProcessor.Builder().build();
+        aprilTagProcessor = new AprilTagProcessor.Builder().setLensIntrinsics(539.0239404, 539.0239404, 316.450283269, 236.364794005).build();
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareMap.get(WebcamName.class, "TurretCam"));
         builder.addProcessor(aprilTagProcessor);
         builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
         builder.setCameraResolution(new Size(640,480));
+
+
         visionPortal = builder.build();
     }
 
@@ -63,11 +65,16 @@ public class TurretTestPid extends LinearOpMode {
         for (AprilTagDetection detection : currentDetections) {
             turretMotor.setPower(-bearingPid.calculate(1, detection.ftcPose.bearing));
 
+
+            LaunchResult launchResults = LaunchCalculator.CalculateShot(detection.ftcPose.range, 0.3, 1.175, .090, 3500, 0.43);
+
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                telemetry.addData("Calculated Launch Angle 1 (deg)", Math.toDegrees(launchResults.getLaunchAngle1()));
+                telemetry.addData("Calculated Launch Angle 1 (deg)", Math.toDegrees(launchResults.getLaunchAngle2()));
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
@@ -86,7 +93,7 @@ public class TurretTestPid extends LinearOpMode {
     }
 
     private void initializeHardware() {
-        turretMotor = hardwareMap.get(DcMotorEx.class, "LiftMotor1");
+        turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
         turretMotor.setMode(RUN_USING_ENCODER);
         initAprilTagProcessor();
     }
