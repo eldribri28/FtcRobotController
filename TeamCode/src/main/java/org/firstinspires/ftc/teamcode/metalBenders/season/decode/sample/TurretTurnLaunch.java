@@ -119,7 +119,7 @@ public class TurretTurnLaunch extends LinearOpMode {
         //Base Angle 58deg
         //Extended Angle 15deg
 
-        double positionValue = launchAngle / 43;
+        double positionValue = Math.abs((58-launchAngle)/30);
         angleServo.setPosition(positionValue);
     }
 

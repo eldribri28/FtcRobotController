@@ -10,7 +10,7 @@ public class LaunchCalculator {
     private static final double VELOCITY_TRANSFER_EFFICIENCY = 0.43;
     private static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
 
-    public static LaunchResult calculatePreferredLaunchResult(double flywheelRPM, double distance) {
+    public static LaunchResult calculatePreferredLaunchResult(double distance, double flywheelRPM) {
 
         double velocity = (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
 
@@ -41,11 +41,10 @@ public class LaunchCalculator {
         return determinePreferredLaunchResult(launchResult1, launchResult2);
     }
 
-    @Nullable
     private static LaunchResult determinePreferredLaunchResult(LaunchResult launchResult1, LaunchResult launchResult2) {
         LaunchResult preferredLaunchResult = null;
         if(launchResult1.isViable() && launchResult2.isViable()) {
-            if(launchResult1.getLandingAngle() > launchResult2.getLaunchAngle()) {
+            if(launchResult1.getLandingAngle() > launchResult2.getLandingAngle()) {
                 preferredLaunchResult = launchResult1;
             } else {
                 preferredLaunchResult = launchResult2;
