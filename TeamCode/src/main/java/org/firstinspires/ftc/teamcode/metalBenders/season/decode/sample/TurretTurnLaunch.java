@@ -50,14 +50,11 @@ public class TurretTurnLaunch extends LinearOpMode {
 
             launchBall();
 
-            //
-
-
-            double flywheelRPM = ((launcherMotor.getVelocity()/28) * 60) * (33 / 30);
+            double flywheelRPM = ((launcherMotor.getVelocity()/28) * 60) * (33.0 / 30.0);
             telemetry.addData("shooter motor1 power", launcherMotor.getPower());
             telemetry.addData("shooter motor1 current (AMPS)", launcherMotor.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("shooter motor1 velocity", flywheelRPM);
-            telemetryAprilTag(0.3, 1.175, 0.090, flywheelRPM, 0.43);
+            telemetryAprilTag(flywheelRPM);
             telemetry.update();
 
         }
@@ -74,8 +71,7 @@ public class TurretTurnLaunch extends LinearOpMode {
         visionPortal = builder.build();
     }
 
-    private void telemetryAprilTag(double launchHeight, double targetHeight, double flywheelDiameterMeters, double flywheelRPM, double velocityTransferEfficiency) {
-
+    private void telemetryAprilTag(double flywheelRPM) {
         List<AprilTagDetection> currentDetections = aprilTagProcessor.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
         if (currentDetections.size() == 0) {
@@ -85,22 +81,18 @@ public class TurretTurnLaunch extends LinearOpMode {
             for (AprilTagDetection detection : currentDetections) {
                 turretMotor.setPower(-bearingPid.calculate(1, detection.ftcPose.bearing));
 
-                LaunchResult launchResults = LaunchCalculator.CalculateShot(detection.ftcPose.range, 0.3, 1.175, .090, 3500, 0.43);
+                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(detection.ftcPose.range, flywheelRPM);
 
-                double launchAngle = launchResults.getLaunchAngle1();
-
-                if (!Double.isNaN(launchAngle)) {
-                    setLaunchAngle(launchAngle);
+                if(launchResult != null) {
+                    setLaunchAngle(launchResult.getLaunchAngle());
                 }
-
 
                 if (detection.metadata != null) {
                     telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                     telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
                     telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
                     telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-                    telemetry.addData("Launch Angle", launchAngle);
-                    telemetry.addData("Launch Angle", launchAngle);
+                    telemetry.addData("Launch Result", launchResult);
                 } else {
                     telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                     telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
@@ -129,7 +121,6 @@ public class TurretTurnLaunch extends LinearOpMode {
 
         double positionValue = launchAngle / 43;
         angleServo.setPosition(positionValue);
-
     }
 
     private void initialize() {
@@ -150,6 +141,4 @@ public class TurretTurnLaunch extends LinearOpMode {
         launcherMotor.setMode(RUN_USING_ENCODER);
         initAprilTagProcessor();
     }
-
-
 }

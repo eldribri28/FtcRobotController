@@ -66,15 +66,14 @@ public class TurretTestPid extends LinearOpMode {
             turretMotor.setPower(-bearingPid.calculate(1, detection.ftcPose.bearing));
 
 
-            LaunchResult launchResults = LaunchCalculator.CalculateShot(detection.ftcPose.range, 0.3, 1.175, .090, 3500, 0.43);
+            LaunchResult launchResults = LaunchCalculator.calculatePreferredLaunchResult(detection.ftcPose.range, 3500);
 
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
                 telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-                telemetry.addData("Calculated Launch Angle 1 (deg)", Math.toDegrees(launchResults.getLaunchAngle1()));
-                telemetry.addData("Calculated Launch Angle 1 (deg)", Math.toDegrees(launchResults.getLaunchAngle2()));
+                telemetry.addData("Calculated Launch Angle (deg)", Math.toDegrees(launchResults.getLaunchAngle()));
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
