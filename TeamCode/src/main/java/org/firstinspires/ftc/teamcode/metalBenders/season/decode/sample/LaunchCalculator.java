@@ -6,11 +6,11 @@ public class LaunchCalculator {
 
     private static final double LAUNCH_HEIGHT = 0.3;
     private static final double TARGET_HEIGHT = 1.175;
-    private static final double FLYWHEEL_DIAMETER_METERS = .09;
-    private static final double VELOCITY_TRANSFER_EFFICIENCY = 0.43;
+    private static final double FLYWHEEL_DIAMETER_METERS = .096;
+    private static final double VELOCITY_TRANSFER_EFFICIENCY = 0.47;
     private static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
 
-    public static LaunchResult calculatePreferredLaunchResult(double distance, double flywheelRPM) {
+    public static LaunchResult calculatePreferredLaunchResult(double flywheelRPM, double distance) {
 
         double velocity = (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
 
@@ -36,15 +36,15 @@ public class LaunchCalculator {
         if (launchAngle2 > 1.5707 || launchAngle2 < 0 || Double.isNaN(launchAngle2) || maxHeight2 > 1.524) {
             solutionViable2 = false;
         }
-        LaunchResult launchResult1 = new LaunchResult(launchAngle1, landingAngle1, maxHeight1, solutionViable1);
-        LaunchResult launchResult2 = new LaunchResult(launchAngle2, landingAngle2, maxHeight2, solutionViable2);
+        LaunchResult launchResult1 = new LaunchResult(Math.toDegrees(launchAngle1), Math.toDegrees(landingAngle1), maxHeight1, solutionViable1);
+        LaunchResult launchResult2 = new LaunchResult(Math.toDegrees(launchAngle2), Math.toDegrees(landingAngle2), maxHeight2, solutionViable2);
         return determinePreferredLaunchResult(launchResult1, launchResult2);
     }
 
     private static LaunchResult determinePreferredLaunchResult(LaunchResult launchResult1, LaunchResult launchResult2) {
         LaunchResult preferredLaunchResult = null;
         if(launchResult1.isViable() && launchResult2.isViable()) {
-            if(launchResult1.getLandingAngle() > launchResult2.getLandingAngle()) {
+            if(launchResult1.getLandingAngle() < launchResult2.getLandingAngle()) {
                 preferredLaunchResult = launchResult1;
             } else {
                 preferredLaunchResult = launchResult2;
