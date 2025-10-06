@@ -2,12 +2,13 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
 import androidx.annotation.Nullable;
 
+
 public class LaunchCalculator {
 
     private static final double LAUNCH_HEIGHT = 0.3;
     private static final double TARGET_HEIGHT = 1.175;
     private static final double FLYWHEEL_DIAMETER_METERS = .096;
-    private static final double VELOCITY_TRANSFER_EFFICIENCY = 0.47;
+    private static final double VELOCITY_TRANSFER_EFFICIENCY = 0.41;
     private static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
 
     public static LaunchResult calculatePreferredLaunchResult(double flywheelRPM, double distance) {
