@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
-@TeleOp(name = "IntakeTest")
+//@TeleOp(name = "IntakeTest", group="test")
+@Autonomous(name="TestAuton", group="test")
 public class IntakeTest extends LinearOpMode {
 
     private DcMotorEx intakeMotor;
