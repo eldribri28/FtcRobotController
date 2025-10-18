@@ -5,14 +5,18 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 
 import android.util.Size;
 
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.arcrobotics.ftclib.controller.PIDController;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -37,14 +41,16 @@ public class TurretTurnLaunch extends LinearOpMode {
     private DcMotorEx intakeMotor;
     private Servo angleServo;
     private Servo launchServo;
-    private NormalizedColorSensor launchSensor;
+    private NormalizedColorSensor launchColorSensor;
+    private NormalizedColorSensor intakeColorSensor;
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTagProcessor;
     private final PIDController bearingPid = new PIDController(0.05, 0.005, 0.05);
-    private final PIDController turretMotorVelocityPid = new PIDController(1, 0.01, 0.4);
     private boolean cameraInitialized = false;
     private double calculatedLaunchAngle = 0;
     private double targetDistance = 0;
+
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0, 0.0075);
 
     public void runOpMode() {
         initialize();
@@ -62,8 +68,8 @@ public class TurretTurnLaunch extends LinearOpMode {
             launchBall();
 
             double flywheelRPM = ((launcherMotor.getVelocity()/28) * 60);
-            telemetry.addData("shooter motor1 power", launcherMotor.getPower());
-            telemetry.addData("shooter motor1 current (AMPS)", launcherMotor.getCurrent(CurrentUnit.AMPS));
+            //telemetry.addData("shooter motor1 power", launcherMotor.getPower());
+            //telemetry.addData("shooter motor1 current (AMPS)", launcherMotor.getCurrent(CurrentUnit.AMPS));
             telemetryAprilTag(flywheelRPM);
             telemetry.update();
 
@@ -116,7 +122,6 @@ public class TurretTurnLaunch extends LinearOpMode {
                     telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
                     telemetry.addData("Target Range (M)", targetDistance);
                     telemetry.addData("Launch Angle (deg)", calculatedLaunchAngle);
-                    //telemetry.addData("Target RPM", targetRPM);
                     telemetry.addData("Actual RPM", flywheelRPM);
                 } else {
                     telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
@@ -126,6 +131,7 @@ public class TurretTurnLaunch extends LinearOpMode {
         }
 
         telemetry.addData("Launcher Ball Color:", getLauncherBallColor());
+        telemetry.addData("Intake Ball Color:", getIntakeBallColor());
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
@@ -142,10 +148,11 @@ public class TurretTurnLaunch extends LinearOpMode {
         setLaunchAngle(calculatedLaunchAngle);
 
         double targetRPM = Math.round(((targetDistance / 1.670) * 800) + 1900);
+        telemetry.addData("Target RPM", targetRPM);
 
         //double targetRPM = Math.round(2600);
         if(gamepad1.right_trigger > 0) {
-            launcherMotor.setVelocity(turretMotorVelocityPid.calculate(( targetRPM / 60.0 ) * 28.0));
+            launcherMotor.setVelocity((targetRPM / 60) * 28);
         } else {
             launcherMotor.setVelocity(0);
         }
@@ -180,24 +187,49 @@ public class TurretTurnLaunch extends LinearOpMode {
 
     private String getLauncherBallColor() {
 
-        NormalizedRGBA colors = launchSensor.getNormalizedColors();
+        NormalizedRGBA colors = launchColorSensor.getNormalizedColors();
 
-        float red = colors.red * 255;
-        float green = colors.green * 255;
-        float blue = colors.blue * 255;
-        //int alpha = colors.alpha * 255;
+        double red = colors.red;
+        double green = colors.green;
+        double blue = colors.blue;
+        //int alpha = colors.alpha;
 
         String ballDetected = "";
 
-        if (red > blue && blue > green && red > 100 && blue > 100) {
+        if (blue > green && red > 0.2 && blue > 0.3) {
             ballDetected = "Purple";
-        } else if (green > red && green > blue && green > 100) {
+        } else if (green > red && green > blue && green > 0.3) {
             ballDetected = "Green";
         } else {
             ballDetected = "None";
         }
 
-        telemetry.addLine(String.format("Launcher Ball RGB %6.1f %6.1f %6.1f ", red, green, blue));
+        telemetry.addLine(String.format("Launcher Ball RGB %6.3f %6.3f %6.3f ", red, green, blue));
+
+
+        return ballDetected;
+    }
+
+    private String getIntakeBallColor() {
+
+        NormalizedRGBA colors = intakeColorSensor.getNormalizedColors();
+
+        double red = colors.red;
+        double green = colors.green;
+        double blue = colors.blue;
+        //int alpha = colors.alpha;
+
+        String ballDetected = "";
+
+        if (blue > green && red > 0.2 && blue > 0.3) {
+            ballDetected = "Purple";
+        } else if (green > red && green > blue && green > 0.3) {
+            ballDetected = "Green";
+        } else {
+            ballDetected = "None";
+        }
+
+        telemetry.addLine(String.format("Intake Ball RGB %6.3f %6.3f %6.3f ", red, green, blue));
 
 
         return ballDetected;
@@ -213,17 +245,35 @@ public class TurretTurnLaunch extends LinearOpMode {
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         angleServo = hardwareMap.get(Servo.class, "angleServo");
         launchServo = hardwareMap.get(Servo.class, "launchServo");
-        launchSensor = hardwareMap.get(NormalizedColorSensor.class, "launchSensor");
+        launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
+        intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
 
-        launchSensor.setGain(15);
+        launchColorSensor.setGain(15);
+        intakeColorSensor.setGain(15);
 
         angleServo.setDirection(Servo.Direction.FORWARD);
+
         launcherMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.gamepad = gamepad1;
 
         turretMotor.setMode(RUN_USING_ENCODER);
-        launcherMotor.setMode(RUN_USING_ENCODER);
+
+
+        // Turns on bulk reading
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
+        // RUE limits max motor speed to 85% by default
+        // Raise that limit to 100%
+        MotorConfigurationType motorConfigurationType = launcherMotor.getMotorType().clone();
+        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
+        launcherMotor.setMotorType(motorConfigurationType);
+        launcherMotor.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(
+                MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d,
+                MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()
+        ));
         initAprilTagProcessor();
     }
 }
