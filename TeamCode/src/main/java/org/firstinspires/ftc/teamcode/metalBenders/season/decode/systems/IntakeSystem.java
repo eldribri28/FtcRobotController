@@ -17,6 +17,8 @@ public class IntakeSystem extends AbstractSystem {
     protected void process() {
         if(getBaseOpMode().getHardwareManager().getGamepad().left_trigger > 0) {
             getBaseOpMode().getHardwareManager().getIntakeMotor().setPower(1);
+        } else if (getBaseOpMode().getHardwareManager().getGamepad().left_bumper) {
+            getBaseOpMode().getHardwareManager().getIntakeMotor().setPower(-1);
         } else {
             getBaseOpMode().getHardwareManager().getIntakeMotor().setPower(0);
         }
