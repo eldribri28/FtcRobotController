@@ -5,19 +5,16 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 
 import android.util.Size;
 
-import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
@@ -50,7 +47,7 @@ public class TurretTurnLaunch extends LinearOpMode {
     private double calculatedLaunchAngle = 0;
     private double targetDistance = 0;
 
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0, 0.0075);
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0, 0.075);
 
     public void runOpMode() {
         initialize();
@@ -68,8 +65,8 @@ public class TurretTurnLaunch extends LinearOpMode {
             launchBall();
 
             double flywheelRPM = ((launcherMotor.getVelocity()/28) * 60);
-            //telemetry.addData("shooter motor1 power", launcherMotor.getPower());
-            //telemetry.addData("shooter motor1 current (AMPS)", launcherMotor.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("shooter motor1 power", launcherMotor.getPower());
+            telemetry.addData("shooter motor1 current (AMPS)", launcherMotor.getCurrent(CurrentUnit.AMPS));
             telemetryAprilTag(flywheelRPM);
             telemetry.update();
 
@@ -112,9 +109,6 @@ public class TurretTurnLaunch extends LinearOpMode {
 
                 targetDistance = detection.ftcPose.range / 39.37;
 
-
-
-
                 if (detection.metadata != null) {
                     telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                     telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
@@ -122,6 +116,7 @@ public class TurretTurnLaunch extends LinearOpMode {
                     telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
                     telemetry.addData("Target Range (M)", targetDistance);
                     telemetry.addData("Launch Angle (deg)", calculatedLaunchAngle);
+                    //telemetry.addData("Target RPM", targetRPM);
                     telemetry.addData("Actual RPM", flywheelRPM);
                 } else {
                     telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
@@ -137,7 +132,7 @@ public class TurretTurnLaunch extends LinearOpMode {
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
         telemetry.addLine("RBE = Range, Bearing & Elevation");
 
-        LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance );
+        LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance );
 
         calculatedLaunchAngle = 0;
 
@@ -148,11 +143,10 @@ public class TurretTurnLaunch extends LinearOpMode {
         setLaunchAngle(calculatedLaunchAngle);
 
         double targetRPM = Math.round(((targetDistance / 1.670) * 800) + 1900);
-        telemetry.addData("Target RPM", targetRPM);
 
         //double targetRPM = Math.round(2600);
         if(gamepad1.right_trigger > 0) {
-            launcherMotor.setVelocity((targetRPM / 60) * 28);
+            launcherMotor.setVelocity(( targetRPM / 60.0 ) * 28.0);
         } else {
             launcherMotor.setVelocity(0);
         }
@@ -189,14 +183,14 @@ public class TurretTurnLaunch extends LinearOpMode {
 
         NormalizedRGBA colors = launchColorSensor.getNormalizedColors();
 
-        double red = colors.red;
-        double green = colors.green;
-        double blue = colors.blue;
+        float red = colors.red;
+        float green = colors.green;
+        float blue = colors.blue;
         //int alpha = colors.alpha;
 
         String ballDetected = "";
 
-        if (blue > green && red > 0.2 && blue > 0.3) {
+        if (blue > green && red > 0.3 && blue > 0.3) {
             ballDetected = "Purple";
         } else if (green > red && green > blue && green > 0.3) {
             ballDetected = "Green";
@@ -214,14 +208,14 @@ public class TurretTurnLaunch extends LinearOpMode {
 
         NormalizedRGBA colors = intakeColorSensor.getNormalizedColors();
 
-        double red = colors.red;
-        double green = colors.green;
-        double blue = colors.blue;
+        float red = colors.red;
+        float green = colors.green;
+        float blue = colors.blue;
         //int alpha = colors.alpha;
 
         String ballDetected = "";
 
-        if (blue > green && red > 0.2 && blue > 0.3) {
+        if (blue > green && red > 0.3 && blue > 0.3) {
             ballDetected = "Purple";
         } else if (green > red && green > blue && green > 0.3) {
             ballDetected = "Green";
@@ -252,28 +246,19 @@ public class TurretTurnLaunch extends LinearOpMode {
         intakeColorSensor.setGain(15);
 
         angleServo.setDirection(Servo.Direction.FORWARD);
-
         launcherMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.gamepad = gamepad1;
 
         turretMotor.setMode(RUN_USING_ENCODER);
+        launcherMotor.setMode(RUN_USING_ENCODER);
 
-
-        // Turns on bulk reading
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
-        // RUE limits max motor speed to 85% by default
-        // Raise that limit to 100%
-        MotorConfigurationType motorConfigurationType = launcherMotor.getMotorType().clone();
-        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-        launcherMotor.setMotorType(motorConfigurationType);
+        // Set PIDF Coefficients with voltage compensated feedforward value
         launcherMotor.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d,
                 MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()
         ));
+
         initAprilTagProcessor();
     }
 }

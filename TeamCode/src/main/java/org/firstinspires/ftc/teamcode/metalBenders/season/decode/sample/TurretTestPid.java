@@ -66,7 +66,7 @@ public class TurretTestPid extends LinearOpMode {
             turretMotor.setPower(-bearingPid.calculate(1, detection.ftcPose.bearing));
 
 
-            LaunchResult launchResults = LaunchCalculator.calculatePreferredLaunchResult(detection.ftcPose.range, 3500);
+            LaunchResult launchResults = LaunchCalculator.calculatePreferredLaunchResult1(detection.ftcPose.range, 3500);
 
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));

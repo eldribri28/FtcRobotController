@@ -11,7 +11,7 @@ public class LaunchCalculator {
     private static final double VELOCITY_TRANSFER_EFFICIENCY = 0.41;
     private static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
 
-    public static LaunchResult calculatePreferredLaunchResult(double flywheelRPM, double distance) {
+    public static LaunchResult calculatePreferredLaunchResult1(double flywheelRPM, double distance) {
 
         double velocity = (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
 
