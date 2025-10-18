@@ -19,7 +19,7 @@ public abstract class AbstractBaseOpMode extends LinearOpMode {
     abstract protected ColorEnum getTargetColor();
     abstract protected List<AbstractSystem> getSystems();
 
-    private List<Thread> systemThreads;
+    private final List<Thread> systemThreads = new ArrayList<>();
     private boolean isSystemThreadsStarted = false;
     private final Map<String, String> telemetryData = new ConcurrentHashMap<>();
 

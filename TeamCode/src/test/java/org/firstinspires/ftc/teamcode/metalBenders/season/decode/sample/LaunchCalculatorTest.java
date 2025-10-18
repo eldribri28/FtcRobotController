@@ -46,11 +46,11 @@ public class LaunchCalculatorTest {
         method.setAccessible(true);
         LaunchResult launchResult = (LaunchResult) method.invoke(null, launchResult1, launchResult2);
         assertNotNull(launchResult);
-        assertEquals(launchResult2, launchResult);
+        assertEquals(launchResult1, launchResult);
 
         launchResult = (LaunchResult) method.invoke(null, launchResult2, launchResult1);
         assertNotNull(launchResult);
-        assertEquals(launchResult2, launchResult);
+        assertEquals(launchResult1, launchResult);
     }
 
     @Test

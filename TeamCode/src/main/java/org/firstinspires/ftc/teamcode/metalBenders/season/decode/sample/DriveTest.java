@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 
@@ -45,9 +46,9 @@ public class DriveTest extends LinearOpMode {
         while (opModeIsActive()) {
             double axial = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
-            double yaw = -(gamepad1.right_stick_x * 1.1);
+            double yaw = gamepad1.right_stick_x * 1.1;
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-            double botHeading = -orientation.getYaw(AngleUnit.RADIANS);
+            double botHeading = orientation.getYaw(AngleUnit.RADIANS);
             double cosHeading = Math.cos(botHeading);
             double sinHeading = Math.sin(botHeading);
             double rotX = lateral * cosHeading - axial * sinHeading;
@@ -72,10 +73,10 @@ public class DriveTest extends LinearOpMode {
                 rightRearPower  /= max;
             }
 
-            leftFrontMotor.setPower(leftFrontPower);
-            rightFrontMotor.setPower(rightFrontPower);
-            leftRearMotor.setPower(leftRearPower);
-            rightRearMotor.setPower(rightRearPower);
+            leftFrontMotor.setPower(leftFrontPower*0.25);
+            rightFrontMotor.setPower(rightFrontPower*0.25);
+            leftRearMotor.setPower(leftRearPower*0.25);
+            rightRearMotor.setPower(rightRearPower*0.25);
 
             telemetry.addData("Motor (Left Front)", "%.2f", leftFrontPower);
             telemetry.addData("Motor (Right Front)", "%.2f", rightFrontPower);
@@ -100,9 +101,15 @@ public class DriveTest extends LinearOpMode {
     }
 
     private void initializeHardware(){
-        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor, leftFrontMotor, leftRearMotor)) {
+        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor)) {
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
+            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
+            motor.setMode(RUN_USING_ENCODER);
+            motor.setZeroPowerBehavior(BRAKE);
+            motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
     }
 }

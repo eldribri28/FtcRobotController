@@ -5,7 +5,9 @@ public enum HardwareEnum {
     RIGHT_FRONT_MOTOR("RFmotor"),
     LEFT_FRONT_MOTOR("LFmotor"),
     RIGHT_REAR_MOTOR("RRmotor"),
-    LEFT_REAR_MOTOR("LRmotor");
+    LEFT_REAR_MOTOR("LRmotor"),
+    IMU("imu"),
+    INTAKE_MOTOR("intakeMotor");
 
     private final String name;
 
