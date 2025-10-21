@@ -8,6 +8,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import android.util.Size;
 
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
@@ -28,7 +29,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public abstract class TeleOpBaseLinearOpMode extends com.qualcomm.robotcore.eventloop.opmode.LinearOpMode {
+public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
     private AprilTagProcessor aprilTagProcessor;
     private VisionPortal visionPortal;
@@ -51,6 +52,7 @@ public abstract class TeleOpBaseLinearOpMode extends com.qualcomm.robotcore.even
             telemetry.addData("Target name", getTargetAprilTag().name());
             telemetry.addData("Target id", getTargetAprilTag().getId());
             telemetry.addData("Motif detected", artifactMotif.name());
+            telemetry.addData("Target distance", targetDistance);
             if (!isGainAndExposureSet) {
                 setExposureAndGain();
                 isGainAndExposureSet = true;
