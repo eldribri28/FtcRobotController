@@ -31,7 +31,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@TeleOp(name = "TurretTurnLaunch")
+@TeleOp(name = "TurretTurnLaunch", group="sample:")
 public class TurretTurnLaunch extends LinearOpMode {
 
     private Gamepad gamepad;

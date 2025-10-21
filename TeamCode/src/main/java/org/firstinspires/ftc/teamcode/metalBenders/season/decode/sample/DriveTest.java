@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.List;
 
-@TeleOp(name = "DriveTest", group="test")
+@TeleOp(name = "DriveTest", group="sample")
 public class DriveTest extends LinearOpMode {
 
     private DcMotorEx rightRearMotor;
