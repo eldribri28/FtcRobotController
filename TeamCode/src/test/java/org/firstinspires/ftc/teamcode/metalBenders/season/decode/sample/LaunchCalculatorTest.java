@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
