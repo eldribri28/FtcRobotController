@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.metalBenders.ignore.archive.ftc_2025;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Disabled
 @TeleOp(name = "OperatorDriveMode")
 public class OperatorDriveMode extends LinearOpMode {
 

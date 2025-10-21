@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.metalBenders.ignore.sample;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-//@TeleOp(name = "IntakeTest", group="test")
-//@Autonomous(name="TestAuton", group="test")
+@Disabled
+@TeleOp(name = "IntakeTest", group="test")
 public class IntakeTest extends LinearOpMode {
 
     private DcMotorEx intakeMotor;

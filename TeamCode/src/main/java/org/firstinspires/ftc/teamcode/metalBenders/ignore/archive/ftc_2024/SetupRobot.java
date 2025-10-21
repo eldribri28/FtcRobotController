@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.metalBenders.ignore.archive.ftc_2024;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.metalBenders.ignore.archive.core.AS5600Block;
 
+@Disabled
 @TeleOp(name = "SetupRobot (Blocks to Java)")
 public class SetupRobot extends LinearOpMode {
 

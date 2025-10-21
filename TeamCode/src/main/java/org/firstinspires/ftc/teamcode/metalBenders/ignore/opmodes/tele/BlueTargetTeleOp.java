@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.metalBenders.ignore.opmodes.tele;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 
-//@TeleOp(name="Blue TeleOp", group="Test")
+@Disabled
+@TeleOp(name="Blue TeleOp", group="Test")
 public class BlueTargetTeleOp extends AbstractBaseTeleOp {
 
     @Override

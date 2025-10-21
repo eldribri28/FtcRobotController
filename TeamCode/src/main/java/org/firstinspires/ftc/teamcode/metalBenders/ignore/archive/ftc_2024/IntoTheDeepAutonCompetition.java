@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.metalBenders.ignore.archive.ftc_2024;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+@Disabled
 @Autonomous(name = "IntoTheDeepAutonCompetition (Blocks to Java)", preselectTeleOp = "Field Centric Drive Mode")
 public class IntoTheDeepAutonCompetition extends LinearOpMode {
 

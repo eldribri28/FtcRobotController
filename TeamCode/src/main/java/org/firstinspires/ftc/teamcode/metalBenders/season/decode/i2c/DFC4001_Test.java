@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.i2c;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+@Disabled
 @TeleOp(name = "DFC4001", group = "Tests")
 public class DFC4001_Test extends LinearOpMode
 {
