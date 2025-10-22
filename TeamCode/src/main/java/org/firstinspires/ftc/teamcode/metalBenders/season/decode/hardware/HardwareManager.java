@@ -21,6 +21,8 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -58,6 +60,7 @@ public class HardwareManager {
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
         this.intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
+
         this.imu = hardwareMap.get(IMU.class, "imu");
         initializeHardware(hardwareMap);
     }
@@ -73,6 +76,7 @@ public class HardwareManager {
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
+
         launcherMotor.setMode(RUN_USING_ENCODER);
         launcherMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
@@ -144,4 +148,6 @@ public class HardwareManager {
     public NormalizedColorSensor getLaunchColorSensor() {
         return launchColorSensor;
     }
+
 }
+
