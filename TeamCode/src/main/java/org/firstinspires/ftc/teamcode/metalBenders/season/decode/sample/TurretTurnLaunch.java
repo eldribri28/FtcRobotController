@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 
 import android.util.Size;
 
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -48,6 +51,9 @@ public class TurretTurnLaunch extends LinearOpMode {
     private boolean cameraInitialized = false;
     private double calculatedLaunchAngle = 0;
     private double targetDistance = 0;
+    private HardwareManager hardwareManager;
+
+    private SparkFunOTOS OTOS;
 
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
 
@@ -65,6 +71,7 @@ public class TurretTurnLaunch extends LinearOpMode {
 
             intakeBall();
             launchBall();
+            getCurrentPosition();
 
             double flywheelRPM = (( launcherMotor.getVelocity() / 28 ) * 60);
             //telemetry.addData("shooter motor1 power", launcherMotor.getPower());
@@ -96,6 +103,17 @@ public class TurretTurnLaunch extends LinearOpMode {
             exposureControl.setExposure(5, TimeUnit.MILLISECONDS);
             gainControl.setGain(75);
         }
+    }
+
+    public void getCurrentPosition() {
+
+        double currentX = OTOSCalculator.getCurrentPosition(OTOS).getXPos();
+        double currentY = OTOSCalculator.getCurrentPosition(OTOS).getYPos();
+        double currentHeading = OTOSCalculator.getCurrentPosition(OTOS).getHeading();
+
+        telemetry.addLine(String.format("Current Position: %6.3f %6.3f %6.3f  (meter)", currentX, currentY, currentHeading));
+
+
     }
 
     private void telemetryAprilTag(double flywheelRPM) {
@@ -258,6 +276,9 @@ public class TurretTurnLaunch extends LinearOpMode {
     }
 
     private void initializeHardware() {
+
+        hardwareManager = new HardwareManager(hardwareMap, gamepad1);
+
         turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
         launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
@@ -265,6 +286,8 @@ public class TurretTurnLaunch extends LinearOpMode {
         launchServo = hardwareMap.get(Servo.class, "launchServo");
         launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
         intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
+
+        OTOS = hardwareManager.getOTOS();
 
         launchColorSensor.setGain(30);
         intakeColorSensor.setGain(15);

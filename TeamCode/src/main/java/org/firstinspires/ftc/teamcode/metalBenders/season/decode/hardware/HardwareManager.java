@@ -5,11 +5,13 @@ import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirect
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 import static java.lang.Thread.sleep;
 
 import android.util.Size;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -24,6 +26,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -42,6 +46,7 @@ public class HardwareManager {
     private final Gamepad gamepad;
     private final WebcamName turretCam;
     private final IMU imu;
+    private final SparkFunOTOS OTOS;
     private final NormalizedColorSensor launchColorSensor;
     private final NormalizedColorSensor intakeColorSensor;
     private static final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
@@ -60,7 +65,7 @@ public class HardwareManager {
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
         this.intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
-
+        this.OTOS = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
         initializeHardware(hardwareMap);
     }
@@ -85,6 +90,7 @@ public class HardwareManager {
         launchColorSensor.setGain(30);
         intakeColorSensor.setGain(15);
         initializeIMU();
+        initializeOTOS();
     }
 
     private void initializeIMU() {
@@ -93,9 +99,28 @@ public class HardwareManager {
         imu.resetYaw();
     }
 
+    /**
+     * Configures the SparkFun OTOS.
+     */
+    public void initializeOTOS() {
+
+        SparkFunOTOS.Pose2D offset;
+
+        OTOS.setLinearUnit(DistanceUnit.METER);
+        OTOS.setAngularUnit(AngleUnit.DEGREES);
+        offset = new SparkFunOTOS.Pose2D(0, 0, 0);
+        OTOS.setOffset(offset);
+        OTOS.setLinearScalar(1);
+        OTOS.setAngularScalar(1);
+        OTOS.calibrateImu();
+        OTOS.resetTracking();
+    }
+
     public IMU getImu() {
         return imu;
     }
+
+    public SparkFunOTOS getOTOS() { return OTOS; }
 
     public WebcamName getTurretCam() {
         return turretCam;
