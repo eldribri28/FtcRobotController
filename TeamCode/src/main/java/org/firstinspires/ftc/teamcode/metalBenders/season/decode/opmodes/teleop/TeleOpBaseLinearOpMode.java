@@ -15,6 +15,9 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
@@ -22,6 +25,7 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactM
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -68,9 +72,15 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void initialize() {
+
+        Position cameraPosition = new Position(DistanceUnit.METER, 0,  -0.20, 0.250, 0);
+        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
         hardwareManager = new HardwareManager(hardwareMap, gamepad1);
-        this.aprilTagProcessor = new AprilTagProcessor.Builder().build();
-        aprilTagProcessor.setDecimation(3);
+        AprilTagProcessor.Builder aprilTagProcessorBuilder = new AprilTagProcessor.Builder();
+        aprilTagProcessorBuilder.setLensIntrinsics(539.0239404, 539.0239404, 316.450283269, 236.364794005);
+        aprilTagProcessorBuilder.setCameraPose(cameraPosition, cameraOrientation);
+        this.aprilTagProcessor = aprilTagProcessorBuilder.build();
+        aprilTagProcessor.setDecimation(4);
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareManager.getTurretCam());
         builder.addProcessor(aprilTagProcessor);

@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
 
@@ -84,7 +88,13 @@ public class TurretTurnLaunch extends LinearOpMode {
     }
 
     private void initAprilTagProcessor() {
-        aprilTagProcessor = new AprilTagProcessor.Builder().build();
+        Position cameraPosition = new Position(DistanceUnit.METER, 0,  -0.20, 0.250, 0);
+        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -75, 0, 0);
+        AprilTagProcessor.Builder aprilTagProcessorBuilder = new AprilTagProcessor.Builder();
+        aprilTagProcessorBuilder.setLensIntrinsics(539.0239404, 539.0239404, 316.450283269, 236.364794005);
+        aprilTagProcessorBuilder.setCameraPose(cameraPosition, cameraOrientation);
+        aprilTagProcessor = aprilTagProcessorBuilder.build();
+        aprilTagProcessor.setDecimation(4);
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareMap.get(WebcamName.class, "TurretCam"));
         builder.addProcessor(aprilTagProcessor);
@@ -107,12 +117,11 @@ public class TurretTurnLaunch extends LinearOpMode {
 
     public void getCurrentPosition() {
 
-        double currentX = OTOSCalculator.getCurrentPosition(OTOS).getXPos();
-        double currentY = OTOSCalculator.getCurrentPosition(OTOS).getYPos();
+        double currentX = OTOSCalculator.getCurrentPosition(OTOS).getXPos() * 39.37;
+        double currentY = OTOSCalculator.getCurrentPosition(OTOS).getYPos() * 39.37;
         double currentHeading = OTOSCalculator.getCurrentPosition(OTOS).getHeading();
 
-        telemetry.addLine(String.format("Current Position: %6.3f %6.3f %6.3f  (meter)", currentX, currentY, currentHeading));
-
+        telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", currentX, currentY, currentHeading));
 
     }
 
@@ -125,12 +134,12 @@ public class TurretTurnLaunch extends LinearOpMode {
         } else {
             // Step through the list of detections and display info for each one.
             for (AprilTagDetection detection : currentDetections) {
-                turretMotor.setPower(-bearingPid.calculate(1, detection.ftcPose.bearing));
+
+                OTOSCalculator.setCurrentPosition(detection.robotPose.getPosition().x, detection.robotPose.getPosition().y, AngleUnit.DEGREES.normalize(detection.robotPose.getOrientation().getYaw()), OTOS);
+
+                turretMotor.setPower(bearingPid.calculate(1, detection.ftcPose.bearing));
 
                 targetDistance = detection.ftcPose.range / 39.37;
-
-
-
 
                 if (detection.metadata != null) {
                     telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
