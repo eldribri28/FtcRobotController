@@ -64,12 +64,12 @@ public class HardwareManager {
     }
 
     private void initializeHardware(HardwareMap hardwareMap) {
-        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor, turretMotor, intakeMotor)) {
+        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor, turretMotor)) {
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
-        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
+        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor, intakeMotor)) {
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
