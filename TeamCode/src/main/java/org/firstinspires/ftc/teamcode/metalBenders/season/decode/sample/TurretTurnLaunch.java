@@ -57,7 +57,7 @@ public class TurretTurnLaunch extends LinearOpMode {
     private double targetDistance = 0;
     private HardwareManager hardwareManager;
 
-    private SparkFunOTOS OTOS;
+    private SparkFunOTOS otos;
 
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
 
@@ -117,9 +117,9 @@ public class TurretTurnLaunch extends LinearOpMode {
 
     public void getCurrentPosition() {
 
-        double currentX = OTOSCalculator.getCurrentPosition(OTOS).getXPos() * 39.37;
-        double currentY = OTOSCalculator.getCurrentPosition(OTOS).getYPos() * 39.37;
-        double currentHeading = OTOSCalculator.getCurrentPosition(OTOS).getHeading();
+        double currentX = OTOSCalculator.getCurrentPosition(otos).getXPos() * 39.37;
+        double currentY = OTOSCalculator.getCurrentPosition(otos).getYPos() * 39.37;
+        double currentHeading = OTOSCalculator.getCurrentPosition(otos).getHeading();
 
         telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", currentX, currentY, currentHeading));
 
@@ -135,7 +135,7 @@ public class TurretTurnLaunch extends LinearOpMode {
             // Step through the list of detections and display info for each one.
             for (AprilTagDetection detection : currentDetections) {
 
-                OTOSCalculator.setCurrentPosition(detection.robotPose.getPosition().x, detection.robotPose.getPosition().y, AngleUnit.DEGREES.normalize(detection.robotPose.getOrientation().getYaw()), OTOS);
+                OTOSCalculator.setCurrentPosition(detection.robotPose.getPosition().x, detection.robotPose.getPosition().y, AngleUnit.DEGREES.normalize(detection.robotPose.getOrientation().getYaw()), otos);
 
                 turretMotor.setPower(bearingPid.calculate(1, detection.ftcPose.bearing));
 
@@ -296,7 +296,7 @@ public class TurretTurnLaunch extends LinearOpMode {
         launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
         intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
 
-        OTOS = hardwareManager.getOTOS();
+        otos = hardwareManager.getOtos();
 
         launchColorSensor.setGain(30);
         intakeColorSensor.setGain(15);

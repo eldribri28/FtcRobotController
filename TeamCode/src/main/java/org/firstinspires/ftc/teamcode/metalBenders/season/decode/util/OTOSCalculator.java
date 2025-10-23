@@ -1,14 +1,8 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class OTOSCalculator {
-
-    //private static ;
 
     public static OTOSResult getCurrentPosition(SparkFunOTOS OTOS) {
 
@@ -26,8 +20,4 @@ public class OTOSCalculator {
         return new OTOSResult(getCurrentPosition(OTOS).getXPos(), getCurrentPosition(OTOS).getYPos(), getCurrentPosition(OTOS).getHeading());
 
     }
-
-
-
-
 }
