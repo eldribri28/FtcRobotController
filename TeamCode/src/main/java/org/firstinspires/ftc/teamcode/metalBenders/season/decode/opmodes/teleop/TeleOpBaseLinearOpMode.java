@@ -22,6 +22,8 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalc
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.Map;
+
 public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
     private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.NONE;
@@ -45,6 +47,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             telemetry.addData("Intake artifact color", intakeArtifactColor.name());
             telemetry.addData("Launcher artifact color", launcherArtifactColor.name());
             telemetry.addData("Target distance", targetDistance);
+            Map<String,String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
+            for(String key : aprilTagTelemetry.keySet()) {
+                String value = aprilTagTelemetry.get(key);
+                telemetry.addData(key, value);
+            }
 
             drive();
             intakeOrRejectArtifact();
@@ -64,7 +71,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1);
-        aprilTagEngine = new AprilTagEngine(hardwareManager, telemetry);
+        aprilTagEngine = new AprilTagEngine(hardwareManager);
     }
 
     private void updateRuntime() {

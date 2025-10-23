@@ -7,7 +7,6 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 
 import android.util.Size;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -21,13 +20,16 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AprilTagEngine implements Runnable {
     private final HardwareManager hardwareManager;
-    private final Telemetry telemetry;
+    private final Map<String, String> telemetry = new ConcurrentHashMap<>();
     private AprilTagProcessor aprilTagProcessor;
     private VisionPortal visionPortal;
     private ArtifactMotifEnum artifactMotif = UNKNOWN;
@@ -37,9 +39,8 @@ public class AprilTagEngine implements Runnable {
     private AprilTagDetection redTargetDetection = null;
     private final ReentrantReadWriteLock redTargetDetectionLock = new ReentrantReadWriteLock();
 
-    public AprilTagEngine(HardwareManager hardwareManager, Telemetry telemetry) {
+    public AprilTagEngine(HardwareManager hardwareManager) {
         this.hardwareManager = hardwareManager;
-        this.telemetry = telemetry;
         initialize();
     }
 
@@ -72,7 +73,7 @@ public class AprilTagEngine implements Runnable {
             try {
                 detectAndProcessAprilTags();
             } catch (Exception e) {
-                telemetry.addData("AprilTagEngine exception",
+                telemetry.put("AprilTagEngine exception",
                         e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         }
@@ -93,7 +94,7 @@ public class AprilTagEngine implements Runnable {
 
     private void detectAndProcessAprilTags() {
         List<AprilTagDetection> currentDetections = aprilTagProcessor.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
+        telemetry.put("# AprilTags Detected", String.valueOf(currentDetections.size()));
         for (AprilTagDetection detection : currentDetections) {
             if (detection != null) {
                 processDetection(detection);
@@ -185,5 +186,9 @@ public class AprilTagEngine implements Runnable {
         } finally {
             redTargetDetectionLock.writeLock().unlock();
         }
+    }
+
+    public Map<String, String> getTelemetry() {
+        return new HashMap<>(telemetry);
     }
 }
