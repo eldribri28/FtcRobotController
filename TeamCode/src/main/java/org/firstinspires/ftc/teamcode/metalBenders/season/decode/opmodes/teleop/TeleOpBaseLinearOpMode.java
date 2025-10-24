@@ -40,6 +40,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         waitForStart();
         resetRuntime();
         aprilTagEngineThread.start();
+        hardwareManager.getLaunchServo().setPosition(0.7);
         while (opModeIsActive()) {
             updateRuntime();
             telemetry.addData("Target name", getTargetAprilTag().name());
@@ -175,9 +176,12 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void processTargetDetection(AprilTagDetection targetDetection) {
         if(targetDetection != null) {
             long detectionAge = targetDetection.frameAcquisitionNanoTime - System.nanoTime();
-            telemetry.addData("Target detection age(millisecond)", "%.2f", detectionAge);
+            telemetry.addData("Target detection age(millisecond)", Math.abs(detectionAge));
+
             if (detectionAge < AGED_DATA_LIMIT_NANO) {
-                hardwareManager.getTurretMotor().setPower(turretBearingPid.calculate(1, targetDetection.ftcPose.bearing));
+                if (detectionAge < AGED_DATA_LIMIT_NANO / 10 ) {
+                    hardwareManager.getTurretMotor().setPower(turretBearingPid.calculate(1, targetDetection.ftcPose.bearing));
+                }
                 targetDistance = targetDetection.ftcPose.range / 39.37;
 
                 double flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
@@ -189,7 +193,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 }
 
                 double targetRPM = Math.round(((targetDistance / 1.670) * 800.0) + 1900.0);
-                hardwareManager.getLauncherMotor().setVelocity((targetRPM / 60.0) * 28.0);
+                //hardwareManager.getLauncherMotor().setVelocity((targetRPM / 60.0) * 28.0);
                 telemetry.addData("target RPM", targetRPM);
 
                 if (hardwareManager.getGamepad().right_trigger > 0) {
@@ -217,7 +221,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         hardwareManager.getLaunchServo().setPosition(0);
         sleep(100);
         hardwareManager.getLaunchServo().setPosition(0.7);
-        sleep(100);
+        sleep(150);
     }
 
     private void autoIntakeBall() {
