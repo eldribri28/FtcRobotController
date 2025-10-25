@@ -68,6 +68,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             drive();
             intakeOrRejectArtifact();
             clearArtifactFromLaunch();
+            setArtifactColors();
             setManualLaunchOverride(aprilTagEngineThread);
             launch();
             resetIMU();
@@ -195,7 +196,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunch() {
-        setArtifactColors();
         if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
             processTargetDetection(aprilTagEngine.getBlueTargetDetection());
         } else {

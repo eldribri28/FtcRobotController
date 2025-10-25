@@ -62,12 +62,7 @@ public class AprilTagEngine implements Runnable {
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()
-                && visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e){}
-        }
+        waitForCameraStreamToStart();
         setExposureAndGain();
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -76,6 +71,15 @@ public class AprilTagEngine implements Runnable {
                 telemetry.put("AprilTagEngine exception",
                         e.getClass().getSimpleName() + " - " + e.getMessage());
             }
+        }
+    }
+
+    private void waitForCameraStreamToStart() {
+        while (!Thread.currentThread().isInterrupted()
+                && visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e){}
         }
     }
 
