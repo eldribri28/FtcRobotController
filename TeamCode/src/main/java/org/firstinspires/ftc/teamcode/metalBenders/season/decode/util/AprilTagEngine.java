@@ -77,6 +77,9 @@ public class AprilTagEngine implements Runnable {
                         e.getClass().getSimpleName() + " - " + e.getMessage());
             }
         }
+    }
+
+    public void teardown() {
         visionPortal.close();
     }
 

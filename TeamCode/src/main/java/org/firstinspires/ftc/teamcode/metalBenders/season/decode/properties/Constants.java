@@ -10,6 +10,11 @@ public final class Constants {
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
 
     public static final long MILLISECONDS_TO_NANOSECONDS = 1000000;
-    public static final long AGED_DATA_LIMIT_NANO= 500 * MILLISECONDS_TO_NANOSECONDS;
+    public static final long AGED_DATA_LIMIT_NANO = 500 * MILLISECONDS_TO_NANOSECONDS;
+    public static final long TURRET_AGE_DATA_LIMIT_NANO = 50 * MILLISECONDS_TO_NANOSECONDS;
     public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 150;
+    public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_START = 1500;
+    public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT = 100;
+    public static final double MANUAL_TURRET_MOTOR_MULTIPLIER = 0.5;
+    public static final double MANUAL_ANGLE_SERVO_POSITION_INCREMENT = 5;
 }

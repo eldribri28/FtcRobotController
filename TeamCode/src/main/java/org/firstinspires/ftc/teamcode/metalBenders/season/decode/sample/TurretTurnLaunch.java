@@ -286,7 +286,7 @@ public class TurretTurnLaunch extends LinearOpMode {
 
     private void initializeHardware() {
 
-        hardwareManager = new HardwareManager(hardwareMap, gamepad1);
+        hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
 
         turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
         launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");

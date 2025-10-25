@@ -129,7 +129,7 @@ public class AutoTargetingLaunchSystem extends AbstractSystem {
             getHardwareManager().getLauncherMotor().setVelocity((targetRPM / 60.0 ) * 28.0);
             addTelemetry("target RPM", flywheelRPM);
 
-            if(getHardwareManager().getGamepad().right_trigger > 0) {
+            if(getHardwareManager().getGamepad1().right_trigger > 0) {
                 getHardwareManager().getLauncherMotor().setVelocity(((targetRPM / 60.0 ) * 28.0) + (( 300.0 / 60.0 ) * 28.0));
                 if (Math.abs(((getHardwareManager().getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < 150.0 ) {
                     if (getDataManager().getLauncherBallColor() != ArtifactColorEnum.NONE) {

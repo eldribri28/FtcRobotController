@@ -42,7 +42,7 @@ public abstract class AbstractBaseOpMode extends LinearOpMode {
     }
 
     private void initialize() {
-        HardwareManager hardwareManager = new HardwareManager(hardwareMap, gamepad1);
+        HardwareManager hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         DataManager dataManager = new DataManager();
         for(AbstractSystem abstractSystem : getSystems()) {
             abstractSystem.setHardwareManager(hardwareManager);

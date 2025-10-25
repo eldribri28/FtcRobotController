@@ -20,9 +20,9 @@ public class ManualDriveSystem extends AbstractSystem {
 
     @Override
     protected void process() {
-        double axial = -getHardwareManager().getGamepad().left_stick_y;
-        double lateral = getHardwareManager().getGamepad().left_stick_x;
-        double yaw = getHardwareManager().getGamepad().right_stick_x * 1.1;
+        double axial = -getHardwareManager().getGamepad1().left_stick_y;
+        double lateral = getHardwareManager().getGamepad1().left_stick_x;
+        double yaw = getHardwareManager().getGamepad1().right_stick_x * 1.1;
         YawPitchRollAngles orientation = getHardwareManager().getImu().getRobotYawPitchRollAngles();
         double botHeading = orientation.getYaw(AngleUnit.RADIANS);
         double cosHeading = Math.cos(botHeading);
@@ -68,7 +68,7 @@ public class ManualDriveSystem extends AbstractSystem {
     }
 
     private void maybeResetImu() {
-        if (getHardwareManager().getGamepad().dpad_up) {
+        if (getHardwareManager().getGamepad1().dpad_up) {
             getHardwareManager().getImu().resetYaw();
         }
     }

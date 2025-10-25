@@ -39,7 +39,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     }
 
     private void initialize() {
-        hardwareManager = new HardwareManager(hardwareMap, gamepad1);
+        hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         this.aprilTagProcessor = new AprilTagProcessor.Builder().build();
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareManager.getTurretCam());

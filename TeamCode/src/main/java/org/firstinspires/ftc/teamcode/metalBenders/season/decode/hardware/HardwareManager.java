@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -36,16 +36,20 @@ public class HardwareManager {
     private final DcMotorEx launcherMotor;
     private final Servo angleServo;
     private final Servo launchServo;
-    private final Gamepad gamepad;
+    private final Gamepad gamepad1;
+    private final Gamepad gamepad2;
     private final WebcamName turretCam;
     private final IMU imu;
     private final SparkFunOTOS otos;
     private final NormalizedColorSensor launchColorSensor;
     private final NormalizedColorSensor intakeColorSensor;
+    private final TouchSensor limitSwitchLeft;
+    private final TouchSensor limitSwitchRight;
     private static final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
 
-    public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad) {
-        this.gamepad = gamepad;
+    public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
+        this.gamepad1 = gamepad1;
+        this.gamepad2 = gamepad2;
         this.rightFrontMotor = hardwareMap.get(DcMotorEx.class, "RFmotor");
         this.leftFrontMotor = hardwareMap.get(DcMotorEx.class, "LFmotor");
         this.rightRearMotor = hardwareMap.get(DcMotorEx.class, "RRmotor");
@@ -58,6 +62,8 @@ public class HardwareManager {
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
         this.intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
+        this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
+        this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
         this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
         initializeHardware(hardwareMap);
@@ -119,8 +125,12 @@ public class HardwareManager {
         return turretCam;
     }
 
-    public Gamepad getGamepad() {
-        return gamepad;
+    public Gamepad getGamepad1() {
+        return gamepad1;
+    }
+
+    public Gamepad getGamepad2() {
+        return gamepad2;
     }
 
     public Servo getLaunchServo() {
@@ -165,5 +175,13 @@ public class HardwareManager {
 
     public NormalizedColorSensor getLaunchColorSensor() {
         return launchColorSensor;
+    }
+
+    public TouchSensor getLimitSwitchLeft() {
+        return limitSwitchLeft;
+    }
+
+    public TouchSensor getLimitSwitchRight() {
+        return limitSwitchRight;
     }
 }

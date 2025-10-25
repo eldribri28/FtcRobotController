@@ -24,9 +24,9 @@ public class ManualIntakeSystem extends AbstractSystem {
 
     @Override
     protected void process() {
-        if(getHardwareManager().getGamepad().left_trigger > 0) {
+        if(getHardwareManager().getGamepad1().left_trigger > 0) {
             getHardwareManager().getIntakeMotor().setPower(1);
-        } else if (getHardwareManager().getGamepad().left_bumper) {
+        } else if (getHardwareManager().getGamepad1().left_bumper) {
             getHardwareManager().getIntakeMotor().setPower(-1);
         } else {
             getHardwareManager().getIntakeMotor().setPower(0);
