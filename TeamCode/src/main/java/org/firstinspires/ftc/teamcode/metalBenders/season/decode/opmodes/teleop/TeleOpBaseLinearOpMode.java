@@ -178,7 +178,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             manualLaunchVelocity -= MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
         }
         hardwareManager.getLauncherMotor().setVelocity(manualLaunchVelocity);
-        if(Math.abs(hardwareManager.getGamepad2().left_stick_x) > 0) {
+        if(Math.abs(hardwareManager.getGamepad2().left_stick_x) > 0
+                && canRotateTurret(hardwareManager.getGamepad2().left_stick_x)) {
             hardwareManager.getTurretMotor().setPower(
                     hardwareManager.getGamepad2().left_stick_x * MANUAL_TURRET_MOTOR_MULTIPLIER);
         } else {
@@ -201,6 +202,19 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         } else {
             processTargetDetection(aprilTagEngine.getRedTargetDetection());
         }
+    }
+
+    private boolean canRotateTurret(double input) {
+        boolean rightSwitchPressed = hardwareManager.getLimitSwitchRight().isPressed();
+        boolean leftSwitchPressed = hardwareManager.getLimitSwitchRight().isPressed();
+        if(input == 0 || (!rightSwitchPressed && ! leftSwitchPressed)) {
+            return true;
+        } else if (input > 0 && !hardwareManager.getLimitSwitchRight().isPressed()) {
+            return true;
+        } else if (input < 0 && !hardwareManager.getLimitSwitchLeft().isPressed()) {
+            return true;
+        }
+        return false;
     }
 
     private void setArtifactColors() {
@@ -233,9 +247,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             telemetry.addData("Target detection age(millisecond)", Math.abs(detectionAge));
 
             if (detectionAge < AGED_DATA_LIMIT_NANO) {
-                if (detectionAge < TURRET_AGE_DATA_LIMIT_NANO
-                        && !hardwareManager.getLimitSwitchLeft().isPressed()
-                        && !hardwareManager.getLimitSwitchRight().isPressed()) {
+                if (detectionAge < TURRET_AGE_DATA_LIMIT_NANO && canRotateTurret(targetDetection.ftcPose.bearing)) {
                     hardwareManager.getTurretMotor().setPower(turretBearingPid.calculate(1, targetDetection.ftcPose.bearing));
                 } else {
                     hardwareManager.getTurretMotor().setPower(0);
