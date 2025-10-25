@@ -16,5 +16,4 @@ public final class Constants {
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_START = 1500;
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT = 100;
     public static final double MANUAL_TURRET_MOTOR_MULTIPLIER = 0.5;
-    public static final double MANUAL_ANGLE_SERVO_POSITION_INCREMENT = 5;
 }

@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_NANO;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_MULTIPLIER;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_ANGLE_SERVO_POSITION_INCREMENT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_MOTOR_MULTIPLIER;
@@ -35,6 +34,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private ArtifactColorEnum launcherArtifactColor = ArtifactColorEnum.NONE;
     private final PIDController turretBearingPid = new PIDController(0.05, 0.005, 0.05);
     private double targetDistance = 0;
+    private double launchAngle = 0;
     private AprilTagEngine aprilTagEngine;
     private boolean isManualLaunchOverrideActive = false;
     private double manualLaunchVelocity = MANUAL_LAUNCH_MOTOR_VELOCITY_START;
@@ -56,6 +56,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             telemetry.addData("Intake artifact color", intakeArtifactColor.name());
             telemetry.addData("Launcher artifact color", launcherArtifactColor.name());
             telemetry.addData("Target distance", targetDistance);
+            telemetry.addData("Launch Angle", launchAngle);
             telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
             telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
 
@@ -175,7 +176,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             manualLaunchVelocity += MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
         }
         if(hardwareManager.getGamepad2().dpad_down) {
-            manualLaunchVelocity -= MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
+            if(manualLaunchVelocity - MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT < 0) {
+                manualLaunchVelocity = 0;
+            } else {
+                manualLaunchVelocity -= MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
+            }
         }
         hardwareManager.getLauncherMotor().setVelocity(manualLaunchVelocity);
         if(Math.abs(hardwareManager.getGamepad2().left_stick_x) > 0
@@ -186,9 +191,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             hardwareManager.getTurretMotor().setPower(0);
         }
         if (Math.abs(hardwareManager.getGamepad2().right_stick_y) > 0) {
-            double currentPosition = hardwareManager.getAngleServo().getPosition();
-            hardwareManager.getAngleServo().setPosition(
-                    currentPosition + MANUAL_ANGLE_SERVO_POSITION_INCREMENT);
+            setLaunchAngle(launchAngle + (hardwareManager.getGamepad2().right_stick_y));
         }
         if(hardwareManager.getGamepad2().right_trigger > 0) {
             autoLaunchArtifact();
@@ -207,11 +210,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private boolean canRotateTurret(double input) {
         boolean rightSwitchPressed = hardwareManager.getLimitSwitchRight().isPressed();
         boolean leftSwitchPressed = hardwareManager.getLimitSwitchRight().isPressed();
-        if(input == 0 || (!rightSwitchPressed && ! leftSwitchPressed)) {
+        if(input == 0 || (!rightSwitchPressed && !leftSwitchPressed)) {
             return true;
         } else if (input > 0 && !hardwareManager.getLimitSwitchRight().isPressed()) {
             return true;
-        } else if (input < 0 && !hardwareManager.getLimitSwitchLeft().isPressed()) {
+        } else if (input < 0 && !hardwareManager.getLimitSwitchLeft().isPressed()){
             return true;
         }
         return false;
@@ -314,8 +317,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setLaunchAngle(double launchAngle) {
         double positionValue = Math.abs(((62.0 - launchAngle) / 35.0));
-        hardwareManager.getAngleServo().setPosition(positionValue);
-        telemetry.addData("launchAngle", launchAngle);
+        if(positionValue >= 0 && positionValue <= 0.8) {
+            hardwareManager.getAngleServo().setPosition(positionValue);
+        }
+        this.launchAngle = launchAngle;
     }
 }
 
