@@ -18,6 +18,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -46,6 +47,7 @@ public class HardwareManager {
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
     private static final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
+    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         this.gamepad1 = gamepad1;
@@ -66,6 +68,7 @@ public class HardwareManager {
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
         this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
+        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
         initializeHardware(hardwareMap);
     }
 
@@ -88,8 +91,14 @@ public class HardwareManager {
         angleServo.setDirection(Servo.Direction.FORWARD);
         launchColorSensor.setGain(30);
         intakeColorSensor.setGain(15);
+        initializeLimelight();
         initializeIMU();
         initializeOTOS();
+    }
+
+    private void initializeLimelight() {
+        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
+        limelight.start(); // This tells Limelight to start looking!
     }
 
     private void initializeIMU() {
@@ -184,4 +193,5 @@ public class HardwareManager {
     public TouchSensor getLimitSwitchRight() {
         return limitSwitchRight;
     }
+    public Limelight3A getLimelight() { return  limelight; }
 }
