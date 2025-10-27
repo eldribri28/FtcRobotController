@@ -15,4 +15,9 @@ public class GlobalVars {
     public static double DRIVE_PID_LAST_TIME = System.currentTimeMillis();
     public static double DRIVE_PID_LAST_ERROR = 0;
 
+    /*
+    Target Lead Vars
+     */
+
+
 }

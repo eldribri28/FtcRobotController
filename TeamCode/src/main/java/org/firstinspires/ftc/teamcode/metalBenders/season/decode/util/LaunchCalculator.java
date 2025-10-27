@@ -10,7 +10,7 @@ public class LaunchCalculator {
 
     public static LaunchResult calculatePreferredLaunchResult1(double flywheelRPM, double distance) {
 
-        double velocity = (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
+        double velocity = calculateVelocity(flywheelRPM);
 
         boolean solutionViable1 = true;
         boolean solutionViable2 = true;
@@ -67,7 +67,16 @@ public class LaunchCalculator {
         return Math.atan(Vfy / Vfx);
     }
 
+    public static double calculateTransitTime(double distance, double velocity, double launchAngle) {
+        return (distance / (velocity * Math.cos(Math.toRadians(launchAngle)))); // Assuming no air resistance
+    }
+
     private static double calculateMaxHeight(double velocity, double launchAngle) {
         return ((Math.pow(velocity, 2) * (Math.sin(launchAngle) * Math.sin(launchAngle))) / (2 * ACCELERATION_DUE_TO_GRAVITY)) + LAUNCH_HEIGHT;
     }
+
+    public static double calculateVelocity(double flywheelRPM) {
+        return (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
+    }
+
 }

@@ -31,27 +31,24 @@ public class LimelightEngine {
         // Getting numbers from Python
         double[] pythonOutputs = result.getPythonOutput();
         if (pythonOutputs != null && pythonOutputs.length > 0) {
-            double totalTargets = pythonOutputs[0];
-            double targetX = pythonOutputs[1];
-            double targetY = pythonOutputs[2];
-            double targetBearing = pythonOutputs[3];
-            double targetDistance = pythonOutputs[4];
+            double targetFound = pythonOutputs[0];
+            double targetBearing = pythonOutputs[1];
+            double targetDistance = pythonOutputs[2];
             ArtifactColorEnum targetColor;
 
             if (pythonOutputs[5] == 1) {
-                targetColor = ArtifactColorEnum.PURPLE;
-            } else if (pythonOutputs[5] == 2) {
                 targetColor = ArtifactColorEnum.GREEN;
+            } else if (pythonOutputs[5] == 2) {
+                targetColor = ArtifactColorEnum.PURPLE;
             } else {
                 targetColor = ArtifactColorEnum.NONE;
             }
 
-            telemetry.addData("LL Targets", totalTargets);
-            telemetry.addData("LL Target X (m)", targetX);
-            telemetry.addData("LL Target Y (m)", targetX);
+            telemetry.addData("LL Target Found", targetFound);
             telemetry.addData("LL Target Bearing (deg)", targetBearing);
             telemetry.addData("LL Target Distance (m)", targetDistance);
             telemetry.addData("LL Target Color", targetColor);
+            telemetry.update();
         }
 
     }

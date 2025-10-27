@@ -20,7 +20,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
-
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -97,6 +96,7 @@ public class HardwareManager {
     }
 
     private void initializeLimelight() {
+        limelight.pipelineSwitch(0);
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
     }
@@ -193,5 +193,6 @@ public class HardwareManager {
     public TouchSensor getLimitSwitchRight() {
         return limitSwitchRight;
     }
-    public Limelight3A getLimelight() { return  limelight; }
+
+    public Limelight3A getLimelight() { return limelight; }
 }

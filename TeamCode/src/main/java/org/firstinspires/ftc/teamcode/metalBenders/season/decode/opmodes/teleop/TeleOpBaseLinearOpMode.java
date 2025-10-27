@@ -10,6 +10,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_NANO;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_METER_PER_SECOND;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateTransitTime;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateVelocity;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -32,9 +35,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
     private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.NONE;
     private ArtifactColorEnum launcherArtifactColor = ArtifactColorEnum.NONE;
-    private final PIDController turretBearingPid = new PIDController(0.05, 0.005, 0.05);
+    private final PIDController turretBearingPid = new PIDController(0.01, 0.0, 0.0);
+
     private double targetDistance = 0;
     private double launchAngle = 0;
+    private double flywheelRPM = 0;
     private AprilTagEngine aprilTagEngine;
     private boolean isManualLaunchOverrideActive = false;
     private double manualLaunchVelocity = MANUAL_LAUNCH_MOTOR_VELOCITY_START;
@@ -244,20 +249,64 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         return artifactColorEnum;
     }
 
+    private double getAngleGamepadLeftStick() {
+        double y = -hardwareManager.getGamepad1().left_stick_y;
+        double x = -hardwareManager.getGamepad1().left_stick_x;
+        return Math.atan2(y,x);
+    }
+
+    private double getMagnitudeGamepadLeftStick() {
+        double y = -hardwareManager.getGamepad1().left_stick_y;
+        double x = -hardwareManager.getGamepad1().left_stick_x;
+        return Math.sqrt(Math.pow(x, 2) + Math.pow(y,2));
+    }
+
+    /*
+    Target lead calculations to move while shooting.  Assumes infinite acceleration of chassis and no obstacles.
+     */
+    private double targetLeadCalculation() {
+
+        double transitTime = calculateTransitTime(targetDistance, calculateVelocity(flywheelRPM), launchAngle);
+        double angleChange = 0;
+
+        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && flywheelRPM > 0) {
+
+            double deltaY = targetDistance - (hardwareManager.getGamepad1().left_stick_y * MAX_DRIVE_VELOCITY_METER_PER_SECOND * transitTime);
+            double deltaX = 0 - (hardwareManager.getGamepad1().left_stick_x * MAX_DRIVE_VELOCITY_METER_PER_SECOND * transitTime);
+
+            angleChange = (Math.toDegrees(Math.atan2(deltaY, deltaX)) - 90) * 0.5;
+
+        } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && flywheelRPM > 0) {
+
+            double deltaY = targetDistance - (hardwareManager.getGamepad1().left_stick_y * MAX_DRIVE_VELOCITY_METER_PER_SECOND * transitTime);
+            double deltaX = 0 - (hardwareManager.getGamepad1().left_stick_x * MAX_DRIVE_VELOCITY_METER_PER_SECOND * transitTime);
+
+            angleChange = (-Math.toDegrees(Math.atan2(deltaY, deltaX)) + 90) * 0.5;
+
+        }
+
+        telemetry.addData("Turret Lead (deg)", angleChange);
+        return angleChange;
+
+    }
+
     private void processTargetDetection(AprilTagDetection targetDetection) {
         if(targetDetection != null) {
             long detectionAge = targetDetection.frameAcquisitionNanoTime - System.nanoTime();
             telemetry.addData("Target detection age(millisecond)", Math.abs(detectionAge));
 
             if (detectionAge < AGED_DATA_LIMIT_NANO) {
-                if (detectionAge < TURRET_AGE_DATA_LIMIT_NANO && canRotateTurret(targetDetection.ftcPose.bearing)) {
-                    hardwareManager.getTurretMotor().setPower(turretBearingPid.calculate(1, targetDetection.ftcPose.bearing));
+                if (detectionAge < TURRET_AGE_DATA_LIMIT_NANO && canRotateTurret(targetDetection.ftcPose.bearing + targetLeadCalculation())) {
+                    telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing + targetLeadCalculation()));
+                    double setPower = turretBearingPid.calculate(1, targetDetection.ftcPose.bearing + targetLeadCalculation());
+                    telemetry.addData("Turret Power", setPower);
+                    hardwareManager.getTurretMotor().setPower(setPower);
                 } else {
                     hardwareManager.getTurretMotor().setPower(0);
                 }
                 targetDistance = targetDetection.ftcPose.range / 39.37;
 
-                double flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
+                flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
 
                 LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
@@ -289,10 +338,12 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunchArtifact() {
-        hardwareManager.getLaunchServo().setPosition(0);
-        sleep(100);
-        hardwareManager.getLaunchServo().setPosition(0.7);
-        sleep(150);
+        if (launcherArtifactColor != ArtifactColorEnum.NONE) {
+            hardwareManager.getLaunchServo().setPosition(0);
+            sleep(100);
+            hardwareManager.getLaunchServo().setPosition(0.7);
+            sleep(150);
+        }
     }
 
     private void clearArtifactFromLaunch() {
