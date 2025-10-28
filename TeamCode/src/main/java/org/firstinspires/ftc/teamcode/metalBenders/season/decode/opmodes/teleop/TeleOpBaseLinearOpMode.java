@@ -100,11 +100,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void drive() {
-        double axial = -hardwareManager.getGamepad1().left_stick_y;
-        double lateral = -hardwareManager.getGamepad1().left_stick_x;
-        double yaw = hardwareManager.getGamepad1().right_stick_x * 1.1;
+        double axial = -gamepad1.left_stick_y;
+        double lateral = gamepad1.left_stick_x;
+        double yaw = gamepad1.right_stick_x * 1.1;
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
-        double botHeading = orientation.getYaw(AngleUnit.RADIANS);
+        double botHeading = -orientation.getYaw(AngleUnit.RADIANS);
         double cosHeading = Math.cos(botHeading);
         double sinHeading = Math.sin(botHeading);
         double rotX = lateral * cosHeading - axial * sinHeading;
@@ -215,7 +215,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private boolean canRotateTurret(double input) {
         boolean rightSwitchPressed = hardwareManager.getLimitSwitchRight().isPressed();
         boolean leftSwitchPressed = hardwareManager.getLimitSwitchRight().isPressed();
-        if(input == 0 || (!rightSwitchPressed && !leftSwitchPressed)) {
+        if(!rightSwitchPressed && !leftSwitchPressed) {
             return true;
         } else if (input > 0 && !hardwareManager.getLimitSwitchRight().isPressed()) {
             return true;

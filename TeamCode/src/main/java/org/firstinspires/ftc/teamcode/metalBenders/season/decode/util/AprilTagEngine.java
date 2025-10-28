@@ -100,11 +100,13 @@ public class AprilTagEngine implements Runnable {
     }
 
     private void detectAndProcessAprilTags() {
-        List<AprilTagDetection> currentDetections = aprilTagProcessor.getDetections();
-        telemetry.put("# AprilTags Detected", String.valueOf(currentDetections.size()));
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection != null) {
-                processDetection(detection);
+        List<AprilTagDetection> currentDetections = aprilTagProcessor.getFreshDetections();
+        if(currentDetections != null) {
+            telemetry.put("# AprilTags Detected", String.valueOf(currentDetections.size()));
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection != null) {
+                    processDetection(detection);
+                }
             }
         }
     }
