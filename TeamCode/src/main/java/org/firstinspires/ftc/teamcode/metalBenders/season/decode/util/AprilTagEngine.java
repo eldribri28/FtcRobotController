@@ -5,6 +5,10 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ap
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.GREEN_PURPLE_PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.UNKNOWN;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_GAIN_SET;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_GAIN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_EXPOSURE;
+
 import android.util.Size;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
@@ -90,12 +94,17 @@ public class AprilTagEngine implements Runnable {
     private void setExposureAndGain() {
         ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
         GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
-        if (exposureControl != null && gainControl != null) {
-            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
-                exposureControl.setMode(ExposureControl.Mode.Manual);
-            }
-            exposureControl.setExposure(5, TimeUnit.MILLISECONDS);
-            gainControl.setGain(75);
+        if (exposureControl != null && gainControl != null && !CAMERA_GAIN_SET) {
+            exposureControl.setMode(ExposureControl.Mode.Manual);
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e){}
+            exposureControl.setExposure(CAMERA_EXPOSURE, TimeUnit.MILLISECONDS);
+            gainControl.setGain(CAMERA_GAIN);
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e){}
+            CAMERA_GAIN_SET = true;
         }
     }
 
@@ -123,6 +132,9 @@ public class AprilTagEngine implements Runnable {
                         setBlueTargetDetection(detection);
                     } else if (RED_TARGET == aprilTagEnum) {
                         setRedTargetDetection(detection);
+                    } else {
+                        setBlueTargetDetection(null);
+                        setRedTargetDetection(null);
                     }
                 }
             }

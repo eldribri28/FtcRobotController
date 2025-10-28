@@ -4,7 +4,13 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Go
 
 public final class Constants {
 
-    public static final double DRIVE_MOTOR_MULTIPLIER = 0.5;
+
+    /*
+    Camera Settings
+     */
+    public static final int CAMERA_GAIN = 1;
+    public static final long CAMERA_EXPOSURE = 4; // In milliseconds
+
     /*
     Turret
      */
@@ -13,6 +19,7 @@ public final class Constants {
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
     public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.41;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
+
     /*
     AprilTag
      */
@@ -27,6 +34,7 @@ public final class Constants {
     /*
     Drive System
      */
+    public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
     public static final double MAX_DRIVE_VELOCITY = 1100; // Ticks Per Second
     public static final double MAX_ROTATE_VELOCITY = 1100; // Ticks per second
     public static final double WHEEL_DIAMETER = 0.104; // in meters
@@ -44,4 +52,11 @@ public final class Constants {
     public static final double DRIVEPID_P = 4.0;
     public static final double DRIVEPID_I = 0.0;
     public static final double DRIVEPID_D = 0.0;
+
+    /*
+    Turret PID
+     */
+    public static final double TURRET_PID_P = 0.03;
+    public static final double TURRET_PID_I = 0.0;
+    public static final double TURRET_PID_D = 0.0;
 }

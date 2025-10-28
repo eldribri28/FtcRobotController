@@ -5,6 +5,8 @@ import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirect
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import com.qualcomm.hardware.lynx.LynxModule;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -72,6 +74,13 @@ public class HardwareManager {
     }
 
     private void initializeHardware(HardwareMap hardwareMap) {
+
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor, turretMotor, intakeMotor)) {
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
