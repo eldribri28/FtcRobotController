@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum.BLUE_TARGET;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum.RED_TARGET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.GREEN_PURPLE_PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.UNKNOWN;
 
@@ -33,18 +31,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AprilTagEngine implements Runnable {
     private final HardwareManager hardwareManager;
+    private final AprilTagEnum targetAprilTag;
     private final Map<String, String> telemetry = new ConcurrentHashMap<>();
     private AprilTagProcessor aprilTagProcessor;
     private VisionPortal visionPortal;
     private ArtifactMotifEnum artifactMotif = UNKNOWN;
     private final ReentrantReadWriteLock artifactMotifLock = new ReentrantReadWriteLock();
-    private AprilTagDetection blueTargetDetection = null;
-    private final ReentrantReadWriteLock blueTargetDetectionLock = new ReentrantReadWriteLock();
-    private AprilTagDetection redTargetDetection = null;
-    private final ReentrantReadWriteLock redTargetDetectionLock = new ReentrantReadWriteLock();
+    private TimedAprilTagDetection targetDetection = null;
+    private final ReentrantReadWriteLock targetDetectionLock = new ReentrantReadWriteLock();
 
-    public AprilTagEngine(HardwareManager hardwareManager) {
+    public AprilTagEngine(HardwareManager hardwareManager, AprilTagEnum targetAprilTag) {
         this.hardwareManager = hardwareManager;
+        this.targetAprilTag = targetAprilTag;
         initialize();
     }
 
@@ -55,7 +53,7 @@ public class AprilTagEngine implements Runnable {
         aprilTagProcessorBuilder.setLensIntrinsics(539.0239404, 539.0239404, 316.450283269, 236.364794005);
         aprilTagProcessorBuilder.setCameraPose(cameraPosition, cameraOrientation);
         this.aprilTagProcessor = aprilTagProcessorBuilder.build();
-        aprilTagProcessor.setDecimation(4);
+        aprilTagProcessor.setDecimation(3);
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(hardwareManager.getTurretCam());
         builder.addProcessor(aprilTagProcessor);
@@ -127,14 +125,9 @@ public class AprilTagEngine implements Runnable {
                 if (artifactMotif == UNKNOWN) {
                     setArtifactMotif(aprilTagEnum);
                 }
-                if (detection.metadata != null) {
-                    if(BLUE_TARGET == aprilTagEnum) {
-                        setBlueTargetDetection(detection);
-                    } else if (RED_TARGET == aprilTagEnum) {
-                        setRedTargetDetection(detection);
-                    } else {
-                        setBlueTargetDetection(null);
-                        setRedTargetDetection(null);
+                if (detection.metadata != null && detection.ftcPose != null) {
+                    if(targetAprilTag == aprilTagEnum) {
+                        setTargetDetection(detection);
                     }
                 }
             }
@@ -173,39 +166,21 @@ public class AprilTagEngine implements Runnable {
         }
     }
 
-    public AprilTagDetection getBlueTargetDetection() {
-        blueTargetDetectionLock.readLock().lock();
+    public TimedAprilTagDetection getTimedTargetDetection() {
+        targetDetectionLock.readLock().lock();
         try {
-            return blueTargetDetection;
+            return targetDetection;
         } finally {
-            blueTargetDetectionLock.readLock().unlock();
+            targetDetectionLock.readLock().unlock();
         }
     }
 
-    private void setBlueTargetDetection(AprilTagDetection detection) {
-        blueTargetDetectionLock.writeLock().lock();
+    private void setTargetDetection(AprilTagDetection detection) {
+        targetDetectionLock.writeLock().lock();
         try {
-            this.blueTargetDetection = detection;
+            this.targetDetection = new TimedAprilTagDetection(detection);
         } finally {
-            blueTargetDetectionLock.writeLock().unlock();
-        }
-    }
-
-    public AprilTagDetection getRedTargetDetection() {
-        redTargetDetectionLock.readLock().lock();
-        try {
-            return redTargetDetection;
-        } finally {
-            redTargetDetectionLock.readLock().unlock();
-        }
-    }
-
-    private void setRedTargetDetection(AprilTagDetection detection) {
-        redTargetDetectionLock.writeLock().lock();
-        try {
-            this.redTargetDetection = detection;
-        } finally {
-            redTargetDetectionLock.writeLock().unlock();
+            targetDetectionLock.writeLock().unlock();
         }
     }
 

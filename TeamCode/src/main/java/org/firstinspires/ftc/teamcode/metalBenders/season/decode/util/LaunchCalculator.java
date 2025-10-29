@@ -28,10 +28,10 @@ public class LaunchCalculator {
         double landingAngle2 = calculateLandingAngle(velocity, launchAngle2);
 
         // Solution is Not Viable if launch angle solution is greater than 90 degrees, less than 0 degrees, NaN, or results in a Max Height greater than 1.524m
-        if (launchAngle1 > 1.5707 || launchAngle1 < 0 || Double.isNaN(launchAngle1) || maxHeight1 > 1.524) {
+        if (launchAngle1 > 1.5707 || launchAngle1 < 0 || Double.isNaN(launchAngle1) || maxHeight1 > 2.0) {
             solutionViable1 = false;
         }
-        if (launchAngle2 > 1.5707 || launchAngle2 < 0 || Double.isNaN(launchAngle2) || maxHeight2 > 1.524) {
+        if (launchAngle2 > 1.5707 || launchAngle2 < 0 || Double.isNaN(launchAngle2) || maxHeight2 > 2.0) {
             solutionViable2 = false;
         }
         LaunchResult launchResult1 = new LaunchResult(Math.toDegrees(launchAngle1), Math.toDegrees(landingAngle1), maxHeight1, solutionViable1);
