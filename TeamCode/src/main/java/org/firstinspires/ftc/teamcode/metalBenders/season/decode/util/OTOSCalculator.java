@@ -14,7 +14,7 @@ public class OTOSCalculator {
         pos = OTOS.getPosition();
         ROBOT_FIELD_X = pos.x;
         ROBOT_FIELD_Y = pos.y;
-        ROBOT_FIELD_H = pos.h;
+        ROBOT_FIELD_H = (pos.h + 360) % 360;
         return new OTOSResult(ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H);
 
     }
@@ -22,7 +22,7 @@ public class OTOSCalculator {
     public static OTOSResult setCurrentPosition(double x, double y, double h, SparkFunOTOS OTOS) {
 
         SparkFunOTOS.Pose2D currentPosition;
-        currentPosition = new SparkFunOTOS.Pose2D(x, y, h);
+        currentPosition = new SparkFunOTOS.Pose2D(x, y, ((h + 360) % 360));
         OTOS.setPosition(currentPosition);
         return new OTOSResult(getCurrentPosition(OTOS).getXPos(), getCurrentPosition(OTOS).getYPos(), getCurrentPosition(OTOS).getHeading());
 

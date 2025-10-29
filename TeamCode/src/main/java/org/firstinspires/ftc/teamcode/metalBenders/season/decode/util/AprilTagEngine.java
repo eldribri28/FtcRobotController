@@ -52,6 +52,7 @@ public class AprilTagEngine implements Runnable {
         AprilTagProcessor.Builder aprilTagProcessorBuilder = new AprilTagProcessor.Builder();
         aprilTagProcessorBuilder.setLensIntrinsics(539.0239404, 539.0239404, 316.450283269, 236.364794005);
         aprilTagProcessorBuilder.setCameraPose(cameraPosition, cameraOrientation);
+        aprilTagProcessorBuilder.setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES);
         this.aprilTagProcessor = aprilTagProcessorBuilder.build();
         aprilTagProcessor.setDecimation(3);
         VisionPortal.Builder builder = new VisionPortal.Builder();

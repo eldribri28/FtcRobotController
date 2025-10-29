@@ -26,8 +26,8 @@ public class GlobalVars {
     public static double DRIVE_PID_LAST_ERROR = 0;
 
     /*
-    Target Lead Vars
+    Turret Vars
      */
-
-
+    public static long TURRET_LEFT_LIMIT_ENCODER_VALUE = 0;
+    public static double TURRET_CHASSIS_OFFSET = 0;
 }

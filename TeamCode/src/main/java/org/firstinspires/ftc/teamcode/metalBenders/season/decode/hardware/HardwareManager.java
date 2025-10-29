@@ -4,6 +4,7 @@ import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirec
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.UP;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
+import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 
@@ -81,9 +82,14 @@ public class HardwareManager {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor, turretMotor, intakeMotor)) {
+        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor)) {
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
+            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+        for(DcMotor motor : List.of(turretMotor, intakeMotor)) {
+            motor.setMode(RUN_USING_ENCODER);
+            motor.setZeroPowerBehavior(FLOAT);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
         for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
@@ -91,9 +97,12 @@ public class HardwareManager {
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
+        for(DcMotor motor : List.of(launcherMotor)) {
+            motor.setMode(RUN_USING_ENCODER);
+            motor.setZeroPowerBehavior(FLOAT);
+            motor.setDirection(DcMotorSimple.Direction.FORWARD);
+        }
 
-        launcherMotor.setMode(RUN_USING_ENCODER);
-        launcherMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         angleServo.setDirection(Servo.Direction.FORWARD);

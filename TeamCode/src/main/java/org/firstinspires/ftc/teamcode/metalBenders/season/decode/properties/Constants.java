@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.GobildaMotorEnum.YELLOWJACKET_1150;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.GobildaMotorEnum.YELLOWJACKET_312;
+
 
 public final class Constants {
 
@@ -19,6 +21,8 @@ public final class Constants {
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
     public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.41;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
+    public static final double TURRET_GEAR_RATIO = 5.11;
+    public static final double TURRET_TICKS_PER_DEGREE = ( ( 5.11 * YELLOWJACKET_312.getPPR() ) / 360 );
 
     /*
     AprilTag
