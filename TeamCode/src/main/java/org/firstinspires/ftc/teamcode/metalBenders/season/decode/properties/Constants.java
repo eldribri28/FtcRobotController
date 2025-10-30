@@ -38,8 +38,8 @@ public final class Constants {
     Drive System
      */
     public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
-    public static final double MAX_DRIVE_VELOCITY = 1100; // Ticks Per Second
-    public static final double MAX_ROTATE_VELOCITY = 1100; // Ticks per second
+    public static final double MAX_DRIVE_VELOCITY_MPS = 2; // Meters per second
+    public static final double AUTON_DRIVE_VELOCITY_MPS = 2; // Meters per second
     public static final double WHEEL_DIAMETER = 0.104; // in meters
     public static final double WHEEL_CIRCUMFERENCE = (Math.PI * WHEEL_DIAMETER);
     public static final double ENCODER_TICKS_PER_METER = (YELLOWJACKET_1150.getPPR() / WHEEL_CIRCUMFERENCE);
@@ -66,6 +66,7 @@ public final class Constants {
     public static final double TURRET_PID_D = 0.0;
 
     /*
+    Launch Servo
      */
     public static final double LAUNCH_SERVO_UP = 0.0;
     public static final double LAUNCH_SERVO_DOWN = 0.65;
