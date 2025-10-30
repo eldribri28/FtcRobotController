@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.GREEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.NONE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.PURPLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
@@ -30,10 +31,11 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.Tur
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
@@ -284,18 +286,21 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
     }
 
-    private ArtifactColorEnum getArtifactColor(NormalizedColorSensor colorSensor, String sensorName) {
+    private ArtifactColorEnum getArtifactColor(RevColorSensorV3 colorSensor, String sensorName) {
         NormalizedRGBA colors = colorSensor.getNormalizedColors();
 
         double red = colors.red;
         double green = colors.green;
         double blue = colors.blue;
+        double distanceCM = colorSensor.getDistance(DistanceUnit.CM);
 
         ArtifactColorEnum artifactColorEnum;
         if (blue > green && red > 0.2 && blue > 0.3) {
             artifactColorEnum = PURPLE;
         } else if (green > red && green > blue && green > 0.3) {
             artifactColorEnum = GREEN;
+        } else if (distanceCM < 4) {
+            artifactColorEnum = UNKNOWN;
         } else {
             artifactColorEnum = NONE;
         }

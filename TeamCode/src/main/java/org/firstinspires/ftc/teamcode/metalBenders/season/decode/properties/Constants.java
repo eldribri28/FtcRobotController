@@ -39,7 +39,7 @@ public final class Constants {
      */
     public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
     public static final double MAX_DRIVE_VELOCITY_MPS = 2; // Meters per second
-    public static final double AUTON_DRIVE_VELOCITY_MPS = 1; // Meters per second
+    public static final double AUTON_DRIVE_VELOCITY_MPS = 2; // Meters per second
     public static final double WHEEL_DIAMETER = 0.104; // in meters
     public static final double WHEEL_CIRCUMFERENCE = (Math.PI * WHEEL_DIAMETER);
     public static final double ENCODER_TICKS_PER_METER = (YELLOWJACKET_1150.getPPR() / WHEEL_CIRCUMFERENCE);

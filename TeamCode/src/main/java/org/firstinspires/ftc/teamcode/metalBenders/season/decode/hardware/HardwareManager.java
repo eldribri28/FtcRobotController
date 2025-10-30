@@ -18,7 +18,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -45,8 +45,8 @@ public class HardwareManager {
     private final WebcamName turretCam;
     private final IMU imu;
     private final SparkFunOTOS otos;
-    private final NormalizedColorSensor launchColorSensor;
-    private final NormalizedColorSensor intakeColorSensor;
+    private final RevColorSensorV3 launchColorSensor;
+    private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
     private static final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
@@ -65,8 +65,8 @@ public class HardwareManager {
         this.turretCam = hardwareMap.get(WebcamName.class, "TurretCam");
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
-        this.launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
-        this.intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
+        this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
+        this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
         this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
@@ -109,7 +109,7 @@ public class HardwareManager {
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         angleServo.setDirection(Servo.Direction.FORWARD);
-        launchColorSensor.setGain(30);
+        launchColorSensor.setGain(27);
         intakeColorSensor.setGain(15);
 
         initializeLimelight();
@@ -200,11 +200,11 @@ public class HardwareManager {
         return launcherMotor;
     }
 
-    public NormalizedColorSensor getIntakeColorSensor() {
+    public RevColorSensorV3 getIntakeColorSensor() {
         return intakeColorSensor;
     }
 
-    public NormalizedColorSensor getLaunchColorSensor() {
+    public RevColorSensorV3 getLaunchColorSensor() {
         return launchColorSensor;
     }
 
