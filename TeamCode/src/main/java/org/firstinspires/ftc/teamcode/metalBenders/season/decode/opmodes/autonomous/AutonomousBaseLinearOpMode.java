@@ -47,6 +47,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AutonStateEnum;
@@ -79,6 +80,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private Limelight3A limelight;
     private SparkFunOTOS otos;
     abstract AprilTagEnum getTargetAprilTag();
+    abstract StartPositionEnum getStartPosition();
     AutonStateEnum state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
 
     @Override
