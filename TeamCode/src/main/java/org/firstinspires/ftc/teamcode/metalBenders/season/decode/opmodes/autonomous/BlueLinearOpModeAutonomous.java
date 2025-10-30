@@ -12,4 +12,5 @@ public class BlueLinearOpModeAutonomous extends AutonomousBaseLinearOpMode {
     AprilTagEnum getTargetAprilTag() {
         return AprilTagEnum.BLUE_TARGET;
     }
+
 }

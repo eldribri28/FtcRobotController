@@ -8,31 +8,22 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
-
-import android.util.Size;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AutonStateEnum;
 
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
-import java.util.concurrent.TimeUnit;
 
 public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.eventloop.opmode.LinearOpMode {
     private HardwareManager hardwareManager;
@@ -45,10 +36,13 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private double flywheelRPM = 0;
     private double targetRPM = 0;
     private boolean allowedToLaunch = false;
+    private boolean launcherEnabled = false;
+    private boolean atTargetPosition = true;
+    private double stateTimestamp = getRuntime();
     private Limelight3A limelight;
     private SparkFunOTOS otos;
-
     abstract AprilTagEnum getTargetAprilTag();
+    AutonStateEnum state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -57,27 +51,103 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         try {
             waitForStart();
             resetRuntime();
-            boolean isGainAndExposureSet = false;
+
             while (opModeIsActive()) {
                 updateRuntime();
                 telemetry.addData("Target name", getTargetAprilTag().name());
                 telemetry.addData("Target id", getTargetAprilTag().getId());
-                autoLaunch();
-                //TODO fill in meat
-                telemetry.update();
+                switch (state) {
+                    case WAIT_LAUNCH_ARTIFACT_1:
+                        launcherEnabled = true;
+                        if (launcherArtifactColor != ArtifactColorEnum.NONE || getRuntime() - stateTimestamp < 5) {
+                            allowedToLaunch = true;
+                            autoLaunch();
+                        } else {
+                            allowedToLaunch = false;
+                            state = AutonStateEnum.WAIT_INTAKE_LOAD_ARTIFACT_2;
+                            stateTimestamp = getRuntime();
+                        }
+                        break;
+                    case WAIT_INTAKE_LOAD_ARTIFACT_2:
+                        if (launcherArtifactColor == ArtifactColorEnum.NONE || getRuntime() - stateTimestamp < 5) {
+                            startIntake();
+                        } else {
+                            stopIntake();
+                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_2;
+                            stateTimestamp = getRuntime();
+                        }
+                        break;
+                    case WAIT_LAUNCH_ARTIFACT_2:
+                        launcherEnabled = true;
+                        if (launcherArtifactColor != ArtifactColorEnum.NONE || getRuntime() - stateTimestamp < 5) {
+                            allowedToLaunch = true;
+                            autoLaunch();
+                        } else {
+                            allowedToLaunch = false;
+                            state = AutonStateEnum.WAIT_INTAKE_LOAD_ARTIFACT_2;
+                            stateTimestamp = getRuntime();
+                        }
+                        break;
+                    case WAIT_INTAKE_LOAD_ARTIFACT_3:
+                        if (launcherArtifactColor == ArtifactColorEnum.NONE || getRuntime() - stateTimestamp < 5) {
+                            startIntake();
+                        } else {
+                            stopIntake();
+                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_3;
+                            stateTimestamp = getRuntime();
+                        }
+                        break;
+                    case WAIT_LAUNCH_ARTIFACT_3:
+                        launcherEnabled = true;
+                        if (launcherArtifactColor != ArtifactColorEnum.NONE || getRuntime() - stateTimestamp < 5) {
+                            allowedToLaunch = true;
+                            autoLaunch();
+                        } else {
+                            allowedToLaunch = false;
+                            state = AutonStateEnum.WAIT_DRIVE_FROM_LAUNCH_ZONE;
+                            stateTimestamp = getRuntime();
+                            atTargetPosition = false;
+                        }
+                        break;
+                    case WAIT_DRIVE_FROM_LAUNCH_ZONE:
+                        launcherEnabled = false;
+                        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && !atTargetPosition) {
+
+                        } else {
+                            state = AutonStateEnum.FINISHED;
+                            stateTimestamp = getRuntime();
+                        }
+                    case FINISHED:
+                        break;
+                    default:
+                        stateTimestamp = getRuntime();
+                        state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
+                }
+                timeIsUpMove();
+                refreshTelemetry();
             }
         } finally {
             aprilTagEngineThread.interrupt();
             aprilTagEngine.teardown();
-            telemetry.update();
+            refreshTelemetry();
         }
 
+    }
+
+    private void refreshTelemetry() {
+        telemetry.addData("Current State", state);
+        telemetry.addData("Time in State (s)", (getRuntime() - stateTimestamp));
+        telemetry.addData("Target Flywheel RPM", targetRPM);
+        telemetry.addData("Actual Flywheel RPM", flywheelRPM);
+        telemetry.addData("Launcher Angle", launchAngle);
+        telemetry.update();
     }
 
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
         otos = hardwareManager.getOtos();
+        state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
     }
 
     private void updateRuntime() {
@@ -89,6 +159,17 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                 totalSeconds % 60);
     }
 
+    private boolean timeIsUpMove() {
+        double totalSeconds = getRuntime();
+        if (totalSeconds > 25 && state != AutonStateEnum.FINISHED) {
+            state = AutonStateEnum.WAIT_DRIVE_FROM_LAUNCH_ZONE;
+            atTargetPosition = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void autoLaunch() {
         TimedAprilTagDetection timedDetection = aprilTagEngine.getTimedTargetDetection();
         if(timedDetection != null && timedDetection.getDetection() != null) {
@@ -96,45 +177,37 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
+
+                /*
+                Aquire target lock
+                 */
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing)) {
                     telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
                     double setPower = turretBearingPid.calculate(1, targetDetection.ftcPose.bearing);
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
-
-                    if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
-                        TURRET_CHASSIS_OFFSET = getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition());
-                        double chassisFieldHeading = (targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
-                        telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
-                        telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
-                        OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, otos);
-                    }
-
                 } else {
                     hardwareManager.getTurretMotor().setPower(0);
                 }
+
+                /*
+                Generate launch system parameters and generate firing solution
+                 */
                 targetDistance = targetDetection.ftcPose.range;
-
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
-                telemetry.addData("flywheel RPM", flywheelRPM);
-
-                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
-                if (launchResult != null) {
-                    setLaunchAngle(launchResult.getLaunchAngle());
-                }
-
                 targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1750.0);
-                hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
-                telemetry.addData("target RPM", targetRPM);
+                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
 
-
-                if ( allowedToLaunch ) {
-                    if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL) {
+                if (launcherEnabled) {
+                    if (launchResult != null) {
+                        setLaunchAngle(launchResult.getLaunchAngle());
+                    }
+                    hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
+                    if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL && allowedToLaunch) {
                         autoLaunchArtifact();
                     }
-                } else {
-                    hardwareManager.getLauncherMotor().setVelocity(0);
                 }
+
             } else {
                 //stop rotating turret if detection is too old
                 hardwareManager.getTurretMotor().setPower(0);
@@ -143,6 +216,13 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
             //stop rotating turret if there is no detection
             hardwareManager.getTurretMotor().setPower(0);
         }
+    }
+
+    private void startIntake() {
+        hardwareManager.getIntakeMotor().setPower(1);
+    }
+    private void stopIntake() {
+        hardwareManager.getIntakeMotor().setPower(1);
     }
 
     private void setLaunchAngle(double launchAngle) {
