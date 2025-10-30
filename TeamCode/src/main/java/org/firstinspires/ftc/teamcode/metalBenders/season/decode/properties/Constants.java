@@ -38,14 +38,14 @@ public final class Constants {
     Drive System
      */
     public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
-    public static final double MAX_DRIVE_VELOCITY = 1100; // Ticks Per Second
     public static final double MAX_DRIVE_VELOCITY_MPS = 2; // Meters per second
-    public static final double MAX_ROTATE_VELOCITY = 1100; // Ticks per second
+    public static final double AUTON_DRIVE_VELOCITY_MPS = 1; // Meters per second
     public static final double WHEEL_DIAMETER = 0.104; // in meters
     public static final double WHEEL_CIRCUMFERENCE = (Math.PI * WHEEL_DIAMETER);
     public static final double ENCODER_TICKS_PER_METER = (YELLOWJACKET_1150.getPPR() / WHEEL_CIRCUMFERENCE);
-    public static final double MAX_DRIVE_VELOCITY_METER_PER_SECOND = MAX_DRIVE_VELOCITY / ENCODER_TICKS_PER_METER;
     public static final double MAX_DRIVE_VELOCITY_TICKS_PER_SECOND = MAX_DRIVE_VELOCITY_MPS * ENCODER_TICKS_PER_METER;
+    public static final double AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND = AUTON_DRIVE_VELOCITY_MPS * ENCODER_TICKS_PER_METER;
+    public static final double MAX_DRIVE_VELOCITY_METER_PER_SECOND = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND / ENCODER_TICKS_PER_METER;
     public static final double ROTATION_ACCURACY = 1;
     
     /*

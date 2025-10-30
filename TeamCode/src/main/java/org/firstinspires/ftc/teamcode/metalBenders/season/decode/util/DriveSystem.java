@@ -12,8 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_ROTATE_VELOCITY;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ROTATEPID_P;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ROTATEPID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ROTATEPID_D;
@@ -81,9 +80,9 @@ public class DriveSystem {
         while (Math.abs(headingError) >= ROTATION_ACCURACY) {
             headingError = AngleUnit.DEGREES.normalize(h - Math.cos(normalizedFieldBotHeading()));
             if (headingError > 0) {
-                rotateVelocity = rotatePidPower(headingError) * MAX_ROTATE_VELOCITY;
+                rotateVelocity = rotatePidPower(headingError) * AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
             } else {
-                rotateVelocity = -(rotatePidPower(headingError) * MAX_ROTATE_VELOCITY);
+                rotateVelocity = -(rotatePidPower(headingError) * AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND);
             }
             // Clip the speed to the maximum permitted value.
             hardwareManager.getLeftFrontMotor().setVelocity(-rotateVelocity);
@@ -117,10 +116,10 @@ public class DriveSystem {
         double rotX = y * sinHeading - x * cosHeading;
         double rotY = y * cosHeading + x * sinHeading;
         double Denominator = JavaUtil.maxOfList(JavaUtil.createListWith(JavaUtil.sumOfList(JavaUtil.createListWith(Math.abs(y), Math.abs(x), Math.abs(RX))), 1));
-        double lfDriveVelocity = (int) (MAX_DRIVE_VELOCITY * -((rotY + rotX + RX) / Denominator));
-        double rfDriveVelocity = (int) (MAX_DRIVE_VELOCITY * -(((rotY - rotX) - RX) / Denominator));
-        double lrDriveVelocity = (int) (MAX_DRIVE_VELOCITY * -(((rotY - rotX) + RX) / Denominator));
-        double rrDriveVelocity = (int) (MAX_DRIVE_VELOCITY * -(((rotY + rotX) - RX) / Denominator));
+        double lfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -((rotY + rotX + RX) / Denominator));
+        double rfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) - RX) / Denominator));
+        double lrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) + RX) / Denominator));
+        double rrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY + rotX) - RX) / Denominator));
 
         return new DriveVelocityResult(lfDriveVelocity, rfDriveVelocity, lrDriveVelocity, rrDriveVelocity);
     }
