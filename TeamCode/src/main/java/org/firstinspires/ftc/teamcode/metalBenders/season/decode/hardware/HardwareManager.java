@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.UP;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
@@ -83,19 +84,21 @@ public class HardwareManager {
         }
 
         for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor)) {
-            motor.setMode(RUN_USING_ENCODER);
+            motor.setMode(STOP_AND_RESET_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
+            motor.setMode(RUN_USING_ENCODER);
+        }
+        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
+            motor.setMode(STOP_AND_RESET_ENCODER);
+            motor.setZeroPowerBehavior(BRAKE);
+            motor.setDirection(DcMotorSimple.Direction.FORWARD);
+            motor.setMode(RUN_USING_ENCODER);
         }
         for(DcMotor motor : List.of(turretMotor, intakeMotor)) {
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(FLOAT);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
-        }
-        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
-            motor.setMode(RUN_USING_ENCODER);
-            motor.setZeroPowerBehavior(BRAKE);
-            motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
         for(DcMotor motor : List.of(launcherMotor)) {
             motor.setMode(RUN_USING_ENCODER);
@@ -108,6 +111,7 @@ public class HardwareManager {
         angleServo.setDirection(Servo.Direction.FORWARD);
         launchColorSensor.setGain(30);
         intakeColorSensor.setGain(15);
+
         initializeLimelight();
         initializeIMU();
         initializeOTOS();

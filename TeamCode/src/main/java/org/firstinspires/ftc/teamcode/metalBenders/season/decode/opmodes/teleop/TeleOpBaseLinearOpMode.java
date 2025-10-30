@@ -15,6 +15,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_TICKS_PER_DEGREE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_TICKS_PER_SECOND;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
@@ -46,6 +49,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Map;
 
+
 public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
     private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.NONE;
@@ -54,7 +58,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double targetDistance = 0;
     private double launchAngle = 0;
     private double flywheelRPM = 0;
-
     private double targetRPM = 0;
     private AprilTagEngine aprilTagEngine;
     private boolean isManualLaunchOverrideActive = false;
@@ -70,7 +73,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             waitForStart();
             resetRuntime();
             aprilTagEngineThread.start();
-            hardwareManager.getLaunchServo().setPosition(0.7);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
             while (opModeIsActive()) {
                 updateRuntime();
                 turretRotateLimit();
@@ -102,7 +105,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 setArtifactColors();
                 setManualLaunchOverride(aprilTagEngineThread);
                 launch();
-                resetIMU();
                 telemetry.update();
             }
         } finally {
@@ -128,46 +130,71 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void drive() {
-        double axial = -gamepad1.left_stick_y;
-        double lateral = gamepad1.left_stick_x;
-        double yaw = gamepad1.right_stick_x * 1.1;
+        double y = -gamepad1.left_stick_y;
+        double x = gamepad1.left_stick_x;
+        double rx = gamepad1.right_stick_x;
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
-        double botHeading = -orientation.getYaw(AngleUnit.RADIANS);
-        double cosHeading = Math.cos(botHeading);
-        double sinHeading = Math.sin(botHeading);
-        double rotX = lateral * cosHeading - axial * sinHeading;
-        double rotY = lateral * sinHeading + axial * cosHeading;
+        double botHeading = orientation.getYaw(AngleUnit.RADIANS);
+
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+        rotX = rotX * 1.1;  // Counteract imperfect strafing
 
         //calculate power
-        double leftFrontPower = (rotY + rotX + yaw);
-        double rightFrontPower = ((rotY - rotX) - yaw);
-        double leftRearPower = ((rotY - rotX) + yaw);
-        double rightRearPower = ((rotY + rotX) - yaw);
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+        double leftFrontPower = (rotY + rotX + rx) / denominator;
+        double leftRearPower = (rotY - rotX + rx) / denominator;
+        double rightFrontPower = (rotY - rotX - rx) / denominator;
+        double rightRearPower = (rotY + rotX - rx) / denominator;
 
         // Normalize the values so no wheel power exceeds 100%
         // This ensures that the robot maintains the desired motion.
-        double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-        max = Math.max(max, Math.abs(leftRearPower));
-        max = Math.max(max, Math.abs(rightRearPower));
+        //double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+        //max = Math.max(max, Math.abs(leftRearPower));
+        //max = Math.max(max, Math.abs(rightRearPower));
 
-        if (max > 1.0) {
-            leftFrontPower /= max;
-            rightFrontPower /= max;
-            leftRearPower /= max;
-            rightRearPower /= max;
-        }
+        //if (max > 1.0) {
+        //    leftFrontPower /= max;
+        //    rightFrontPower /= max;
+        //    leftRearPower /= max;
+        //    rightRearPower /= max;
+        //}
 
-        double voltageCorrectedPower = (DRIVE_MOTOR_MULTIPLIER * 12)  / hardwareMap.voltageSensor.iterator().next().getVoltage();
+        double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower;
+        double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower;
+        double leftRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftRearPower;
+        double RightRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightRearPower;
 
-        hardwareManager.getLeftFrontMotor().setPower(leftFrontPower * voltageCorrectedPower);
-        hardwareManager.getRightFrontMotor().setPower(rightFrontPower * voltageCorrectedPower);
-        hardwareManager.getLeftRearMotor().setPower(leftRearPower * voltageCorrectedPower);
-        hardwareManager.getRightRearMotor().setPower(rightRearPower * voltageCorrectedPower);
+        telemetry.addData("Bearing", -botHeading);
+        telemetry.addData("L-Stick X", -gamepad1.left_stick_x);
+        telemetry.addData("L-Stick y", -gamepad1.left_stick_y);
+        telemetry.addData("rotX", rotX);
+        telemetry.addData("rotY", rotY);
 
-        telemetry.addData("Motor (Left Front)", "%.2f", leftFrontPower);
-        telemetry.addData("Motor (Right Front)", "%.2f", rightFrontPower);
-        telemetry.addData("Motor (Left Rear)", "%.2f", leftRearPower);
-        telemetry.addData("Motor (Right Rear)", "%.2f", rightRearPower);
+
+        hardwareManager.getLeftFrontMotor().setVelocity(leftFrontVelocity);
+        hardwareManager.getRightFrontMotor().setVelocity(rightFrontVelocity);
+        hardwareManager.getLeftRearMotor().setVelocity(leftRearVelocity);
+        hardwareManager.getRightRearMotor().setVelocity(RightRearVelocity);
+
+
+        //double voltageCorrectedPower = (DRIVE_MOTOR_MULTIPLIER * 12)  / hardwareMap.voltageSensor.iterator().next().getVoltage();
+        //hardwareManager.getLeftFrontMotor().setPower(leftFrontPower * voltageCorrectedPower);
+        //hardwareManager.getRightFrontMotor().setPower(rightFrontPower * voltageCorrectedPower);
+        //hardwareManager.getLeftRearMotor().setPower(leftRearPower * voltageCorrectedPower);
+        //hardwareManager.getRightRearMotor().setPower(rightRearPower * voltageCorrectedPower);
+
+        telemetry.addData("Commanded Motor (Left Front)", "%.2f", leftFrontVelocity);
+        telemetry.addData("Commanded Motor (Right Front)", "%.2f", rightFrontVelocity);
+        telemetry.addData("Commanded Motor (Left Rear)", "%.2f", leftRearVelocity);
+        telemetry.addData("Commanded Motor (Right Rear)", "%.2f", RightRearVelocity);
+
+        telemetry.addData("Actual Motor (Left Front)", "%.2f", hardwareManager.getLeftFrontMotor().getVelocity());
+        telemetry.addData("Actual Motor (Right Front)", "%.2f", hardwareManager.getRightFrontMotor().getVelocity());
+        telemetry.addData("Actual Motor (Left Rear)", "%.2f", hardwareManager.getLeftRearMotor().getVelocity());
+        telemetry.addData("Actual Motor (Right Rear)", "%.2f", hardwareManager.getRightRearMotor().getVelocity());
     }
 
     private void resetIMU() {
@@ -312,9 +339,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
-                if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing + targetLeadCalculation())) {
-                    telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing + targetLeadCalculation()));
-                    double setPower = turretBearingPid.calculate(1, targetDetection.ftcPose.bearing + targetLeadCalculation());
+                if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing)) {
+                    telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
+                    double setPower = turretBearingPid.calculate(1, targetDetection.ftcPose.bearing);
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
@@ -340,13 +367,13 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 }
 
                 targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1750.0);
+                hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
                 telemetry.addData("target RPM", targetRPM);
 
 
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
                     if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL) {
                         autoLaunchArtifact();
-                        autoIntakeArtifact();
                     }
                 } else {
                     hardwareManager.getLauncherMotor().setVelocity(0);
@@ -360,15 +387,15 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             hardwareManager.getTurretMotor().setPower(0);
         }
 
-        hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
+
 
     }
 
     private void autoLaunchArtifact() {
         if (isManualLaunchOverrideActive || launcherArtifactColor != ArtifactColorEnum.NONE) {
-            hardwareManager.getLaunchServo().setPosition(0);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
             sleep(100);
-            hardwareManager.getLaunchServo().setPosition(0.7);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
             sleep(150);
         }
     }
