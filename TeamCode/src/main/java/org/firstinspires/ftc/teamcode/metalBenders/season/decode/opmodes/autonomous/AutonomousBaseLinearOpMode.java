@@ -398,7 +398,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     */
     public void startDrive(double x, double y, double h, double tgtTol) {
         double targetH = AngleUnit.DEGREES.normalize(h);
-        if (Math.abs(getDriveDistance(x,y)) < tgtTol) {
+        if (Math.abs(getDriveDistance(x,y)) > tgtTol) {
             DriveVelocityResult motorVelocities = calculateMotorSpeeds(x, y, h);
             hardwareManager.getLeftFrontMotor().setVelocity(motorVelocities.lfDriveVelocity());
             hardwareManager.getLeftRearMotor().setVelocity(motorVelocities.lrDriveVelocity());
