@@ -136,7 +136,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void drive() {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x;
+        double rx = gamepad1.right_stick_x * 0.8;
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
         double botHeading = orientation.getYaw(AngleUnit.RADIANS);
 
