@@ -58,6 +58,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
     private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.NONE;
     private ArtifactColorEnum launcherArtifactColor = ArtifactColorEnum.NONE;
+    private ArtifactColorEnum launcherArtifactColor2 = ArtifactColorEnum.NONE;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -86,6 +87,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 telemetry.addData("Motif detected", aprilTagEngine.getArtifactMotif().name());
                 telemetry.addData("Intake artifact color", intakeArtifactColor.name());
                 telemetry.addData("Launcher artifact color", launcherArtifactColor.name());
+                telemetry.addData("Launcher artifact color 2", launcherArtifactColor2.name());
                 telemetry.addData("Target distance", targetDistance);
                 telemetry.addData("Launch Angle", launchAngle);
                 telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
@@ -102,7 +104,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                     String value = aprilTagTelemetry.get(key);
                     telemetry.addData(key, value);
                 }
-
+                resetIMU();
                 drive();
                 intakeOrRejectArtifact();
                 clearArtifactFromLaunch();
@@ -136,7 +138,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void drive() {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x * 0.8;
+        double rx = gamepad1.right_stick_x * 0.6;
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
         double botHeading = orientation.getYaw(AngleUnit.RADIANS);
 
@@ -286,6 +288,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void setArtifactColors() {
         intakeArtifactColor = getArtifactColor(hardwareManager.getIntakeColorSensor(), "Intake");
         launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
+        launcherArtifactColor2 = getArtifactColor(hardwareManager.getLaunchColorSensor2(), "Launcher2");
     }
 
     private ArtifactColorEnum getArtifactColor(RevColorSensorV3 colorSensor, String sensorName) {
@@ -399,7 +402,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunchArtifact() {
-        if (isManualLaunchOverrideActive || launcherArtifactColor != ArtifactColorEnum.NONE) {
+        if (isManualLaunchOverrideActive || (launcherArtifactColor != ArtifactColorEnum.NONE && launcherArtifactColor2 != ArtifactColorEnum.NONE)) {
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
             sleep(100);
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);

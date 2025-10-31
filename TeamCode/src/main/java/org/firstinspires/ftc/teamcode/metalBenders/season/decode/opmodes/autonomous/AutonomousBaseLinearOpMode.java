@@ -4,6 +4,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.NONE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.FAR;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.NEAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
@@ -25,6 +27,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVEPID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVEPID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ROTATION_ACCURACY;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MATCH_START_DELAY;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROTATE_PID_ACCUMULATED_ERROR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROTATE_PID_LAST_TIME;
@@ -68,6 +71,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private AprilTagEngine aprilTagEngine;
     private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.NONE;
     private ArtifactColorEnum launcherArtifactColor = ArtifactColorEnum.NONE;
+    private ArtifactColorEnum launcherArtifactColor2 = ArtifactColorEnum.NONE;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -75,13 +79,13 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private double targetRPM = 0;
     private boolean allowedToLaunch = false;
     private boolean launcherEnabled = false;
-    private boolean atTargetPosition = true;
+    private boolean atTargetPosition = false;
     private double stateTimestamp = getRuntime();
     private Limelight3A limelight;
     private SparkFunOTOS otos;
     abstract AprilTagEnum getTargetAprilTag();
     abstract StartPositionEnum getStartPosition();
-    AutonStateEnum state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
+    AutonStateEnum state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -96,16 +100,28 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
             waitForStart();
             resetRuntime();
             aprilTagEngineThread.start();
+            sleep((long) (MATCH_START_DELAY * 1000));
+            stateTimestamp = getRuntime();
             while (opModeIsActive()) {
                 updateRuntime();
                 updateSparkfunOdometry();
                 setArtifactColors();
                 telemetry.addData("Target name", getTargetAprilTag().name());
                 telemetry.addData("Target id", getTargetAprilTag().getId());
+                telemetry.addData("Starting Position", getStartPosition());
                 switch (state) {
+                    case WAIT_DRIVE_BACKWARD:
+                        if (getStartPosition() == NEAR && !atTargetPosition && getRuntime() - stateTimestamp < 5) {
+                            startDrive(0.000, -0.400, 0.0, 0.050);
+                        } else {
+                            stopDrive();
+                            stateTimestamp = getRuntime();
+                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
+                        }
+                        break;
                     case WAIT_LAUNCH_ARTIFACT_1:
                         launcherEnabled = true;
-                        if (launcherArtifactColor != NONE && getRuntime() - stateTimestamp < 5) {
+                        if ((launcherArtifactColor != NONE || launcherArtifactColor2 != NONE) && getRuntime() - stateTimestamp < 5) {
                             allowedToLaunch = true;
                         } else {
                             allowedToLaunch = false;
@@ -115,7 +131,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         }
                         break;
                     case WAIT_INTAKE_LOAD_ARTIFACT_2:
-                        if (launcherArtifactColor == NONE && getRuntime() - stateTimestamp < 5) {
+                        if (launcherArtifactColor == NONE && launcherArtifactColor2 == NONE  && getRuntime() - stateTimestamp < 5) {
                             startIntake();
                             sleep(50);
                             stopIntake();
@@ -128,7 +144,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         break;
                     case WAIT_LAUNCH_ARTIFACT_2:
                         launcherEnabled = true;
-                        if (launcherArtifactColor != NONE && getRuntime() - stateTimestamp < 5) {
+                        if ((launcherArtifactColor != NONE || launcherArtifactColor2 != NONE) && getRuntime() - stateTimestamp < 5) {
                             allowedToLaunch = true;
                         } else {
                             allowedToLaunch = false;
@@ -138,7 +154,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         }
                         break;
                     case WAIT_INTAKE_LOAD_ARTIFACT_3:
-                        if (launcherArtifactColor == NONE && getRuntime() - stateTimestamp < 5) {
+                        if (launcherArtifactColor == NONE && launcherArtifactColor2 == NONE  && getRuntime() - stateTimestamp < 5) {
                             startIntake();
                             sleep(50);
                             stopIntake();
@@ -151,7 +167,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         break;
                     case WAIT_LAUNCH_ARTIFACT_3:
                         launcherEnabled = true;
-                        if (launcherArtifactColor != NONE && getRuntime() - stateTimestamp < 5) {
+                        if ((launcherArtifactColor != NONE || launcherArtifactColor2 != NONE) && getRuntime() - stateTimestamp < 5) {
                             allowedToLaunch = true;
                         } else {
                             allowedToLaunch = false;
@@ -163,24 +179,31 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         break;
                     case WAIT_DRIVE_FROM_LAUNCH_ZONE:
                         launcherEnabled = false;
-                        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && !atTargetPosition) {
-                            startDrive(0.200, 0.200, 0.0, 0.020);
+                        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == FAR && !atTargetPosition) {
+                            startDrive(0.250, 0.250, 0.0, 0.100);
+                        } else if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
+                            startDrive(-0.300, -0.200, 0.0, 0.050);
+                        } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == FAR && !atTargetPosition) {
+                            startDrive(-0.250, 0.250, 0.0, 0.050);
+                        } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
+                            startDrive(0.300, -0.200, 0.0, 0.050);
                         } else {
                             stopDrive();
                             state = AutonStateEnum.FINISHED;
                             stateTimestamp = getRuntime();
                         }
+                        break;
                     case FINISHED:
                         launcherEnabled = false;
                         allowedToLaunch = false;
-                        if (launcherArtifactColor != NONE && getRuntime() < 20) {
-                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
-                            stateTimestamp = getRuntime();
-                        }
+                        atTargetPosition = true;
+                        stopDrive();
+                        stopIntake();
                         break;
                     default:
                         stateTimestamp = getRuntime();
-                        state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
+                        state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
+                        break;
                 }
                 autoLaunch();
                 timeIsUpMove();
@@ -202,6 +225,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         telemetry.addData("Launcher Angle", launchAngle);
         telemetry.addData("Robot Heading Offset (deg)", BOT_HEADING_OFFSET);
         telemetry.addData("Launcher Artifact Color", launcherArtifactColor);
+        telemetry.addData("Launcher Artifact Color2", launcherArtifactColor2);
         telemetry.addLine(String.format("Robot Position (x,y,h) (m,m,deg) %6.3f %6.3f %6.3f", ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H));
         Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
         for (String key : aprilTagTelemetry.keySet()) {
@@ -215,7 +239,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
         otos = hardwareManager.getOtos();
-        state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_1;
+        state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
     }
 
     private void updateRuntime() {
@@ -241,6 +265,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private void setArtifactColors() {
         intakeArtifactColor = getArtifactColor(hardwareManager.getIntakeColorSensor(), "Intake");
         launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
+        launcherArtifactColor2 = getArtifactColor(hardwareManager.getLaunchColorSensor2(), "Launcher2");
     }
 
     private ArtifactColorEnum getArtifactColor(RevColorSensorV3 colorSensor, String sensorName) {
@@ -290,7 +315,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                  */
                 targetDistance = targetDetection.ftcPose.range;
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
-                targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1750.0);
+                targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1800.0);
                 LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
 
                 if (launcherEnabled) {
@@ -319,7 +344,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         hardwareManager.getIntakeMotor().setPower(1);
     }
     private void stopIntake() {
-        hardwareManager.getIntakeMotor().setPower(1);
+        hardwareManager.getIntakeMotor().setPower(0);
     }
 
     private void setLaunchAngle(double launchAngle) {
@@ -397,14 +422,12 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     Drive to target coordinates
     */
     public void startDrive(double x, double y, double h, double tgtTol) {
-        double targetH = AngleUnit.DEGREES.normalize(h);
         if (Math.abs(getDriveDistance(x,y)) > tgtTol) {
             DriveVelocityResult motorVelocities = calculateMotorSpeeds(x, y, h);
             hardwareManager.getLeftFrontMotor().setVelocity(motorVelocities.lfDriveVelocity());
             hardwareManager.getLeftRearMotor().setVelocity(motorVelocities.lrDriveVelocity());
             hardwareManager.getRightFrontMotor().setVelocity(motorVelocities.rfDriveVelocity());
             hardwareManager.getRightRearMotor().setVelocity(motorVelocities.rrDriveVelocity());
-            atTargetPosition = false;
         } else {
             rotateRobot(h);
         }
@@ -412,32 +435,32 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     }
 
     private void stopDrive() {
-        hardwareManager.getLeftFrontMotor().setVelocity(0);
-        hardwareManager.getLeftRearMotor().setVelocity(0);
-        hardwareManager.getRightFrontMotor().setVelocity(0);
-        hardwareManager.getRightRearMotor().setVelocity(0);
+        atTargetPosition = true;
+        hardwareManager.getLeftFrontMotor().setPower(0);
+        hardwareManager.getLeftRearMotor().setPower(0);
+        hardwareManager.getRightFrontMotor().setPower(0);
+        hardwareManager.getRightRearMotor().setPower(0);
     }
 
     /*
     Rotate robot to desired heading
      */
     public void rotateRobot(double h) {
-        double steeringCorrection;
         double rotateVelocity;
-        double headingError = AngleUnit.DEGREES.normalize(h - Math.cos(normalizedFieldBotHeading()));
+        double headingError = AngleUnit.DEGREES.normalize(h - Math.cos(AngleUnit.DEGREES.normalize(ROBOT_FIELD_H)));
         // Keep looping while we are still active and not on heading.
         if (Math.abs(headingError) >= ROTATION_ACCURACY) {
-            headingError = AngleUnit.DEGREES.normalize(h - Math.cos(normalizedFieldBotHeading()));
+            headingError = AngleUnit.RADIANS.normalize(h - Math.cos(AngleUnit.DEGREES.normalize(ROBOT_FIELD_H)));
             if (headingError > 0) {
                 rotateVelocity = rotatePidPower(headingError) * AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
             } else {
                 rotateVelocity = -(rotatePidPower(headingError) * AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND);
             }
             // Clip the speed to the maximum permitted value.
-            hardwareManager.getLeftFrontMotor().setVelocity(-rotateVelocity);
-            hardwareManager.getLeftRearMotor().setVelocity(-rotateVelocity);
-            hardwareManager.getRightFrontMotor().setVelocity(rotateVelocity);
-            hardwareManager.getRightRearMotor().setVelocity(rotateVelocity);
+            hardwareManager.getLeftFrontMotor().setVelocity(-rotateVelocity * rotatePidPower(headingError));
+            hardwareManager.getLeftRearMotor().setVelocity(-rotateVelocity * rotatePidPower(headingError));
+            hardwareManager.getRightFrontMotor().setVelocity(rotateVelocity * rotatePidPower(headingError));
+            hardwareManager.getRightRearMotor().setVelocity(rotateVelocity * rotatePidPower(headingError));
             atTargetPosition = false;
         } else {
             stopDrive();
@@ -449,44 +472,37 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     Calculate motor velocities to get to target
      */
     private DriveVelocityResult calculateMotorSpeeds(double targetX, double targetY, double targetH) {
-        double RX;
-        double headingError = AngleUnit.DEGREES.normalize(targetH - Math.cos(normalizedFieldBotHeading() / 180 * Math.PI));
+        YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
+        double botHeading = orientation.getYaw(AngleUnit.RADIANS);
+        double RX = 0;
+        double headingError = AngleUnit.DEGREES.normalize(targetH - Math.cos(orientation.getYaw(AngleUnit.DEGREES)));
         double x = Math.sin(getDriveAngle(targetX,targetY) / 180 * Math.PI) * drivePidPower(getDriveDistance(targetX,targetY));
         double y = Math.cos(getDriveAngle(targetX,targetY) / 180 * Math.PI) * drivePidPower(getDriveDistance(targetX,targetY));
-        if (headingError > 0) {
-            RX = rotatePidPower(headingError) * 0.8;
-        } else {
-            RX = -(rotatePidPower(headingError) * 0.8);
-        }
-        double cosHeading = Math.cos(normalizedFieldBotHeading() / 180 * Math.PI);
-        double sinHeading = Math.sin(normalizedFieldBotHeading() / 180 * Math.PI);
-        double rotX = y * sinHeading - x * cosHeading;
-        double rotY = y * cosHeading + x * sinHeading;
-        rotX = rotX * 1.1;  // Counteract imperfect strafing
-        //double Denominator = JavaUtil.maxOfList(JavaUtil.createListWith(JavaUtil.sumOfList(JavaUtil.createListWith(Math.abs(y), Math.abs(x), Math.abs(RX))), 1));
-        double lfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -((rotY + rotX + RX))); // Denominator));
-        double rfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) - RX))); // Denominator));
-        double lrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) + RX))); // Denominator));
-        double rrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY + rotX) - RX))); // Denominator));
+        //if (headingError > 0) {
+        //    RX = rotatePidPower(headingError) * 0.8;
+        //} else {
+        //    RX = -(rotatePidPower(headingError) * 0.8);
+        //}
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+        //double rotX = y * sinHeading - x * cosHeading;
+        //double rotY = y * cosHeading + x * sinHeading;
+        double Denominator = JavaUtil.maxOfList(JavaUtil.createListWith(JavaUtil.sumOfList(JavaUtil.createListWith(Math.abs(y), Math.abs(x), Math.abs(RX))), 1));
+        double lfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -((rotY + rotX + RX) / Denominator));
+        double rfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) - RX) / Denominator));
+        double lrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) + RX) / Denominator));
+        double rrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY + rotX) - RX) / Denominator));
 
         return new DriveVelocityResult(lfDriveVelocity, rfDriveVelocity, lrDriveVelocity, rrDriveVelocity);
     }
 
     /*
-    Function to convert -180:180 degree field headings into 0-360 degree headings
-     */
-    private double normalizedFieldBotHeading() {
-        YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
-        ROBOT_FIELD_H = Double.parseDouble(JavaUtil.formatNumber(AngleUnit.DEGREES.normalize(orientation.getYaw(AngleUnit.DEGREES) + BOT_HEADING_OFFSET), 3));
-        return ROBOT_FIELD_H;
-    }
-
-
-    /*
     Function to control rotation speed based on error magnitude
      */
     private double rotatePidPower(double h) {
-        double headingError = AngleUnit.DEGREES.normalize(h - normalizedFieldBotHeading());
+        double headingError = AngleUnit.DEGREES.normalize(h - AngleUnit.DEGREES.normalize(ROBOT_FIELD_H));
         // Determine the heading current error.
         if (headingError > 180) {
             headingError = headingError - 360;
@@ -544,7 +560,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private double getDriveAngle(double targetX, double targetY) {
         double deltaX = ROBOT_FIELD_X - targetX;
         double deltaY = ROBOT_FIELD_Y - targetY;
-        return Math.atan2(deltaY, deltaX) / Math.PI * 180;
+        return Math.atan2(deltaY, deltaX);
     }
 
 

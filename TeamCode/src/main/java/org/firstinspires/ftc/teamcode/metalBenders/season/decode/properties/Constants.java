@@ -6,7 +6,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Go
 
 public final class Constants {
 
-
+    public static final double MATCH_START_DELAY = 0.0; // Delay in s
     /*
     Camera Settings
      */

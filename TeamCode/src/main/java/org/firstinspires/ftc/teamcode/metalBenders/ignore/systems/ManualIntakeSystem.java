@@ -34,6 +34,7 @@ public class ManualIntakeSystem extends AbstractSystem {
         ArtifactColorEnum intakeBallColor = getArtifactColor(getHardwareManager().getIntakeColorSensor(), "Intake Color Sensor");
         getDataManager().setIntakeBallColor(intakeBallColor);
         ArtifactColorEnum launcherBallColor = getArtifactColor(getHardwareManager().getLaunchColorSensor(), "Launcher Color Sensor");
+        ArtifactColorEnum launcherBallColor2 = getArtifactColor(getHardwareManager().getLaunchColorSensor2(), "Launcher Color Sensor2");
         getDataManager().setLauncherBallColor(launcherBallColor);
     }
 

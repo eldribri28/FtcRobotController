@@ -46,6 +46,7 @@ public class HardwareManager {
     private final IMU imu;
     private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
+    private final RevColorSensorV3 launchColorSensor2;
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
@@ -66,6 +67,7 @@ public class HardwareManager {
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
+        this.launchColorSensor2 = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor2");
         this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
@@ -110,6 +112,7 @@ public class HardwareManager {
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         angleServo.setDirection(Servo.Direction.FORWARD);
         launchColorSensor.setGain(27);
+        launchColorSensor2.setGain(27);
         intakeColorSensor.setGain(15);
 
         initializeLimelight();
@@ -206,6 +209,9 @@ public class HardwareManager {
 
     public RevColorSensorV3 getLaunchColorSensor() {
         return launchColorSensor;
+    }
+    public RevColorSensorV3 getLaunchColorSensor2() {
+        return launchColorSensor2;
     }
 
     public TouchSensor getLimitSwitchLeft() {
