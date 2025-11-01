@@ -111,8 +111,10 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                 telemetry.addData("Starting Position", getStartPosition());
                 switch (state) {
                     case WAIT_DRIVE_BACKWARD:
-                        if (getStartPosition() == NEAR && !atTargetPosition && getRuntime() - stateTimestamp < 5) {
-                            startDrive(0.000, -0.400, 0.0, 0.050);
+                        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == NEAR && !atTargetPosition && getRuntime() - stateTimestamp < 5) {
+                            startDrive(-0.500, 0.200, 0.0, 0.100);
+                        } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == NEAR && !atTargetPosition && getRuntime() - stateTimestamp < 5) {
+                            startDrive(-0.500, 0.000, 0.0, 0.100);
                         } else {
                             stopDrive();
                             stateTimestamp = getRuntime();
@@ -178,15 +180,21 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         }
                         break;
                     case WAIT_DRIVE_FROM_LAUNCH_ZONE:
-                        launcherEnabled = false;
-                        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == FAR && !atTargetPosition) {
-                            startDrive(0.250, 0.250, 0.0, 0.100);
-                        } else if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
-                            startDrive(-0.300, -0.200, 0.0, 0.050);
-                        } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == FAR && !atTargetPosition) {
-                            startDrive(-0.250, 0.250, 0.0, 0.050);
-                        } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
-                            startDrive(0.300, -0.200, 0.0, 0.050);
+                        if (getRuntime() - stateTimestamp < 5) {
+                            launcherEnabled = false;
+                            if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == FAR && !atTargetPosition) {
+                                startDrive(0.300, 0.000, 0.0, 0.100);
+                            } else if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
+                                startDrive(-0.500, -0.300, 0.0, 0.100);
+                            } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == FAR && !atTargetPosition) {
+                                startDrive(0.300, 0.000, 0.0, 0.100);
+                            } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
+                                startDrive(-0.500, 0.300, 0.0, 0.100);
+                            } else {
+                                stopDrive();
+                                state = AutonStateEnum.FINISHED;
+                                stateTimestamp = getRuntime();
+                            }
                         } else {
                             stopDrive();
                             state = AutonStateEnum.FINISHED;
@@ -424,10 +432,10 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     public void startDrive(double x, double y, double h, double tgtTol) {
         if (Math.abs(getDriveDistance(x,y)) > tgtTol) {
             DriveVelocityResult motorVelocities = calculateMotorSpeeds(x, y, h);
-            hardwareManager.getLeftFrontMotor().setVelocity(motorVelocities.lfDriveVelocity());
-            hardwareManager.getLeftRearMotor().setVelocity(motorVelocities.lrDriveVelocity());
-            hardwareManager.getRightFrontMotor().setVelocity(motorVelocities.rfDriveVelocity());
-            hardwareManager.getRightRearMotor().setVelocity(motorVelocities.rrDriveVelocity());
+            hardwareManager.getLeftFrontMotor().setVelocity(-motorVelocities.lfDriveVelocity());
+            hardwareManager.getLeftRearMotor().setVelocity(-motorVelocities.lrDriveVelocity());
+            hardwareManager.getRightFrontMotor().setVelocity(-motorVelocities.rfDriveVelocity());
+            hardwareManager.getRightRearMotor().setVelocity(-motorVelocities.rrDriveVelocity());
         } else {
             rotateRobot(h);
         }
@@ -447,10 +455,12 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
      */
     public void rotateRobot(double h) {
         double rotateVelocity;
-        double headingError = AngleUnit.DEGREES.normalize(h - Math.cos(AngleUnit.DEGREES.normalize(ROBOT_FIELD_H)));
+        YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
+        double botHeading = AngleUnit.RADIANS.normalize(orientation.getYaw(AngleUnit.RADIANS));
+        double headingError = AngleUnit.DEGREES.normalize(h - AngleUnit.DEGREES.normalize(Math.cos(-botHeading)));
         // Keep looping while we are still active and not on heading.
         if (Math.abs(headingError) >= ROTATION_ACCURACY) {
-            headingError = AngleUnit.RADIANS.normalize(h - Math.cos(AngleUnit.DEGREES.normalize(ROBOT_FIELD_H)));
+            headingError = AngleUnit.DEGREES.normalize(h - AngleUnit.DEGREES.normalize(Math.cos(-botHeading)));
             if (headingError > 0) {
                 rotateVelocity = rotatePidPower(headingError) * AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
             } else {
@@ -473,11 +483,11 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
      */
     private DriveVelocityResult calculateMotorSpeeds(double targetX, double targetY, double targetH) {
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
-        double botHeading = orientation.getYaw(AngleUnit.RADIANS);
+        double botHeading = AngleUnit.RADIANS.normalize(orientation.getYaw(AngleUnit.RADIANS));
         double RX = 0;
-        double headingError = AngleUnit.DEGREES.normalize(targetH - Math.cos(orientation.getYaw(AngleUnit.DEGREES)));
-        double x = Math.sin(getDriveAngle(targetX,targetY) / 180 * Math.PI) * drivePidPower(getDriveDistance(targetX,targetY));
-        double y = Math.cos(getDriveAngle(targetX,targetY) / 180 * Math.PI) * drivePidPower(getDriveDistance(targetX,targetY));
+        double headingError = AngleUnit.DEGREES.normalize(targetH - AngleUnit.DEGREES.normalize(botHeading));
+        double x = Math.sin(getDriveAngle(targetX,targetY)) * drivePidPower(getDriveDistance(targetX,targetY));
+        double y = Math.cos(getDriveAngle(targetX,targetY)) * drivePidPower(getDriveDistance(targetX,targetY));
         //if (headingError > 0) {
         //    RX = rotatePidPower(headingError) * 0.8;
         //} else {
@@ -490,10 +500,10 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         //double rotX = y * sinHeading - x * cosHeading;
         //double rotY = y * cosHeading + x * sinHeading;
         double Denominator = JavaUtil.maxOfList(JavaUtil.createListWith(JavaUtil.sumOfList(JavaUtil.createListWith(Math.abs(y), Math.abs(x), Math.abs(RX))), 1));
-        double lfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -((rotY + rotX + RX) / Denominator));
-        double rfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) - RX) / Denominator));
-        double lrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY - rotX) + RX) / Denominator));
-        double rrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * -(((rotY + rotX) - RX) / Denominator));
+        double lfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * ((rotY + rotX + RX) / Denominator));
+        double rfDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * (((rotY - rotX) - RX) / Denominator));
+        double lrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * (((rotY - rotX) + RX) / Denominator));
+        double rrDriveVelocity = (int) (AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND * (((rotY + rotX) - RX) / Denominator));
 
         return new DriveVelocityResult(lfDriveVelocity, rfDriveVelocity, lrDriveVelocity, rrDriveVelocity);
     }

@@ -10,8 +10,8 @@ public final class Constants {
     /*
     Camera Settings
      */
-    public static final int CAMERA_GAIN = 1;
-    public static final long CAMERA_EXPOSURE = 5; // In milliseconds
+    public static final int CAMERA_GAIN = 5;
+    public static final long CAMERA_EXPOSURE = 7; // In milliseconds
 
     /*
     Turret
