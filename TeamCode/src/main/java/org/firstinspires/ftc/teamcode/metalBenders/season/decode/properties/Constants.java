@@ -23,7 +23,10 @@ public final class Constants {
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
     public static final double TURRET_GEAR_RATIO = 5.11;
     public static final double TURRET_TICKS_PER_DEGREE = ( ( 5.11 * YELLOWJACKET_312.getPPR() ) / 360 );
-
+    public static final double MANUAL_NEAR_LAUNCH_VELOCITY = 1500;
+    public static final double MANUAL_FAR_LAUNCH_VELOCITY = 3000;
+    public static final double MANUAL_TURRET_INIT_TURN_POWER = 0.1;
+    public static final int MANUAL_TURRET_INIT_TOLERANCE = 5;
     /*
     AprilTag
      */

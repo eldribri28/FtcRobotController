@@ -8,8 +8,12 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_FAR_LAUNCH_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_NEAR_LAUNCH_VELOCITY;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_INIT_TOLERANCE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_INIT_TURN_POWER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
@@ -34,7 +38,9 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -80,30 +86,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             aprilTagEngineThread.start();
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
             while (opModeIsActive()) {
-                updateRuntime();
+                updateTelemetry();
                 turretRotateLimit();
-                telemetry.addData("Manual Launch Controls Active", isManualLaunchOverrideActive);
-                telemetry.addData("Target name", getTargetAprilTag().name());
-                telemetry.addData("Motif detected", aprilTagEngine.getArtifactMotif().name());
-                telemetry.addData("Intake artifact color", intakeArtifactColor.name());
-                telemetry.addData("Launcher artifact color", launcherArtifactColor.name());
-                telemetry.addData("Launcher artifact color 2", launcherArtifactColor2.name());
-                telemetry.addData("Target distance", targetDistance);
-                telemetry.addData("Launch Angle", launchAngle);
-                telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
-                telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
-                telemetry.addData("Turret Angle: (deg)", getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition()));
-                OTOSResult otosData = OTOSCalculator.getCurrentPosition(otos);
-                telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", otosData.getXPos(), otosData.getYPos(), otosData.getHeading()));
-
-                telemetry.addData("Target Calculated Heading (deg)", getTargetBearing(otosData.getXPos(), otosData.getYPos()));
-                telemetry.addData("Turret Calculated Heading (deg)", calculateTurretAngleFromOtos(hardwareManager.getTurretMotor().getCurrentPosition(), otosData.getHeading()));
-
-                Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
-                for (String key : aprilTagTelemetry.keySet()) {
-                    String value = aprilTagTelemetry.get(key);
-                    telemetry.addData(key, value);
-                }
                 resetIMU();
                 drive();
                 intakeOrRejectArtifact();
@@ -133,6 +117,32 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 "%02.0f:%02.0f",
                 totalSeconds / 60,
                 totalSeconds % 60);
+    }
+
+    private void updateTelemetry() {
+        updateRuntime();
+        telemetry.addData("Manual Launch Controls Active", isManualLaunchOverrideActive);
+        telemetry.addData("Target name", getTargetAprilTag().name());
+        telemetry.addData("Motif detected", aprilTagEngine.getArtifactMotif().name());
+        telemetry.addData("Intake artifact color", intakeArtifactColor.name());
+        telemetry.addData("Launcher artifact color", launcherArtifactColor.name());
+        telemetry.addData("Launcher artifact color 2", launcherArtifactColor2.name());
+        telemetry.addData("Target distance", targetDistance);
+        telemetry.addData("Launch Angle", launchAngle);
+        telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
+        telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
+        telemetry.addData("Turret Angle: (deg)", getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition()));
+        OTOSResult otosData = OTOSCalculator.getCurrentPosition(otos);
+        telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", otosData.getXPos(), otosData.getYPos(), otosData.getHeading()));
+
+        telemetry.addData("Target Calculated Heading (deg)", getTargetBearing(otosData.getXPos(), otosData.getYPos()));
+        telemetry.addData("Turret Calculated Heading (deg)", calculateTurretAngleFromOtos(hardwareManager.getTurretMotor().getCurrentPosition(), otosData.getHeading()));
+
+        Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
+        for (String key : aprilTagTelemetry.keySet()) {
+            String value = aprilTagTelemetry.get(key);
+            telemetry.addData(key, value);
+        }
     }
 
     private void drive() {
@@ -221,16 +231,44 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setManualLaunchOverride(Thread aprilTagEngineThread) {
         if(hardwareManager.getGamepad2().dpad_left && hardwareManager.getGamepad2().x) {
-            hardwareManager.getGamepad2().rumble(250);
             isManualLaunchOverrideActive = true;
-            hardwareManager.getLauncherMotor().setVelocity(manualLaunchVelocity);
             aprilTagEngineThread.interrupt();
+//            centerTurret();
         } else if (hardwareManager.getGamepad1().dpad_left && hardwareManager.getGamepad1().x) {
-            hardwareManager.getGamepad1().rumble(250);
             isManualLaunchOverrideActive = false;
             aprilTagEngineThread.start();
         }
     }
+
+//    private void centerTurret() {
+//        if(getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
+//            int positionAtLimit = rotateTurretToLimitSwitchAndGetPosition(hardwareManager.getLimitSwitchLeft(), -MANUAL_TURRET_INIT_TURN_POWER);
+//            rotateTurretToPosition(positionAtLimit + (int)Math.round(90.0 * TURRET_TICKS_PER_DEGREE), MANUAL_TURRET_INIT_TURN_POWER);
+//        } else {
+//            int positionAtLimit = rotateTurretToLimitSwitchAndGetPosition(hardwareManager.getLimitSwitchRight(), MANUAL_TURRET_INIT_TURN_POWER);
+//            rotateTurretToPosition(positionAtLimit + (int)Math.round(90.0 * TURRET_TICKS_PER_DEGREE), -MANUAL_TURRET_INIT_TURN_POWER);
+//        }
+//    }
+//
+//    private void rotateTurretToPosition(int position, double turnPower) {
+//        hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        hardwareManager.getTurretMotor().setTargetPositionTolerance(MANUAL_TURRET_INIT_TOLERANCE);
+//        hardwareManager.getTurretMotor().setTargetPosition(position);
+//        hardwareManager.getTurretMotor().setPower(turnPower);
+//        while(opModeIsActive() && hardwareManager.getTurretMotor().isBusy()) {
+//        }
+//        hardwareManager.getTurretMotor().setPower(0);
+//        hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//    }
+//
+//    private int rotateTurretToLimitSwitchAndGetPosition(TouchSensor touchSensor, double turnPower) {
+//        hardwareManager.getTurretMotor().setPower(turnPower);
+//        while(opModeIsActive() && !touchSensor.isPressed()) {
+//        }
+//        hardwareManager.getTurretMotor().setPower(0);
+//        hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        return hardwareManager.getTurretMotor().getCurrentPosition();
+//    }
 
     private void launch() {
         if(isManualLaunchOverrideActive) {
@@ -241,26 +279,13 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
     private void manualLaunch() {
         if(hardwareManager.getGamepad2().dpad_up) {
-            manualLaunchVelocity += MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
+            manualLaunchVelocity = MANUAL_FAR_LAUNCH_VELOCITY;
         }
         if(hardwareManager.getGamepad2().dpad_down) {
-            if(manualLaunchVelocity - MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT < 0) {
-                manualLaunchVelocity = 0;
-            } else {
-                manualLaunchVelocity -= MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
-            }
+           manualLaunchVelocity = MANUAL_NEAR_LAUNCH_VELOCITY;
         }
         hardwareManager.getLauncherMotor().setVelocity(manualLaunchVelocity);
-        if(Math.abs(hardwareManager.getGamepad2().left_stick_x) > 0
-                && canRotateTurret(hardwareManager.getGamepad2().left_stick_x)) {
-            hardwareManager.getTurretMotor().setPower(
-                    hardwareManager.getGamepad2().left_stick_x * MANUAL_TURRET_MOTOR_MULTIPLIER);
-        } else {
-            hardwareManager.getTurretMotor().setPower(0);
-        }
-        if (Math.abs(hardwareManager.getGamepad2().right_stick_y) > 0) {
-            setLaunchAngle(launchAngle + (hardwareManager.getGamepad2().right_stick_y));
-        }
+
         if(hardwareManager.getGamepad2().right_trigger > 0) {
             autoLaunchArtifact();
             autoIntakeArtifact();
@@ -380,7 +405,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
                 telemetry.addData("target RPM", targetRPM);
 
-
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
                     if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL) {
                         autoLaunchArtifact();
@@ -396,9 +420,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             //stop rotating turret if there is no detection
             hardwareManager.getTurretMotor().setPower(0);
         }
-
-
-
     }
 
     private void autoLaunchArtifact() {
@@ -411,13 +432,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void clearArtifactFromLaunch() {
-        boolean clear = false;
-        if(isManualLaunchOverrideActive && hardwareManager.getGamepad2().right_bumper) {
-            clear = true;
-        } else if (!isManualLaunchOverrideActive && hardwareManager.getGamepad1().right_bumper) {
-            clear = true;
-        }
-        if (clear) {
+        if((isManualLaunchOverrideActive && hardwareManager.getGamepad2().right_bumper)
+                || (!isManualLaunchOverrideActive && hardwareManager.getGamepad1().right_bumper)) {
             hardwareManager.getLauncherMotor().setPower(0.4);
             sleep(100);
             autoLaunchArtifact();
@@ -449,12 +465,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             deltaX = x - (-72);
             deltaY = y - (72);
         }
-
-
         return (Math.toDegrees(Math.atan2(deltaY, deltaX)));// - getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition() + 360) % 360) ;
     }
-
-
-
 }
 
