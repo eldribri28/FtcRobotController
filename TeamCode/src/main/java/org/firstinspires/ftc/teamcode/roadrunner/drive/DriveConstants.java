@@ -21,7 +21,6 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    //go-bilda yellow jacket 1150 rpm
     public static final double TICKS_PER_REV = 28;
     public static final double MAX_RPM = 1150;
 
