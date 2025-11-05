@@ -233,42 +233,16 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         if(hardwareManager.getGamepad2().dpad_left && hardwareManager.getGamepad2().x) {
             isManualLaunchOverrideActive = true;
             aprilTagEngineThread.interrupt();
-//            centerTurret();
+            if(getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
+                hardwareManager.getTurretMotor().setPower(0.8);
+            } else {
+                hardwareManager.getTurretMotor().setPower(-0.8);
+            }
         } else if (hardwareManager.getGamepad1().dpad_left && hardwareManager.getGamepad1().x) {
             isManualLaunchOverrideActive = false;
             aprilTagEngineThread.start();
         }
     }
-
-//    private void centerTurret() {
-//        if(getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
-//            int positionAtLimit = rotateTurretToLimitSwitchAndGetPosition(hardwareManager.getLimitSwitchLeft(), -MANUAL_TURRET_INIT_TURN_POWER);
-//            rotateTurretToPosition(positionAtLimit + (int)Math.round(90.0 * TURRET_TICKS_PER_DEGREE), MANUAL_TURRET_INIT_TURN_POWER);
-//        } else {
-//            int positionAtLimit = rotateTurretToLimitSwitchAndGetPosition(hardwareManager.getLimitSwitchRight(), MANUAL_TURRET_INIT_TURN_POWER);
-//            rotateTurretToPosition(positionAtLimit + (int)Math.round(90.0 * TURRET_TICKS_PER_DEGREE), -MANUAL_TURRET_INIT_TURN_POWER);
-//        }
-//    }
-//
-//    private void rotateTurretToPosition(int position, double turnPower) {
-//        hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        hardwareManager.getTurretMotor().setTargetPositionTolerance(MANUAL_TURRET_INIT_TOLERANCE);
-//        hardwareManager.getTurretMotor().setTargetPosition(position);
-//        hardwareManager.getTurretMotor().setPower(turnPower);
-//        while(opModeIsActive() && hardwareManager.getTurretMotor().isBusy()) {
-//        }
-//        hardwareManager.getTurretMotor().setPower(0);
-//        hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//    }
-//
-//    private int rotateTurretToLimitSwitchAndGetPosition(TouchSensor touchSensor, double turnPower) {
-//        hardwareManager.getTurretMotor().setPower(turnPower);
-//        while(opModeIsActive() && !touchSensor.isPressed()) {
-//        }
-//        hardwareManager.getTurretMotor().setPower(0);
-//        hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        return hardwareManager.getTurretMotor().getCurrentPosition();
-//    }
 
     private void launch() {
         if(isManualLaunchOverrideActive) {
@@ -303,10 +277,16 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void turretRotateLimit() {
-        if (hardwareManager.getLimitSwitchRight().isPressed()) {
-            TURRET_LEFT_LIMIT_ENCODER_VALUE = Math.round(hardwareManager.getTurretMotor().getCurrentPosition() + ( TURRET_TICKS_PER_DEGREE * 90));
-        } else if (hardwareManager.getLimitSwitchLeft().isPressed()){
-            TURRET_LEFT_LIMIT_ENCODER_VALUE = Math.round(hardwareManager.getTurretMotor().getCurrentPosition() - ( TURRET_TICKS_PER_DEGREE * 90));
+        if(hardwareManager.getLimitSwitchRight().isPressed() || hardwareManager.getLimitSwitchLeft().isPressed()) {
+            hardwareManager.getTurretMotor().setPower(0);
+            if (hardwareManager.getLimitSwitchRight().isPressed()) {
+                TURRET_LEFT_LIMIT_ENCODER_VALUE = Math.round(hardwareManager.getTurretMotor().getCurrentPosition() + (TURRET_TICKS_PER_DEGREE * 90));
+            } else if (hardwareManager.getLimitSwitchLeft().isPressed()) {
+                TURRET_LEFT_LIMIT_ENCODER_VALUE = Math.round(hardwareManager.getTurretMotor().getCurrentPosition() - (TURRET_TICKS_PER_DEGREE * 90));
+            }
+            if(isManualLaunchOverrideActive) {
+                //TODO center the turret
+            }
         }
     }
 

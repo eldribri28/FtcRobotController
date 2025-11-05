@@ -21,7 +21,7 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 28;
+    public static final double TICKS_PER_REV = 145.1;
     public static final double MAX_RPM = 1150;
 
     /*
@@ -45,8 +45,8 @@ public class DriveConstants {
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
     public static double WHEEL_RADIUS = 2.04724; // in
-    public static double GEAR_RATIO = 19.2; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 1.5; // in
+    public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
+    public static double TRACK_WIDTH = 9.5; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
