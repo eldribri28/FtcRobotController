@@ -279,13 +279,19 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void turretRotateLimit() {
         if(hardwareManager.getLimitSwitchRight().isPressed() || hardwareManager.getLimitSwitchLeft().isPressed()) {
             hardwareManager.getTurretMotor().setPower(0);
+            int directionMultiplier = 0;
             if (hardwareManager.getLimitSwitchRight().isPressed()) {
                 TURRET_LEFT_LIMIT_ENCODER_VALUE = Math.round(hardwareManager.getTurretMotor().getCurrentPosition() + (TURRET_TICKS_PER_DEGREE * 90));
+                directionMultiplier = 1;
             } else if (hardwareManager.getLimitSwitchLeft().isPressed()) {
                 TURRET_LEFT_LIMIT_ENCODER_VALUE = Math.round(hardwareManager.getTurretMotor().getCurrentPosition() - (TURRET_TICKS_PER_DEGREE * 90));
+                directionMultiplier = -1;
             }
             if(isManualLaunchOverrideActive) {
-                //TODO center the turret
+                hardwareManager.getTurretMotor().setTargetPositionTolerance(5);
+                hardwareManager.getTurretMotor().setTargetPosition((int) (TURRET_LEFT_LIMIT_ENCODER_VALUE + Math.round(TURRET_TICKS_PER_DEGREE * 45.0)));
+                hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                hardwareManager.getTurretMotor().setPower(0.8 * directionMultiplier);
             }
         }
     }
