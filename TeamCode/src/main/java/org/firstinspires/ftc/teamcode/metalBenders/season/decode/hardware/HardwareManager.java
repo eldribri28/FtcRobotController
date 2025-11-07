@@ -14,6 +14,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -47,6 +48,10 @@ public class HardwareManager {
     private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
+
+    private DigitalChannel redLED;
+    private DigitalChannel greenLED;
+    private final Servo indicatorLED;
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
@@ -74,6 +79,9 @@ public class HardwareManager {
         this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
         this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        this.redLED = hardwareMap.get(DigitalChannel.class, "redLed");
+        this.greenLED = hardwareMap.get(DigitalChannel.class, "greenLed");
+        this.indicatorLED = hardwareMap.get(Servo.class, "signalLed");
         initializeHardware(hardwareMap);
     }
 
@@ -111,9 +119,12 @@ public class HardwareManager {
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         angleServo.setDirection(Servo.Direction.FORWARD);
-        launchColorSensor.setGain(27);
-        launchColorSensor2.setGain(27);
-        intakeColorSensor.setGain(15);
+        launchColorSensor.setGain(30);
+        launchColorSensor2.setGain(30);
+        intakeColorSensor.setGain(30);
+
+        redLED.setMode(DigitalChannel.Mode.OUTPUT);
+        greenLED.setMode(DigitalChannel.Mode.OUTPUT);
 
         initializeLimelight();
         initializeIMU();
@@ -223,4 +234,9 @@ public class HardwareManager {
     }
 
     public Limelight3A getLimelight() { return limelight; }
+
+    public DigitalChannel getRedLed() { return redLED; }
+
+    public DigitalChannel getGreenLed() { return greenLED; }
+    public Servo getIndicatorLed() { return indicatorLED; }
 }

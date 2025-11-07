@@ -4,6 +4,13 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.NONE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.RED;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.GREEN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.ORANGE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.YELLOW;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.PURPLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.BLUE;
+
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
@@ -32,7 +39,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateTransitTime;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateVelocity;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.calculateTurretAngleFromOtos;
+//import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.calculateTurretAngleFromOtos;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
@@ -47,6 +54,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
@@ -93,6 +101,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 intakeOrRejectArtifact();
                 clearArtifactFromLaunch();
                 setArtifactColors();
+                setLauncherLed();
                 setManualLaunchOverride(aprilTagEngineThread);
                 launch();
                 telemetry.update();
@@ -136,12 +145,25 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", otosData.getXPos(), otosData.getYPos(), otosData.getHeading()));
 
         telemetry.addData("Target Calculated Heading (deg)", getTargetBearing(otosData.getXPos(), otosData.getYPos()));
-        telemetry.addData("Turret Calculated Heading (deg)", calculateTurretAngleFromOtos(hardwareManager.getTurretMotor().getCurrentPosition(), otosData.getHeading()));
+        //telemetry.addData("Turret Calculated Heading (deg)", calculateTurretAngleFromOtos(hardwareManager.getTurretMotor().getCurrentPosition(), otosData.getHeading()));
 
         Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
         for (String key : aprilTagTelemetry.keySet()) {
             String value = aprilTagTelemetry.get(key);
             telemetry.addData(key, value);
+        }
+    }
+
+
+    private void setLauncherLed() {
+        if (launcherArtifactColor == ArtifactColorEnum.GREEN || launcherArtifactColor2 == ArtifactColorEnum.GREEN) {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
+            //hardwareManager.getGreenLed().setState(true);
+            //hardwareManager.getRedLed().setState(false);
+        } else if (launcherArtifactColor == ArtifactColorEnum.PURPLE || launcherArtifactColor2 == ArtifactColorEnum.PURPLE) {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
+        } else {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
         }
     }
 
@@ -311,14 +333,12 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         double distanceCM = colorSensor.getDistance(DistanceUnit.CM);
 
         ArtifactColorEnum artifactColorEnum;
-        if (blue > green && red > 0.2 && blue > 0.3) {
-            artifactColorEnum = PURPLE;
-        } else if (green > red && green > blue && green > 0.3) {
-            artifactColorEnum = GREEN;
-        } else if (distanceCM < 4) {
-            artifactColorEnum = UNKNOWN;
+        if (blue > green && red > 0.2 && blue > 0.2) {
+            artifactColorEnum = ArtifactColorEnum.PURPLE;
+        } else if (green > red && green > blue && green > 0.2) {
+            artifactColorEnum = ArtifactColorEnum.GREEN;
         } else {
-            artifactColorEnum = NONE;
+            artifactColorEnum = ArtifactColorEnum.NONE;
         }
         telemetry.addData(sensorName + " - RGB", "%6.3f %6.3f %6.3f", red, green, blue);
         return artifactColorEnum;
@@ -409,12 +429,12 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunchArtifact() {
-        if (isManualLaunchOverrideActive || (launcherArtifactColor != ArtifactColorEnum.NONE && launcherArtifactColor2 != ArtifactColorEnum.NONE)) {
+        //if (isManualLaunchOverrideActive || (launcherArtifactColor != ArtifactColorEnum.NONE && launcherArtifactColor2 != ArtifactColorEnum.NONE)) {
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
             sleep(100);
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
             sleep(150);
-        }
+        //}
     }
 
     private void clearArtifactFromLaunch() {

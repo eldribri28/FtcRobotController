@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 
 public abstract class TurretBearing {
@@ -12,13 +13,13 @@ public abstract class TurretBearing {
     abstract AprilTagEnum getTargetAprilTag();
 
     /*
-    Calculate turret bearing from otos, apriltag bearing, and turretPosition
+    Calculate turret bearing from IMU, apriltag bearing, and turretPosition
      */
-    public static double calculateTurretAngleFromOtos(double turretEncoderPosition, double h) {
+    public static double calculateTurretAngleFromImu(double turretEncoderPosition, double h) {
 
         double turretPosition = getTurretChassisOffset(turretEncoderPosition);
         if (turretPosition != 0) {
-            return ( h + turretPosition + 360 ) % 360;
+            return AngleUnit.DEGREES.normalize(h + turretPosition );
         } else {
             return 0;
         }
@@ -30,13 +31,11 @@ public abstract class TurretBearing {
      */
     public static double getTurretChassisOffset(double turretEncoderPosition) {
         if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
-            return Math.round(((( turretEncoderPosition + TURRET_LEFT_LIMIT_ENCODER_VALUE ) / TURRET_TICKS_PER_DEGREE ) + 360 ) % 360 );
+            return ((long) AngleUnit.DEGREES.normalize(Math.round( turretEncoderPosition + TURRET_LEFT_LIMIT_ENCODER_VALUE ) / TURRET_TICKS_PER_DEGREE ));
         } else {
             return 0;
         }
     }
-
-
 
 
 
