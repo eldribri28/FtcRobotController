@@ -1,27 +1,13 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.GREEN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.NONE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.RED;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.GREEN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.ORANGE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.YELLOW;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.PURPLE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum.BLUE;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_FAR_LAUNCH_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_NEAR_LAUNCH_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_INIT_TOLERANCE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_INIT_TURN_POWER;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_TURRET_MOTOR_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_METER_PER_SECOND;
@@ -29,25 +15,18 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_TICKS_PER_DEGREE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_TICKS_PER_SECOND;
-
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
-
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateTransitTime;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateVelocity;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
-//import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.calculateTurretAngleFromOtos;
 
 import com.arcrobotics.ftclib.controller.PIDController;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -62,7 +41,6 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResu
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Map;
@@ -70,9 +48,9 @@ import java.util.Map;
 
 public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
-    private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.NONE;
-    private ArtifactColorEnum launcherArtifactColor = ArtifactColorEnum.NONE;
-    private ArtifactColorEnum launcherArtifactColor2 = ArtifactColorEnum.NONE;
+    private ArtifactColorEnum intakeArtifactColor = UNKNOWN;
+    private ArtifactColorEnum launcherArtifactColor = UNKNOWN;
+    private ArtifactColorEnum launcherArtifactColor2 = UNKNOWN;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -82,7 +60,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private boolean isManualLaunchOverrideActive = false;
     private double manualLaunchVelocity = MANUAL_LAUNCH_MOTOR_VELOCITY_START;
     abstract AprilTagEnum getTargetAprilTag();
-    private SparkFunOTOS otos;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -101,7 +78,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 intakeOrRejectArtifact();
                 clearArtifactFromLaunch();
                 setArtifactColors();
-                setLauncherLed();
                 setManualLaunchOverride(aprilTagEngineThread);
                 launch();
                 telemetry.update();
@@ -116,7 +92,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
-        otos = hardwareManager.getOtos();
     }
 
     private void updateRuntime() {
@@ -141,7 +116,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
         telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
         telemetry.addData("Turret Angle: (deg)", getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition()));
-        OTOSResult otosData = OTOSCalculator.getCurrentPosition(otos);
+        OTOSResult otosData = OTOSCalculator.getCurrentPosition(hardwareManager.getOtos());
         telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", otosData.getXPos(), otosData.getYPos(), otosData.getHeading()));
 
         telemetry.addData("Target Calculated Heading (deg)", getTargetBearing(otosData.getXPos(), otosData.getYPos()));
@@ -154,23 +129,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         }
     }
 
-
-    private void setLauncherLed() {
-        if (launcherArtifactColor == ArtifactColorEnum.GREEN || launcherArtifactColor2 == ArtifactColorEnum.GREEN) {
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
-            //hardwareManager.getGreenLed().setState(true);
-            //hardwareManager.getRedLed().setState(false);
-        } else if (launcherArtifactColor == ArtifactColorEnum.PURPLE || launcherArtifactColor2 == ArtifactColorEnum.PURPLE) {
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
-        } else {
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
-        }
-    }
-
     private void drive() {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
-        double rx = gamepad1.right_stick_x * 0.6;
+        double rx = gamepad1.right_stick_x * 0.4;
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
         double botHeading = orientation.getYaw(AngleUnit.RADIANS);
 
@@ -322,6 +284,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         intakeArtifactColor = getArtifactColor(hardwareManager.getIntakeColorSensor(), "Intake");
         launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
         launcherArtifactColor2 = getArtifactColor(hardwareManager.getLaunchColorSensor2(), "Launcher2");
+        if (launcherArtifactColor == ArtifactColorEnum.GREEN || launcherArtifactColor2 == ArtifactColorEnum.GREEN) {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
+        } else if (launcherArtifactColor == ArtifactColorEnum.PURPLE || launcherArtifactColor2 == ArtifactColorEnum.PURPLE) {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
+        } else {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.WHITE.getLedValue());
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
+        }
     }
 
     private ArtifactColorEnum getArtifactColor(RevColorSensorV3 colorSensor, String sensorName) {
@@ -380,7 +350,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
-                if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing)) {
+                if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing) && targetDetection.id == getTargetAprilTag().getId()) {
                     telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
                     double setPower = turretBearingPid.calculate(1, targetDetection.ftcPose.bearing);
                     telemetry.addData("Turret Power", setPower);
@@ -391,7 +361,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                         double chassisFieldHeading = (targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
                         telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
                         telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
-                        OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, otos);
+                        OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, hardwareManager.getOtos());
                     }
 
                 } else {

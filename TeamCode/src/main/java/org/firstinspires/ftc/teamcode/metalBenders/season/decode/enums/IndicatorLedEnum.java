@@ -7,7 +7,8 @@ public enum IndicatorLedEnum {
     YELLOW(0.388),
     GREEN(0.500),
     BLUE(0.611),
-    PURPLE(0.722);
+    PURPLE(0.722),
+    WHITE(1.0);
 
     private double value;
 

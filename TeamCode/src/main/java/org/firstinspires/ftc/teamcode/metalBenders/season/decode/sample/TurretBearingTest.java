@@ -164,7 +164,7 @@ public class TurretBearingTest extends LinearOpMode {
         double chassisError = 0;
         double targetHeading = getTargetBearing(currentX, currentY);
         if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
-            turretError = AngleUnit.DEGREES.normalize( TURRET_CHASSIS_OFFSET- targetHeading );
+            turretError = AngleUnit.DEGREES.normalize(  targetHeading - TURRET_CHASSIS_OFFSET );
         }
         telemetry.addData("Turret Error", turretError);
         return turretError;
