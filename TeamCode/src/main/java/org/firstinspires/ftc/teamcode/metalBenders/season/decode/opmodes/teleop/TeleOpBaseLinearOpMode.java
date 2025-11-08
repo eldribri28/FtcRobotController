@@ -26,6 +26,7 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -92,6 +93,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
+        hardwareManager.getRedLed().setState(false);
+        hardwareManager.getGreenLed().setState(false);
     }
 
     private void updateRuntime() {
@@ -344,15 +347,24 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunch() {
+        boolean launchLed = false;
+        boolean targetLed = false;
+        boolean bearingGood = false;
+
         TimedAprilTagDetection timedDetection = aprilTagEngine.getTimedTargetDetection();
         if(timedDetection != null && timedDetection.getDetection() != null) {
+            targetLed = true;
             AprilTagDetection targetDetection = timedDetection.getDetection();
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing) && targetDetection.id == getTargetAprilTag().getId()) {
+                    if (Math.abs(targetDetection.ftcPose.bearing) < 3 ) {
+                        bearingGood = true;
+                    }
                     telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
-                    double setPower = turretBearingPid.calculate(1, targetDetection.ftcPose.bearing);
+                    telemetry.addData("Target ID", targetDetection.id);
+                    double setPower = turretBearingPid.calculate(0, targetDetection.ftcPose.bearing);
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
@@ -377,12 +389,13 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                     setLaunchAngle(launchResult.getLaunchAngle());
                 }
 
-                targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1750.0);
+                targetRPM = Math.round(((targetDistance / 1.670) * 920.0) + 1750.0);
                 hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
                 telemetry.addData("target RPM", targetRPM);
 
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
-                    if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL) {
+                    if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL && bearingGood) {
+                        launchLed = true;
                         autoLaunchArtifact();
                     }
                 } else {
@@ -395,6 +408,16 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         } else {
             //stop rotating turret if there is no detection
             hardwareManager.getTurretMotor().setPower(0);
+        }
+        if (targetLed && !launchLed) {
+            hardwareManager.getRedLed().setState(true);
+            hardwareManager.getGreenLed().setState(false);
+        } else if (launchLed) {
+            hardwareManager.getRedLed().setState(true);
+            hardwareManager.getGreenLed().setState(false);
+        } else {
+            hardwareManager.getRedLed().setState(false);
+            hardwareManager.getGreenLed().setState(false);
         }
     }
 

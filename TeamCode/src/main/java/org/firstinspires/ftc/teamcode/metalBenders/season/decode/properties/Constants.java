@@ -64,9 +64,9 @@ public final class Constants {
     /*
     Turret PID
      */
-    public static final double TURRET_PID_P = 0.035;
+    public static final double TURRET_PID_P = 0.032;
     public static final double TURRET_PID_I = 0.0;
-    public static final double TURRET_PID_D = 0.0;
+    public static final double TURRET_PID_D = 0.01;
 
     /*
     Launch Servo

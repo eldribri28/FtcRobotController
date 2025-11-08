@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.UP;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -105,8 +107,13 @@ public class HardwareManager {
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
             motor.setMode(RUN_USING_ENCODER);
         }
-        for(DcMotor motor : List.of(turretMotor, intakeMotor)) {
+        for(DcMotor motor : List.of(intakeMotor)) {
             motor.setMode(RUN_USING_ENCODER);
+            motor.setZeroPowerBehavior(FLOAT);
+            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+        for(DcMotor motor : List.of(turretMotor)) {
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(FLOAT);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
@@ -119,9 +126,9 @@ public class HardwareManager {
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         angleServo.setDirection(Servo.Direction.FORWARD);
-        launchColorSensor.setGain(30);
-        launchColorSensor2.setGain(30);
-        intakeColorSensor.setGain(30);
+        launchColorSensor.setGain(22);
+        launchColorSensor2.setGain(22);
+        intakeColorSensor.setGain(20);
 
         redLED.setMode(DigitalChannel.Mode.OUTPUT);
         greenLED.setMode(DigitalChannel.Mode.OUTPUT);
