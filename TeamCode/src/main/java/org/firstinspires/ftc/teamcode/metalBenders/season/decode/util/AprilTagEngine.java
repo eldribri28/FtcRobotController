@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.GREEN_PURPLE_PURPLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.PURPLE_GREEN_PURPLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.PURPLE_PURPLE_GREEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.UNKNOWN;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_GAIN_SET;
@@ -120,17 +122,15 @@ public class AprilTagEngine implements Runnable {
     }
 
     private void processDetection(AprilTagDetection detection) {
-        if(detection != null) {
-            AprilTagEnum aprilTagEnum = AprilTagEnum.findById(detection.id);
-            if (aprilTagEnum != null) {
-                if (artifactMotif == UNKNOWN) {
-                    setArtifactMotif(aprilTagEnum);
-                }
-                if (detection.metadata != null && detection.ftcPose != null) {
-                    if(targetAprilTag == aprilTagEnum) {
-                        setTargetDetection(detection);
-                    }
-                }
+        AprilTagEnum aprilTagEnum = AprilTagEnum.findById(detection.id);
+        if (aprilTagEnum != null) {
+            if (artifactMotif == UNKNOWN) {
+                setArtifactMotif(aprilTagEnum);
+            }
+            if (detection.metadata != null
+                    && detection.ftcPose != null
+                    && targetAprilTag == aprilTagEnum) {
+                setTargetDetection(detection);
             }
         }
     }
@@ -141,10 +141,10 @@ public class AprilTagEngine implements Runnable {
                 setArtifactMotif(GREEN_PURPLE_PURPLE);
                 break;
             case MOTIF_PGP:
-                setArtifactMotif(ArtifactMotifEnum.PURPLE_GREEN_PURPLE);
+                setArtifactMotif(PURPLE_GREEN_PURPLE);
                 break;
             case MOTIF_PPG:
-                setArtifactMotif(ArtifactMotifEnum.PURPLE_PURPLE_GREEN);
+                setArtifactMotif(PURPLE_PURPLE_GREEN);
                 break;
         }
     }

@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
@@ -35,6 +38,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
@@ -168,7 +172,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower;
         double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower;
         double leftRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftRearPower;
-        double RightRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightRearPower;
+        double rightRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightRearPower;
 
         telemetry.addData("Bearing", -botHeading);
         telemetry.addData("L-Stick X", -gamepad1.left_stick_x);
@@ -176,11 +180,26 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("rotX", rotX);
         telemetry.addData("rotY", rotY);
 
-
-        hardwareManager.getLeftFrontMotor().setVelocity(leftFrontVelocity);
-        hardwareManager.getRightFrontMotor().setVelocity(rightFrontVelocity);
-        hardwareManager.getLeftRearMotor().setVelocity(leftRearVelocity);
-        hardwareManager.getRightRearMotor().setVelocity(RightRearVelocity);
+        if(leftFrontVelocity == 0) {
+            hardwareManager.getLeftFrontMotor().setPower(0);
+        } else {
+            hardwareManager.getLeftFrontMotor().setVelocity(leftFrontVelocity);
+        }
+        if(rightFrontVelocity == 0) {
+            hardwareManager.getRightFrontMotor().setPower(0);
+        } else {
+            hardwareManager.getRightFrontMotor().setVelocity(rightFrontVelocity);
+        }
+        if(leftRearVelocity == 0) {
+            hardwareManager.getLeftRearMotor().setPower(0);
+        } else {
+            hardwareManager.getLeftRearMotor().setVelocity(leftRearVelocity);
+        }
+        if(rightRearVelocity == 0) {
+            hardwareManager.getRightRearMotor().setPower(0);
+        } else {
+            hardwareManager.getRightRearMotor().setVelocity(rightRearVelocity);
+        }
 
 
         //double voltageCorrectedPower = (DRIVE_MOTOR_MULTIPLIER * 12)  / hardwareMap.voltageSensor.iterator().next().getVoltage();
@@ -192,7 +211,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Commanded Motor (Left Front)", "%.2f", leftFrontVelocity);
         telemetry.addData("Commanded Motor (Right Front)", "%.2f", rightFrontVelocity);
         telemetry.addData("Commanded Motor (Left Rear)", "%.2f", leftRearVelocity);
-        telemetry.addData("Commanded Motor (Right Rear)", "%.2f", RightRearVelocity);
+        telemetry.addData("Commanded Motor (Right Rear)", "%.2f", rightRearVelocity);
 
         telemetry.addData("Actual Motor (Left Front)", "%.2f", hardwareManager.getLeftFrontMotor().getVelocity());
         telemetry.addData("Actual Motor (Right Front)", "%.2f", hardwareManager.getRightFrontMotor().getVelocity());
@@ -347,13 +366,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunch() {
-        boolean launchLed = false;
-        boolean targetLed = false;
         boolean bearingGood = false;
 
         TimedAprilTagDetection timedDetection = aprilTagEngine.getTimedTargetDetection();
         if(timedDetection != null && timedDetection.getDetection() != null) {
-            targetLed = true;
+            setLedStates(APRIL_TAG_DETECTED);
             AprilTagDetection targetDetection = timedDetection.getDetection();
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
@@ -387,6 +404,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
                 if (launchResult != null) {
                     setLaunchAngle(launchResult.getLaunchAngle());
+                    setLedStates(VIABLE_LAUNCH_SOLUTION);
                 }
 
                 targetRPM = Math.round(((targetDistance / 1.670) * 920.0) + 1750.0);
@@ -395,7 +413,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
                     if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL && bearingGood) {
-                        launchLed = true;
                         autoLaunchArtifact();
                     }
                 } else {
@@ -408,11 +425,15 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         } else {
             //stop rotating turret if there is no detection
             hardwareManager.getTurretMotor().setPower(0);
+            setLedStates(NO_TAG_DETECTED);
         }
-        if (targetLed && !launchLed) {
+    }
+
+    private void setLedStates(LedStateEnum ledStateEnum) {
+        if(ledStateEnum == APRIL_TAG_DETECTED) {
             hardwareManager.getRedLed().setState(true);
             hardwareManager.getGreenLed().setState(false);
-        } else if (launchLed) {
+        } else if (ledStateEnum == VIABLE_LAUNCH_SOLUTION) {
             hardwareManager.getRedLed().setState(true);
             hardwareManager.getGreenLed().setState(false);
         } else {
