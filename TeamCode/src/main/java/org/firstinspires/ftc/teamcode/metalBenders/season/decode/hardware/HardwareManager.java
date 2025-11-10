@@ -8,7 +8,8 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
-import com.arcrobotics.ftclib.controller.PIDController;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
+
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -16,12 +17,12 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -50,14 +51,13 @@ public class HardwareManager {
     private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
-
-    private DigitalChannel redLED;
-    private DigitalChannel greenLED;
+    private final LED redLED;
+    private final LED greenLED;
     private final Servo indicatorLED;
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
-    private static final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
+    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
     private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -81,8 +81,8 @@ public class HardwareManager {
         this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
         this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        this.redLED = hardwareMap.get(DigitalChannel.class, "redLed");
-        this.greenLED = hardwareMap.get(DigitalChannel.class, "greenLed");
+        this.redLED = hardwareMap.get(LED.class, "redLed");
+        this.greenLED = hardwareMap.get(LED.class, "greenLed");
         this.indicatorLED = hardwareMap.get(Servo.class, "signalLed");
         initializeHardware(hardwareMap);
     }
@@ -130,12 +130,16 @@ public class HardwareManager {
         launchColorSensor2.setGain(22);
         intakeColorSensor.setGain(20);
 
-        redLED.setMode(DigitalChannel.Mode.OUTPUT);
-        greenLED.setMode(DigitalChannel.Mode.OUTPUT);
+        redLED.off();
+        greenLED.off();
 
         initializeLimelight();
         initializeIMU();
         initializeOTOS();
+    }
+
+    public void postStartInitialization() {
+        launchServo.setPosition(LAUNCH_SERVO_DOWN);
     }
 
     private void initializeLimelight() {
@@ -242,8 +246,9 @@ public class HardwareManager {
 
     public Limelight3A getLimelight() { return limelight; }
 
-    public DigitalChannel getRedLed() { return redLED; }
+    public LED getRedLed() { return redLED; }
 
-    public DigitalChannel getGreenLed() { return greenLED; }
+    public LED getGreenLed() { return greenLED; }
+
     public Servo getIndicatorLed() { return indicatorLED; }
 }

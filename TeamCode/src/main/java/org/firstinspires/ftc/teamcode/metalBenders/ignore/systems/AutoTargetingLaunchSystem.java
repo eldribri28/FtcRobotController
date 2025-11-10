@@ -122,7 +122,7 @@ public class AutoTargetingLaunchSystem extends AbstractSystem {
         double flywheelRPM = (getHardwareManager().getLauncherMotor().getVelocity()/28.0) * 60.0;
         addTelemetry("flywheel RPM", flywheelRPM);
 
-        LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
+        LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
         if(launchResult != null) {
             setLaunchAngle(launchResult.getLaunchAngle());
             double targetRPM = Math.round(((targetDistance / 1.670) * 800) + 1900);

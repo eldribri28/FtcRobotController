@@ -29,7 +29,6 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -97,8 +96,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
-        hardwareManager.getRedLed().setState(false);
-        hardwareManager.getGreenLed().setState(false);
     }
 
     private void updateRuntime() {
@@ -401,7 +398,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
 
-                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
+                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
                 if (launchResult != null) {
                     setLaunchAngle(launchResult.getLaunchAngle());
                     setLedStates(VIABLE_LAUNCH_SOLUTION);
@@ -431,14 +428,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setLedStates(LedStateEnum ledStateEnum) {
         if(ledStateEnum == APRIL_TAG_DETECTED) {
-            hardwareManager.getRedLed().setState(true);
-            hardwareManager.getGreenLed().setState(false);
+            hardwareManager.getRedLed().on();
+            hardwareManager.getGreenLed().off();
         } else if (ledStateEnum == VIABLE_LAUNCH_SOLUTION) {
-            hardwareManager.getRedLed().setState(true);
-            hardwareManager.getGreenLed().setState(false);
+            hardwareManager.getRedLed().on();
+            hardwareManager.getGreenLed().off();
         } else {
-            hardwareManager.getRedLed().setState(false);
-            hardwareManager.getGreenLed().setState(false);
+            hardwareManager.getRedLed().off();
+            hardwareManager.getGreenLed().off();
         }
     }
 

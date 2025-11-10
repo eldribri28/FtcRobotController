@@ -56,12 +56,10 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagE
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AutonStateEnum;
 
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AutonTelemetry;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.DriveVelocityResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.DriveSystem;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Map;
@@ -324,7 +322,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                 targetDistance = targetDetection.ftcPose.range;
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1800.0);
-                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
+                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
 
                 if (launcherEnabled) {
                     if (launchResult != null) {

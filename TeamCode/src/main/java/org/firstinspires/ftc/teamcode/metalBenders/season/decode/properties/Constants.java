@@ -73,4 +73,9 @@ public final class Constants {
      */
     public static final double LAUNCH_SERVO_UP = 0.0;
     public static final double LAUNCH_SERVO_DOWN = 0.65;
+
+    /*
+    Color indicator control
+     */
+    public static final int MINIMUM_COLOR_HIT_COUNT_TO_CHANGE = 3;
 }
