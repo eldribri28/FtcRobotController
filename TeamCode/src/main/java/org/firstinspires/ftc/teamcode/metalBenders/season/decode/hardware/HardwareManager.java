@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -51,8 +52,8 @@ public class HardwareManager {
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
 
-    private DigitalChannel redLED;
-    private DigitalChannel greenLED;
+    private LED redLED;
+    private LED greenLED;
     private final Servo indicatorLED;
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
@@ -81,8 +82,8 @@ public class HardwareManager {
         this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
         this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        this.redLED = hardwareMap.get(DigitalChannel.class, "redLed");
-        this.greenLED = hardwareMap.get(DigitalChannel.class, "greenLed");
+        this.redLED = hardwareMap.get(LED.class, "redLed");
+        this.greenLED = hardwareMap.get(LED.class, "greenLed");
         this.indicatorLED = hardwareMap.get(Servo.class, "signalLed");
         initializeHardware(hardwareMap);
     }
@@ -130,8 +131,8 @@ public class HardwareManager {
         launchColorSensor2.setGain(22);
         intakeColorSensor.setGain(20);
 
-        redLED.setMode(DigitalChannel.Mode.OUTPUT);
-        greenLED.setMode(DigitalChannel.Mode.OUTPUT);
+        redLED.off();
+        greenLED.off();
 
         initializeLimelight();
         initializeIMU();
@@ -242,8 +243,9 @@ public class HardwareManager {
 
     public Limelight3A getLimelight() { return limelight; }
 
-    public DigitalChannel getRedLed() { return redLED; }
+    public LED getRedLed() { return redLED; }
 
-    public DigitalChannel getGreenLed() { return greenLED; }
+    public LED getGreenLed() { return greenLED; }
+
     public Servo getIndicatorLed() { return indicatorLED; }
 }
