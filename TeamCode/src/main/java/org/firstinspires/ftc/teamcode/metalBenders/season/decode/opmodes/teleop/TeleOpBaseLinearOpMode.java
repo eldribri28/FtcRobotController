@@ -407,7 +407,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                     setLedStates(VIABLE_LAUNCH_SOLUTION);
                 }
 
-                targetRPM = Math.round(((targetDistance / 1.670) * 920.0) + 1750.0);
+                targetRPM = Math.round(((targetDistance / 1.670) * 1025.0) + 1600.0);
                 hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
                 telemetry.addData("target RPM", targetRPM);
 
@@ -467,7 +467,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void setLaunchAngle(double launchAngle) {
-        double positionValue = Math.abs(((70.0 - launchAngle) / 35.0));
+        double positionValue = Math.abs(((68.0 - launchAngle) / 35.0));
         if(positionValue >= 0 && positionValue <= 0.8) {
             hardwareManager.getAngleServo().setPosition(positionValue);
         }
