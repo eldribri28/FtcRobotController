@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.GREEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.PURPLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MINIMUM_COLOR_HIT_COUNT_TO_CHANGE;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -18,8 +19,8 @@ public class ColorManager {
     private final HardwareManager hardwareManager;
     private final ColorHitCount intakeColorHitCount;
     private final ColorHitCount launcherColorHitCount;
-    private ArtifactColorEnum intakeArtifactColor = ArtifactColorEnum.UNKNOWN;
-    private ArtifactColorEnum launcherArtifactColor = ArtifactColorEnum.UNKNOWN;
+    private ArtifactColorEnum intakeArtifactColor = UNKNOWN;
+    private ArtifactColorEnum launcherArtifactColor = UNKNOWN;
 
     public ColorManager(HardwareManager hardwareManager) {
         this.hardwareManager = hardwareManager;
@@ -34,21 +35,21 @@ public class ColorManager {
 
     private void setLauncherArtifactColor() {
         incrementColorHitCounts(launcherColorHitCount, hardwareManager.getLaunchColorSensor(), hardwareManager.getLaunchColorSensor2());
-        if(launcherColorHitCount.isMinimumHitCountReached()) {
+        if(launcherArtifactColor == UNKNOWN || launcherColorHitCount.isMinimumHitCountReached()) {
             launcherArtifactColor = launcherColorHitCount.getArtifactColorEnum();
             if(launcherArtifactColor == GREEN) {
                 hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
             } else if (launcherArtifactColor == PURPLE){
                 hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
             } else {
-                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
+                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
             }
         }
     }
 
     private void setIntakeArtifactColor() {
         incrementColorHitCounts(intakeColorHitCount, hardwareManager.getIntakeColorSensor());
-        if(intakeColorHitCount.isMinimumHitCountReached()) {
+        if(intakeArtifactColor == UNKNOWN || intakeColorHitCount.isMinimumHitCountReached()) {
             intakeArtifactColor = intakeColorHitCount.getArtifactColorEnum();
         }
     }

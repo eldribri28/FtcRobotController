@@ -27,6 +27,7 @@ public final class Constants {
     public static final double MANUAL_FAR_LAUNCH_VELOCITY = 3000;
     public static final double MANUAL_TURRET_INIT_TURN_POWER = 0.1;
     public static final int MANUAL_TURRET_INIT_TOLERANCE = 5;
+    public static final double LAUNCHER_MOTOR_IDLE_VELOCITY = 1000;
     /*
     AprilTag
      */
