@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.UNKNOWN;
-
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
@@ -27,20 +25,16 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.Tur
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ColorManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
@@ -49,13 +43,14 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedApril
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
-    private ArtifactColorEnum intakeArtifactColor = UNKNOWN;
-    private ArtifactColorEnum launcherArtifactColor = UNKNOWN;
-    private ArtifactColorEnum launcherArtifactColor2 = UNKNOWN;
+    private ArtifactMotifEnum artifactMotifEnum = ArtifactMotifEnum.UNKNOWN;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -64,6 +59,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private AprilTagEngine aprilTagEngine;
     private boolean isManualLaunchOverrideActive = false;
     private double manualLaunchVelocity = MANUAL_LAUNCH_MOTOR_VELOCITY_START;
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private ColorManager colorManager;
     abstract AprilTagEnum getTargetAprilTag();
 
     @Override
@@ -74,7 +71,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             waitForStart();
             resetRuntime();
             aprilTagEngineThread.start();
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
+            hardwareManager.postStartInitialization();
             while (opModeIsActive()) {
                 updateTelemetry();
                 turretRotateLimit();
@@ -82,12 +79,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 drive();
                 intakeOrRejectArtifact();
                 clearArtifactFromLaunch();
-                setArtifactColors();
+                colorManager.setArtifactColors();
+                setArtifactMotifEnum();
                 setManualLaunchOverride(aprilTagEngineThread);
                 launch();
                 telemetry.update();
             }
         } finally {
+            scheduler.shutdownNow();
             aprilTagEngineThread.interrupt();
             aprilTagEngine.teardown();
             telemetry.update();
@@ -97,8 +96,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
-        hardwareManager.getRedLed().off();
-        hardwareManager.getGreenLed().off();
+        colorManager = new ColorManager(hardwareManager);
     }
 
     private void updateRuntime() {
@@ -114,10 +112,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         updateRuntime();
         telemetry.addData("Manual Launch Controls Active", isManualLaunchOverrideActive);
         telemetry.addData("Target name", getTargetAprilTag().name());
-        telemetry.addData("Motif detected", aprilTagEngine.getArtifactMotif().name());
-        telemetry.addData("Intake artifact color", intakeArtifactColor.name());
-        telemetry.addData("Launcher artifact color", launcherArtifactColor.name());
-        telemetry.addData("Launcher artifact color 2", launcherArtifactColor2.name());
+        telemetry.addData("Motif detected", artifactMotifEnum.name());
+        telemetry.addData("Intake artifact color", colorManager.getIntakeArtifactColor().name());
+        telemetry.addData("Launcher artifact color", colorManager.getLauncherArtifactColor().name());
         telemetry.addData("Target distance", targetDistance);
         telemetry.addData("Launch Angle", launchAngle);
         telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
@@ -156,19 +153,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         double rightFrontPower = (rotY - rotX - rx) / denominator;
         double rightRearPower = (rotY + rotX - rx) / denominator;
 
-        // Normalize the values so no wheel power exceeds 100%
-        // This ensures that the robot maintains the desired motion.
-        //double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-        //max = Math.max(max, Math.abs(leftRearPower));
-        //max = Math.max(max, Math.abs(rightRearPower));
-
-        //if (max > 1.0) {
-        //    leftFrontPower /= max;
-        //    rightFrontPower /= max;
-        //    leftRearPower /= max;
-        //    rightRearPower /= max;
-        //}
-
         double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower;
         double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower;
         double leftRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftRearPower;
@@ -200,13 +184,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         } else {
             hardwareManager.getRightRearMotor().setVelocity(rightRearVelocity);
         }
-
-
-        //double voltageCorrectedPower = (DRIVE_MOTOR_MULTIPLIER * 12)  / hardwareMap.voltageSensor.iterator().next().getVoltage();
-        //hardwareManager.getLeftFrontMotor().setPower(leftFrontPower * voltageCorrectedPower);
-        //hardwareManager.getRightFrontMotor().setPower(rightFrontPower * voltageCorrectedPower);
-        //hardwareManager.getLeftRearMotor().setPower(leftRearPower * voltageCorrectedPower);
-        //hardwareManager.getRightRearMotor().setPower(rightRearPower * voltageCorrectedPower);
 
         telemetry.addData("Commanded Motor (Left Front)", "%.2f", leftFrontVelocity);
         telemetry.addData("Commanded Motor (Right Front)", "%.2f", rightFrontVelocity);
@@ -302,38 +279,11 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         }
     }
 
-    private void setArtifactColors() {
-        intakeArtifactColor = getArtifactColor(hardwareManager.getIntakeColorSensor(), "Intake");
-        launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
-        launcherArtifactColor2 = getArtifactColor(hardwareManager.getLaunchColorSensor2(), "Launcher2");
-        if (launcherArtifactColor == ArtifactColorEnum.GREEN || launcherArtifactColor2 == ArtifactColorEnum.GREEN) {
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
-        } else if (launcherArtifactColor == ArtifactColorEnum.PURPLE || launcherArtifactColor2 == ArtifactColorEnum.PURPLE) {
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
-        } else {
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.WHITE.getLedValue());
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
+    private void setArtifactMotifEnum() {
+        //get the motif if unknown, may continue to be unknown motif tag is seen
+        if(artifactMotifEnum == ArtifactMotifEnum.UNKNOWN) {
+            artifactMotifEnum = aprilTagEngine.getArtifactMotif();
         }
-    }
-
-    private ArtifactColorEnum getArtifactColor(RevColorSensorV3 colorSensor, String sensorName) {
-        NormalizedRGBA colors = colorSensor.getNormalizedColors();
-
-        double red = colors.red;
-        double green = colors.green;
-        double blue = colors.blue;
-        double distanceCM = colorSensor.getDistance(DistanceUnit.CM);
-
-        ArtifactColorEnum artifactColorEnum;
-        if (blue > green && red > 0.2 && blue > 0.2) {
-            artifactColorEnum = ArtifactColorEnum.PURPLE;
-        } else if (green > red && green > blue && green > 0.2) {
-            artifactColorEnum = ArtifactColorEnum.GREEN;
-        } else {
-            artifactColorEnum = ArtifactColorEnum.NONE;
-        }
-        telemetry.addData(sensorName + " - RGB", "%6.3f %6.3f %6.3f", red, green, blue);
-        return artifactColorEnum;
     }
 
     /*
@@ -366,8 +316,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunch() {
-        boolean bearingGood = false;
-
         TimedAprilTagDetection timedDetection = aprilTagEngine.getTimedTargetDetection();
         if(timedDetection != null && timedDetection.getDetection() != null) {
             setLedStates(APRIL_TAG_DETECTED);
@@ -376,9 +324,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing) && targetDetection.id == getTargetAprilTag().getId()) {
-                    if (Math.abs(targetDetection.ftcPose.bearing) < 3 ) {
-                        bearingGood = true;
-                    }
                     telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
                     telemetry.addData("Target ID", targetDetection.id);
                     double setPower = turretBearingPid.calculate(0, targetDetection.ftcPose.bearing);
@@ -401,7 +346,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
 
-                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult1(flywheelRPM, targetDistance);
+                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
                 if (launchResult != null) {
                     setLaunchAngle(launchResult.getLaunchAngle());
                     setLedStates(VIABLE_LAUNCH_SOLUTION);
@@ -412,7 +357,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 telemetry.addData("target RPM", targetRPM);
 
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
-                    if (Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL && bearingGood) {
+                    if (readyToShoot(targetDetection)) {
                         autoLaunchArtifact();
                     }
                 } else {
@@ -421,6 +366,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             } else {
                 //stop rotating turret if detection is too old
                 hardwareManager.getTurretMotor().setPower(0);
+                setLedStates(NO_TAG_DETECTED);
             }
         } else {
             //stop rotating turret if there is no detection
@@ -429,13 +375,27 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         }
     }
 
+    public boolean readyToShoot(AprilTagDetection targetDetection) {
+        return isTurretAngleWithinThreshold(targetDetection)
+                && isLaunchMotorVelocityWithinThreshold();
+    }
+
+    private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
+        return Math.abs(detection.ftcPose.bearing) <= 3.0;
+    }
+
+    private boolean isLaunchMotorVelocityWithinThreshold() {
+        return Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM)
+                <= MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+    }
+
     private void setLedStates(LedStateEnum ledStateEnum) {
         if(ledStateEnum == APRIL_TAG_DETECTED) {
             hardwareManager.getRedLed().on();
             hardwareManager.getGreenLed().off();
         } else if (ledStateEnum == VIABLE_LAUNCH_SOLUTION) {
-            hardwareManager.getRedLed().on();
-            hardwareManager.getGreenLed().off();
+            hardwareManager.getRedLed().off();
+            hardwareManager.getGreenLed().on();
         } else {
             hardwareManager.getRedLed().off();
             hardwareManager.getGreenLed().off();
@@ -443,27 +403,29 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunchArtifact() {
-        //if (isManualLaunchOverrideActive || (launcherArtifactColor != ArtifactColorEnum.NONE && launcherArtifactColor2 != ArtifactColorEnum.NONE)) {
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
-            sleep(100);
+        hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+        Runnable servoDown = () -> {
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
-            sleep(150);
-        //}
+        };
+        scheduler.schedule(servoDown, 100, TimeUnit.MILLISECONDS);
     }
 
     private void clearArtifactFromLaunch() {
         if((isManualLaunchOverrideActive && hardwareManager.getGamepad2().right_bumper)
                 || (!isManualLaunchOverrideActive && hardwareManager.getGamepad1().right_bumper)) {
             hardwareManager.getLauncherMotor().setPower(0.4);
-            sleep(100);
+            Runnable autoLaunch = this::autoLaunchArtifact;
+            scheduler.schedule(autoLaunch, 200, TimeUnit.MILLISECONDS);
             autoLaunchArtifact();
         }
     }
 
     private void autoIntakeArtifact() {
         hardwareManager.getIntakeMotor().setPower(1);
-        sleep(25);
-        hardwareManager.getIntakeMotor().setPower(0);
+        Runnable stopIntake = () -> {
+            hardwareManager.getIntakeMotor().setPower(0);
+        };
+        scheduler.schedule(stopIntake, 100, TimeUnit.MILLISECONDS);
     }
 
     private void setLaunchAngle(double launchAngle) {

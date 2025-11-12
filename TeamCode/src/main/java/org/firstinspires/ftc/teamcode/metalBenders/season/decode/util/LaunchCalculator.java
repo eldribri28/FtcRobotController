@@ -8,7 +8,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 
 public class LaunchCalculator {
 
-    public static LaunchResult calculatePreferredLaunchResult1(double flywheelRPM, double distance) {
+    public static LaunchResult calculatePreferredLaunchResult(double flywheelRPM, double distance) {
 
         double velocity = calculateVelocity(flywheelRPM);
 

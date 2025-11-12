@@ -4,7 +4,6 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.PURPLE_GREEN_PURPLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.PURPLE_PURPLE_GREEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.UNKNOWN;
-
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_GAIN_SET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_GAIN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_EXPOSURE;
@@ -113,29 +112,32 @@ public class AprilTagEngine implements Runnable {
         List<AprilTagDetection> currentDetections = aprilTagProcessor.getFreshDetections();
         if(currentDetections != null) {
             telemetry.put("# AprilTags Detected", String.valueOf(currentDetections.size()));
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection != null) {
-                    processDetection(detection);
-                }
-            }
+            currentDetections.forEach(this::processDetection);
         }
     }
 
     private void processDetection(AprilTagDetection detection) {
-        AprilTagEnum aprilTagEnum = AprilTagEnum.findById(detection.id);
-        if (aprilTagEnum != null) {
-            if (artifactMotif == UNKNOWN) {
-                setArtifactMotif(aprilTagEnum);
-            }
-            if (detection.metadata != null
-                    && detection.ftcPose != null
-                    && targetAprilTag == aprilTagEnum) {
+        if(detection != null) {
+            if (isValidTargetDetection(detection)) {
                 setTargetDetection(detection);
+            }
+            if (artifactMotif == UNKNOWN) {
+                setArtifactMotif(detection);
             }
         }
     }
 
-    private void setArtifactMotif(AprilTagEnum aprilTagEnum) {
+    private boolean isValidTargetDetection(AprilTagDetection detection) {
+        return detection.metadata != null
+                && detection.ftcPose != null
+                && targetAprilTag.getId() == detection.id;
+    }
+
+    private void setArtifactMotif(AprilTagDetection detection) {
+        AprilTagEnum aprilTagEnum = AprilTagEnum.findById(detection.id);
+        if(aprilTagEnum == null) {
+            return;
+        }
         switch (aprilTagEnum) {
             case MOTIF_GPP:
                 setArtifactMotif(GREEN_PURPLE_PURPLE);

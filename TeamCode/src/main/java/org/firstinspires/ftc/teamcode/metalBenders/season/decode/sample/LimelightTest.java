@@ -28,7 +28,7 @@ public class LimelightTest extends LinearOpMode {
 
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
-        limelight = hardwareManager.getLimelight();
+//        limelight = hardwareManager.getLimelight();
     }
 
 }
