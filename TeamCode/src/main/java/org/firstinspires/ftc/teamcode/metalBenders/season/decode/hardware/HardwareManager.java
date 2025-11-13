@@ -8,8 +8,7 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
-
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -17,6 +16,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -51,14 +51,15 @@ public class HardwareManager {
     private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
-    private final LED redLED;
-    private final LED greenLED;
+
+    private LED redLED;
+    private LED greenLED;
     private final Servo indicatorLED;
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
-    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
-//    private final Limelight3A limelight;
+    private static final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
+    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         this.gamepad1 = gamepad1;
@@ -78,9 +79,9 @@ public class HardwareManager {
         this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
-        this.otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
+        this.otos = hardwareMap.get(SparkFunOTOS.class, "sparkFunOTOS");
         this.imu = hardwareMap.get(IMU.class, "imu");
-//        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
         this.redLED = hardwareMap.get(LED.class, "redLed");
         this.greenLED = hardwareMap.get(LED.class, "greenLed");
         this.indicatorLED = hardwareMap.get(Servo.class, "signalLed");
@@ -133,20 +134,16 @@ public class HardwareManager {
         redLED.off();
         greenLED.off();
 
-//        initializeLimelight();
+        initializeLimelight();
         initializeIMU();
         initializeOTOS();
     }
 
-    public void postStartInitialization() {
-        launchServo.setPosition(LAUNCH_SERVO_DOWN);
+    private void initializeLimelight() {
+        limelight.pipelineSwitch(0);
+        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
+        limelight.start(); // This tells Limelight to start looking!
     }
-
-//    private void initializeLimelight() {
-//        limelight.pipelineSwitch(0);
-//        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
-//        limelight.start(); // This tells Limelight to start looking!
-//    }
 
     private void initializeIMU() {
         ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RIGHT, UP);
@@ -244,7 +241,7 @@ public class HardwareManager {
         return limitSwitchRight;
     }
 
-//    public Limelight3A getLimelight() { return limelight; }
+    public Limelight3A getLimelight() { return limelight; }
 
     public LED getRedLed() { return redLED; }
 

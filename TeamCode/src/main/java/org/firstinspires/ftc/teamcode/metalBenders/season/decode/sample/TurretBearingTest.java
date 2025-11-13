@@ -17,10 +17,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_TICKS_PER_DEGREE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.IMU_YAW;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_ANGLE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_IMU_OFFSET;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.IMU_OTOS_OFFSET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CURRENT_ENCODER;
 
 
@@ -37,7 +34,7 @@ public class TurretBearingTest extends LinearOpMode {
 
     private HardwareManager hardwareManager;
 
-    private final PIDController turretBearingPid = new PIDController(0.015, 0.00, 0.00);
+    private final PIDController turretBearingPid = new PIDController(0.025, 0.00, 0.01);
 
     private AprilTagEngine aprilTagEngine;
 
@@ -48,6 +45,8 @@ public class TurretBearingTest extends LinearOpMode {
     private double currentX = 0;
     private double currentY = 0;
     private double currentOtosH = 0;
+
+    private double aprilTagBearing = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -62,18 +61,19 @@ public class TurretBearingTest extends LinearOpMode {
             while (opModeIsActive()) {
 
 
-
-                updateAprilTagFieldPosition();
-                getFieldPosition();
-                turretRotateLimit();
-
-                IMU_YAW = hardwareManager.getImu().getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
                 TURRET_CURRENT_ENCODER = hardwareManager.getTurretMotor().getCurrentPosition();
                 TURRET_ANGLE = getTurretChassisOffset(TURRET_CURRENT_ENCODER);
 
-                moveTurret(calculateTurretError());
+                turretRotateLimit();
 
-                //telemetry.addData("IMU Heading", IMU_YAW);
+                if (updateAprilTagFieldPosition()) {
+                    moveTurret(aprilTagBearing);
+                } else {
+                    moveTurret(calculateTurretError());
+                }
+                getFieldPosition();
+
+
                 telemetry.addData("Turret Angle", TURRET_ANGLE);
                 telemetry.addData("Turret Offset", TURRET_CHASSIS_OFFSET);
                 telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", currentX, currentY, currentOtosH));
@@ -101,58 +101,6 @@ public class TurretBearingTest extends LinearOpMode {
         TURRET_LEFT_LIMIT_ENCODER_VALUE = 0;
     }
 
-    private void setFieldPosition(AprilTagDetection targetDetection) {
-        if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
-            TURRET_CHASSIS_OFFSET = getTurretChassisOffset(TURRET_CURRENT_ENCODER);
-            double chassisFieldHeading = AngleUnit.DEGREES.normalize(targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
-            if (chassisFieldHeading > 180) {
-                chassisFieldHeading = chassisFieldHeading - 360;
-            } else if (chassisFieldHeading <= -180) {
-                chassisFieldHeading = chassisFieldHeading + 360;
-            }
-            telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
-            telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
-            //IMU_OTOS_OFFSET = AngleUnit.DEGREES.normalize(IMU_YAW - chassisFieldHeading);
-            OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, otos);
-        }
-    }
-
-
-    private boolean updateAprilTagFieldPosition() {
-        TimedAprilTagDetection timedDetection = aprilTagEngine.getTimedTargetDetection();
-        if (timedDetection != null && timedDetection.getDetection() != null && timedDetection.getAgeInMillis() < AGED_DATA_LIMIT_MILLISECONDS) {
-            AprilTagDetection targetDetection = timedDetection.getDetection();
-            telemetry.addData("Target detection age(millisecond)", timedDetection.getAgeInMillis());
-            setFieldPosition(targetDetection);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private void getFieldPosition() {
-        currentX = OTOSCalculator.getCurrentPosition(otos).getXPos();
-        currentY = OTOSCalculator.getCurrentPosition(otos).getYPos();
-        currentOtosH = OTOSCalculator.getCurrentPosition(otos).getHeading();
-        if (currentOtosH > 180) {
-            currentOtosH = currentOtosH - 360;
-        } else if (currentOtosH <= -180) {
-            currentOtosH = currentOtosH + 360;
-        }
-    }
-
-
-    private void turretRotateLimit() {
-        if (hardwareManager.getLimitSwitchRight().isPressed()) {
-            TURRET_LEFT_LIMIT_ENCODER_VALUE = (long) AngleUnit.DEGREES.normalize(Math.round(TURRET_CURRENT_ENCODER + ( TURRET_TICKS_PER_DEGREE * 90)));
-            //TURRET_IMU_OFFSET = AngleUnit.DEGREES.normalize(IMU_YAW + getTurretChassisOffset(TURRET_CURRENT_ENCODER));
-        } else if (hardwareManager.getLimitSwitchLeft().isPressed()){
-            TURRET_LEFT_LIMIT_ENCODER_VALUE = (long) AngleUnit.DEGREES.normalize(Math.round(TURRET_CURRENT_ENCODER - ( TURRET_TICKS_PER_DEGREE * 90)));
-            //TURRET_IMU_OFFSET = AngleUnit.DEGREES.normalize(IMU_YAW + getTurretChassisOffset(TURRET_CURRENT_ENCODER));
-        }
-    }
-
-
     private boolean canRotateTurret(double input) {
         if (input < 0 && hardwareManager.getLimitSwitchRight().isPressed()) {
             return false;
@@ -163,9 +111,57 @@ public class TurretBearingTest extends LinearOpMode {
         }
     }
 
+    private void turretRotateLimit() {
+        if (hardwareManager.getLimitSwitchRight().isPressed()) {
+            TURRET_LEFT_LIMIT_ENCODER_VALUE = (long) AngleUnit.DEGREES.normalize(Math.round(TURRET_CURRENT_ENCODER + ( TURRET_TICKS_PER_DEGREE * 90)));
+        } else if (hardwareManager.getLimitSwitchLeft().isPressed()){
+            TURRET_LEFT_LIMIT_ENCODER_VALUE = (long) AngleUnit.DEGREES.normalize(Math.round(TURRET_CURRENT_ENCODER - ( TURRET_TICKS_PER_DEGREE * 90)));
+        }
+    }
+
+    /*
+    Set the field position based on apriltag
+     */
+    private void setFieldPosition(AprilTagDetection targetDetection) {
+        if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
+            TURRET_CHASSIS_OFFSET = getTurretChassisOffset(TURRET_CURRENT_ENCODER);
+            double chassisFieldHeading = AngleUnit.DEGREES.normalize(targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
+            telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
+            telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
+            OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, otos);
+        }
+    }
+    /*
+    If a tag is in view, update the robot position
+     */
+    private boolean updateAprilTagFieldPosition() {
+        TimedAprilTagDetection timedDetection = aprilTagEngine.getTimedTargetDetection();
+        if (timedDetection != null && timedDetection.getDetection() != null && timedDetection.getAgeInMillis() < AGED_DATA_LIMIT_MILLISECONDS) {
+            AprilTagDetection targetDetection = timedDetection.getDetection();
+            telemetry.addData("Target detection age(millisecond)", timedDetection.getAgeInMillis());
+            setFieldPosition(targetDetection);
+            aprilTagBearing = targetDetection.ftcPose.bearing;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /*
+    Lookup current field positon and heading
+     */
+    private void getFieldPosition() {
+        currentX = OTOSCalculator.getCurrentPosition(otos).getXPos();
+        currentY = OTOSCalculator.getCurrentPosition(otos).getYPos();
+        currentOtosH = OTOSCalculator.getCurrentPosition(otos).getHeading();
+    }
+
+    /*
+    Move the turret to the target
+     */
     private void moveTurret(double turretError) {
+        telemetry.addData("Turret Error", turretError);
         double setPower = turretBearingPid.calculate(0, turretError);
-        setPower = Range.clip(setPower, -0.4, 0.4);
+        setPower = Range.clip(setPower, -1, 1);
         if (canRotateTurret(setPower) && Math.abs(turretError) > 1) {
             hardwareManager.getTurretMotor().setPower(setPower);
         } else {
@@ -174,23 +170,28 @@ public class TurretBearingTest extends LinearOpMode {
         telemetry.addData("Turret Power", setPower);
     }
 
+    /*
+    Calculate the current turret error if the camera doesn't see a tag
+     */
     private double calculateTurretError() {
         double turretError = 0;
+        double turretHeading = 0;
         double chassisError = 0;
         double targetHeading = getTargetBearing(currentX, currentY);
         telemetry.addData("Target Heading", targetHeading);
         if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
-            turretError = AngleUnit.DEGREES.normalize(currentOtosH - TURRET_ANGLE );
+            turretHeading = AngleUnit.DEGREES.normalize(currentOtosH + TURRET_ANGLE );
             telemetry.addData("Turret - Heading", turretError);
-            turretError = AngleUnit.DEGREES.normalize( targetHeading - turretError );
+            turretError = AngleUnit.DEGREES.normalize( turretHeading - targetHeading );
             telemetry.addData("Turret - Heading - Target Heading", turretError);
         }
-        telemetry.addData("Turret Error", turretError);
-        return turretError;
+        return -turretError;
     }
 
 
-
+    /*
+    Locate target bearing based on robot position
+     */
     public double getTargetBearing(double x, double y) {
         double deltaX = 0;
         double deltaY = 0;
@@ -202,7 +203,6 @@ public class TurretBearingTest extends LinearOpMode {
             deltaX = (-1.371) - x;
             deltaY = (1.371) - y;
         }
-
 
         return (AngleUnit.DEGREES.normalize(Math.toDegrees(Math.atan2(deltaY, deltaX)) - 90));// - getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition() + 360) % 360) ;
     }

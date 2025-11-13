@@ -30,9 +30,6 @@ public class GlobalVars {
      */
     public static long TURRET_LEFT_LIMIT_ENCODER_VALUE = 0;
     public static double TURRET_CHASSIS_OFFSET = 0;
-    public static double IMU_YAW = 0;
     public static double TURRET_ANGLE = 0;
-    public static double TURRET_IMU_OFFSET = 0;
-    public static double IMU_OTOS_OFFSET;
     public static double TURRET_CURRENT_ENCODER;
 }
