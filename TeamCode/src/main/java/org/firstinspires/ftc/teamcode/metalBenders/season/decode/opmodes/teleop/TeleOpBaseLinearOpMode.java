@@ -156,10 +156,16 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         double rightFrontPower = (rotY - rotX - rx) / denominator;
         double rightRearPower = (rotY + rotX - rx) / denominator;
 
-        double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower;
-        double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower;
-        double leftRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftRearPower;
-        double rightRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightRearPower;
+        double driverSelectedMultipler = 1;
+        if(gamepad1.right_bumper) {
+            driverSelectedMultipler = 0.5;
+        } else if (gamepad1.b) {
+            driverSelectedMultipler = 1.5;
+        }
+        double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower * driverSelectedMultipler;
+        double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower * driverSelectedMultipler;
+        double leftRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftRearPower * driverSelectedMultipler;
+        double rightRearVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightRearPower * driverSelectedMultipler;
 
         telemetry.addData("Bearing", -botHeading);
         telemetry.addData("L-Stick X", -gamepad1.left_stick_x);
@@ -417,8 +423,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void clearArtifactFromLaunch() {
-        if((isManualLaunchOverrideActive && hardwareManager.getGamepad2().right_bumper)
-                || (!isManualLaunchOverrideActive && hardwareManager.getGamepad1().right_bumper)) {
+        if((isManualLaunchOverrideActive && hardwareManager.getGamepad2().x)
+                || (!isManualLaunchOverrideActive && hardwareManager.getGamepad1().x)) {
             hardwareManager.getLauncherMotor().setVelocity(LAUNCHER_MOTOR_IDLE_VELOCITY);
             Runnable autoLaunch = this::autoLaunchArtifact;
             scheduler.schedule(autoLaunch, 200, TimeUnit.MILLISECONDS);
