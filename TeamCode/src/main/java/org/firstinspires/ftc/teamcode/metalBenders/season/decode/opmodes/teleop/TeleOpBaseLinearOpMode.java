@@ -362,7 +362,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
                 telemetry.addData("target RPM", targetRPM);
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
-                    targetRPM = Math.round(((targetDistance / 1.670) * 1000.0) + 1550.0);
+                    targetRPM = Math.round(((targetDistance / 1.670) * 1000.0) + 1575.0);
                     if (readyToShoot(targetDetection)) {
                         autoLaunchArtifact();
                     }
