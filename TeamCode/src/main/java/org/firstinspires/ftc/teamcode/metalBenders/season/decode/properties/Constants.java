@@ -22,9 +22,12 @@ public final class Constants {
     public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.41;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
     public static final double TURRET_GEAR_RATIO = 5.11;
-    public static final double TURRET_TICKS_PER_DEGREE = ( ( TURRET_GEAR_RATIO * YELLOWJACKET_312.getPPR() ) / 360 );
+    public static final double TURRET_TICKS_PER_DEGREE = ( ( 5.11 * YELLOWJACKET_312.getPPR() ) / 360 );
     public static final double MANUAL_NEAR_LAUNCH_VELOCITY = 1500;
     public static final double MANUAL_FAR_LAUNCH_VELOCITY = 3000;
+    public static final double MANUAL_TURRET_INIT_TURN_POWER = 0.1;
+    public static final int MANUAL_TURRET_INIT_TOLERANCE = 5;
+    public static final double LAUNCHER_MOTOR_IDLE_VELOCITY = 1000;
     /*
     AprilTag
      */
@@ -32,23 +35,23 @@ public final class Constants {
     public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 50;
     public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 50;
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_START = 1500;
+    public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT = 100;
+    public static final double MANUAL_TURRET_MOTOR_MULTIPLIER = 0.5;
 
     /*
     Drive System
      */
     public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
-    public static final double MAX_MOTOR_TICKS_PER_SECOND = (double) ((6000 * 28) / 60); // (Base Motor RPM * Ticks Per Revolution) / 60 Seconds
+    public static final double MAX_DRIVE_VELOCITY_MPS = 2; // Meters per second
     public static final double AUTON_DRIVE_VELOCITY_MPS = 2; // Meters per second
     public static final double WHEEL_DIAMETER = 0.104; // in meters
     public static final double WHEEL_CIRCUMFERENCE = (Math.PI * WHEEL_DIAMETER);
     public static final double ENCODER_TICKS_PER_METER = (YELLOWJACKET_1150.getPPR() / WHEEL_CIRCUMFERENCE);
-    public static final double MAX_DRIVE_VELOCITY_MPS = MAX_MOTOR_TICKS_PER_SECOND / ENCODER_TICKS_PER_METER; // Meters per second
-    public static final double TARGET_DRIVE_VELOCITY_MPS = 2;
-    public static final double MAX_DRIVE_VELOCITY_TICKS_PER_SECOND = TARGET_DRIVE_VELOCITY_MPS * ENCODER_TICKS_PER_METER;
+    public static final double MAX_DRIVE_VELOCITY_TICKS_PER_SECOND = MAX_DRIVE_VELOCITY_MPS * ENCODER_TICKS_PER_METER;
     public static final double AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND = AUTON_DRIVE_VELOCITY_MPS * ENCODER_TICKS_PER_METER;
     public static final double MAX_DRIVE_VELOCITY_METER_PER_SECOND = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND / ENCODER_TICKS_PER_METER;
     public static final double ROTATION_ACCURACY = 1;
-    
+
     /*
     Drive PID
      */
@@ -62,13 +65,18 @@ public final class Constants {
     /*
     Turret PID
      */
-    public static final double TURRET_PID_P = 0.035; //0.032;
+    public static final double TURRET_PID_P = 0.032;
     public static final double TURRET_PID_I = 0.0;
-    public static final double TURRET_PID_D = 0.02;
+    public static final double TURRET_PID_D = 0.01;
 
     /*
     Launch Servo
      */
     public static final double LAUNCH_SERVO_UP = 0.0;
     public static final double LAUNCH_SERVO_DOWN = 0.65;
+
+    /*
+    Color indicator control
+     */
+    public static final int MINIMUM_COLOR_HIT_COUNT_TO_CHANGE = 3;
 }
