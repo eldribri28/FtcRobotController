@@ -10,7 +10,7 @@ public enum AutonStateEnum {
     WAIT_LAUNCH_ARTIFACT_3,
     WAIT_DRIVE_FROM_LAUNCH_ZONE,
     WAIT_DRIVE_FORWARD_PICKUP,
-    FINISHED;
+    FINISHED
 
 }
 
