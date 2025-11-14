@@ -22,7 +22,7 @@ public final class Constants {
     public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.41;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
     public static final double TURRET_GEAR_RATIO = 5.11;
-    public static final double TURRET_TICKS_PER_DEGREE = ( ( 5.11 * YELLOWJACKET_312.getPPR() ) / 360 );
+    public static final double TURRET_TICKS_PER_DEGREE = ( ( 5.111111111 * YELLOWJACKET_312.getPPR() ) / 360 );
     public static final double MANUAL_NEAR_LAUNCH_VELOCITY = 1500;
     public static final double MANUAL_FAR_LAUNCH_VELOCITY = 3000;
     public static final double MANUAL_TURRET_INIT_TURN_POWER = 0.1;
@@ -43,7 +43,7 @@ public final class Constants {
      */
     public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
     public static final double MAX_DRIVE_VELOCITY_MPS = 2; // Meters per second
-    public static final double AUTON_DRIVE_VELOCITY_MPS = 2; // Meters per second
+    public static final double AUTON_DRIVE_VELOCITY_MPS = 2.2; // Meters per second
     public static final double WHEEL_DIAMETER = 0.104; // in meters
     public static final double WHEEL_CIRCUMFERENCE = (Math.PI * WHEEL_DIAMETER);
     public static final double ENCODER_TICKS_PER_METER = (YELLOWJACKET_1150.getPPR() / WHEEL_CIRCUMFERENCE);
@@ -67,7 +67,7 @@ public final class Constants {
      */
     public static final double TURRET_PID_P = 0.032;
     public static final double TURRET_PID_I = 0.0;
-    public static final double TURRET_PID_D = 0.01;
+    public static final double TURRET_PID_D = 0.02;
 
     /*
     Launch Servo

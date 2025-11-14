@@ -57,7 +57,7 @@ public class HardwareManager {
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
-    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
+    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 5);
 //    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -108,7 +108,7 @@ public class HardwareManager {
             motor.setMode(RUN_USING_ENCODER);
         }
         for(DcMotor motor : List.of(intakeMotor)) {
-            motor.setMode(RUN_USING_ENCODER);
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(FLOAT);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
@@ -126,7 +126,7 @@ public class HardwareManager {
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         angleServo.setDirection(Servo.Direction.FORWARD);
-        launchColorSensor.setGain(22);
+        launchColorSensor.setGain(27);
         launchColorSensor2.setGain(22);
         intakeColorSensor.setGain(20);
 

@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.util.Range;
 
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
@@ -45,8 +47,8 @@ public class TurretBearingTest extends LinearOpMode {
     private double currentX = 0;
     private double currentY = 0;
     private double currentOtosH = 0;
-
     private double aprilTagBearing = 0;
+    private double IMU_OTOS_OFFSET;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -60,7 +62,6 @@ public class TurretBearingTest extends LinearOpMode {
             aprilTagEngineThread.start();
             while (opModeIsActive()) {
 
-
                 TURRET_CURRENT_ENCODER = hardwareManager.getTurretMotor().getCurrentPosition();
                 TURRET_ANGLE = getTurretChassisOffset(TURRET_CURRENT_ENCODER);
 
@@ -73,11 +74,9 @@ public class TurretBearingTest extends LinearOpMode {
                 }
                 getFieldPosition();
 
-
                 telemetry.addData("Turret Angle", TURRET_ANGLE);
                 telemetry.addData("Turret Offset", TURRET_CHASSIS_OFFSET);
                 telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", currentX, currentY, currentOtosH));
-
 
                 telemetry.update();
 
@@ -95,7 +94,11 @@ public class TurretBearingTest extends LinearOpMode {
         hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         otos = hardwareManager.getOtos();
+        SparkFunOTOS.Pose2D offset;
+        otos.setLinearUnit(DistanceUnit.METER);
         otos.setAngularUnit(AngleUnit.DEGREES);
+        offset = new SparkFunOTOS.Pose2D(0, 0, 90);
+        otos.setOffset(offset);
         aprilTagEngine = new AprilTagEngine(hardwareManager, AprilTagEnum.RED_TARGET);
         TURRET_CHASSIS_OFFSET = 0;
         TURRET_LEFT_LIMIT_ENCODER_VALUE = 0;
@@ -124,13 +127,16 @@ public class TurretBearingTest extends LinearOpMode {
      */
     private void setFieldPosition(AprilTagDetection targetDetection) {
         if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
+            YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
             TURRET_CHASSIS_OFFSET = getTurretChassisOffset(TURRET_CURRENT_ENCODER);
             double chassisFieldHeading = AngleUnit.DEGREES.normalize(targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
+            IMU_OTOS_OFFSET = AngleUnit.DEGREES.normalize(chassisFieldHeading - orientation.getYaw(AngleUnit.DEGREES));
             telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
             telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
             OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, otos);
         }
     }
+
     /*
     If a tag is in view, update the robot position
      */
@@ -150,9 +156,11 @@ public class TurretBearingTest extends LinearOpMode {
     Lookup current field positon and heading
      */
     private void getFieldPosition() {
+        YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
         currentX = OTOSCalculator.getCurrentPosition(otos).getXPos();
         currentY = OTOSCalculator.getCurrentPosition(otos).getYPos();
-        currentOtosH = OTOSCalculator.getCurrentPosition(otos).getHeading();
+        currentOtosH = AngleUnit.DEGREES.normalize(IMU_OTOS_OFFSET + orientation.getYaw(AngleUnit.DEGREES));
+        //currentOtosH = OTOSCalculator.getCurrentPosition(otos).getHeading();
     }
 
     /*

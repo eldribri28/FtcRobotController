@@ -42,7 +42,7 @@ public class LaunchCalculator {
     private static LaunchResult determinePreferredLaunchResult(LaunchResult launchResult1, LaunchResult launchResult2) {
         LaunchResult preferredLaunchResult = null;
         if (launchResult1.isViable() && launchResult2.isViable()) {
-            if (launchResult1.getLandingAngle() < launchResult2.getLandingAngle()) {
+            if (launchResult1.getLandingAngle() > launchResult2.getLandingAngle()) {
                 preferredLaunchResult = launchResult1;
             } else {
                 preferredLaunchResult = launchResult2;

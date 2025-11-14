@@ -126,19 +126,20 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         } else {
                             allowedToLaunch = false;
                             state = AutonStateEnum.WAIT_INTAKE_LOAD_ARTIFACT_2;
-                            sleep(100);
+                            sleep(150);
                             stateTimestamp = getRuntime();
                         }
                         break;
                     case WAIT_INTAKE_LOAD_ARTIFACT_2:
                         if (launcherArtifactColor == NONE && launcherArtifactColor2 == NONE  && getRuntime() - stateTimestamp < 5) {
                             startIntake();
-                            sleep(50);
-                            stopIntake();
-                            sleep(50);
-                        } else {
-                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_2;
                             sleep(100);
+                            stopIntake();
+                            sleep(100);
+                        } else {
+                            stopIntake();
+                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_2;
+                            sleep(150);
                             stateTimestamp = getRuntime();
                         }
                         break;
@@ -149,19 +150,20 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                         } else {
                             allowedToLaunch = false;
                             state = AutonStateEnum.WAIT_INTAKE_LOAD_ARTIFACT_3;
-                            sleep(100);
+                            sleep(150);
                             stateTimestamp = getRuntime();
                         }
                         break;
                     case WAIT_INTAKE_LOAD_ARTIFACT_3:
                         if (launcherArtifactColor == NONE && launcherArtifactColor2 == NONE  && getRuntime() - stateTimestamp < 5) {
                             startIntake();
-                            sleep(50);
-                            stopIntake();
-                            sleep(50);
-                        } else {
-                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_3;
                             sleep(100);
+                            stopIntake();
+                            sleep(100);
+                        } else {
+                            stopIntake();
+                            state = AutonStateEnum.WAIT_LAUNCH_ARTIFACT_3;
+                            sleep(150);
                             stateTimestamp = getRuntime();
                         }
                         break;
@@ -185,10 +187,36 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                             } else if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
                                 startDrive(-0.500, -0.300, 0.0, 0.100);
                             } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == FAR && !atTargetPosition) {
-                                startDrive(0.300, 0.000, 0.0, 0.100);
+                                startDrive(0.000, -0.800, 0.0, 0.050);
                             } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
                                 startDrive(-0.500, 0.300, 0.0, 0.100);
                             } else {
+                                stopDrive();
+                                state = AutonStateEnum.WAIT_DRIVE_FORWARD_PICKUP;
+                                stateTimestamp = getRuntime();
+                                atTargetPosition = false;
+                            }
+                        } else {
+                            stopDrive();
+                            state = AutonStateEnum.WAIT_DRIVE_FORWARD_PICKUP;
+                            stateTimestamp = getRuntime();
+                            atTargetPosition = false;
+                        }
+                        break;
+                    case WAIT_DRIVE_FORWARD_PICKUP:
+                        if (getRuntime() - stateTimestamp < 5) {
+                            launcherEnabled = false;
+                            startIntake();
+                            if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == FAR && !atTargetPosition) {
+                                startDrive(0.300, 0.000, 0.0, 0.100);
+                            } else if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
+                                startDrive(-0.500, -0.300, 0.0, 0.100);
+                            } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == FAR && !atTargetPosition) {
+                                startDrive(1.000, -0.800, 0.0, 0.050);
+                            } else if (getTargetAprilTag() == AprilTagEnum.RED_TARGET && getStartPosition() == NEAR && !atTargetPosition) {
+                                startDrive(-0.500, 0.300, 0.0, 0.100);
+                            } else {
+                                stopIntake();
                                 stopDrive();
                                 state = AutonStateEnum.FINISHED;
                                 stateTimestamp = getRuntime();
@@ -245,6 +273,11 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
         otos = hardwareManager.getOtos();
+        otos.setAngularUnit(AngleUnit.DEGREES);
+        otos.setLinearUnit(DistanceUnit.METER);
+        SparkFunOTOS.Pose2D offset;
+        offset = new SparkFunOTOS.Pose2D(0, 0, 0);
+        otos.setOffset(offset);
         state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
     }
 

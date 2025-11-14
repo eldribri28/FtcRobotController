@@ -160,7 +160,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         if(gamepad1.right_bumper) {
             driverSelectedMultipler = 0.5;
         } else if (gamepad1.b) {
-            driverSelectedMultipler = 1.5;
+            driverSelectedMultipler = 2.0;
         }
         double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower * driverSelectedMultipler;
         double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower * driverSelectedMultipler;
@@ -362,7 +362,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
                 telemetry.addData("target RPM", targetRPM);
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
-                    targetRPM = Math.round(((targetDistance / 1.670) * 1000.0) + 1575.0);
+                    targetRPM = Math.round(((targetDistance / 1.670) * 925) + 1725);
                     if (readyToShoot(targetDetection)) {
                         autoLaunchArtifact();
                     }
@@ -391,7 +391,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
-        return Math.abs(detection.ftcPose.bearing) <= 3.0;
+        return Math.abs(detection.ftcPose.bearing) <= 2.0;
     }
 
     private boolean isLaunchMotorVelocityWithinThreshold() {
@@ -419,13 +419,18 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
             isShotTimeoutActive = false;
         };
-        scheduler.schedule(servoDown, 100, TimeUnit.MILLISECONDS);
+        scheduler.schedule(servoDown, 150, TimeUnit.MILLISECONDS);
     }
 
     private void clearArtifactFromLaunch() {
         if((isManualLaunchOverrideActive && hardwareManager.getGamepad2().x)
                 || (!isManualLaunchOverrideActive && hardwareManager.getGamepad1().x)) {
             hardwareManager.getLauncherMotor().setVelocity(LAUNCHER_MOTOR_IDLE_VELOCITY);
+            Runnable autoLaunch = this::autoLaunchArtifact;
+            scheduler.schedule(autoLaunch, 200, TimeUnit.MILLISECONDS);
+            autoLaunchArtifact();
+        }
+        if (hardwareManager.getGamepad1().a) {
             Runnable autoLaunch = this::autoLaunchArtifact;
             scheduler.schedule(autoLaunch, 200, TimeUnit.MILLISECONDS);
             autoLaunchArtifact();
@@ -441,7 +446,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void setLaunchAngle(double launchAngle) {
-        double positionValue = Math.abs(((68.0 - launchAngle) / 35.0));
+        double positionValue = Math.abs(((69 - launchAngle) / 35.0));
         if(positionValue >= 0 && positionValue <= 0.8) {
             hardwareManager.getAngleServo().setPosition(positionValue);
         }
