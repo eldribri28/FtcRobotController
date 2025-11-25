@@ -8,6 +8,7 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -140,6 +141,7 @@ public class HardwareManager {
 
     public void postStartInitialization() {
         launchServo.setPosition(LAUNCH_SERVO_DOWN);
+        launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
 
 //    private void initializeLimelight() {

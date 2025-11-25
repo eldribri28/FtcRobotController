@@ -11,7 +11,6 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_FAR_LAUNCH_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_NEAR_LAUNCH_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_METER_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
@@ -158,9 +157,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
         double driverSelectedMultipler = 1;
         if(gamepad1.right_bumper) {
-            driverSelectedMultipler = 0.5;
-        } else if (gamepad1.b) {
             driverSelectedMultipler = 2.0;
+        } else if (gamepad1.b) {
+            driverSelectedMultipler = 0.5;
         }
         double leftFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * leftFrontPower * driverSelectedMultipler;
         double rightFrontVelocity = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND * rightFrontPower * driverSelectedMultipler;
@@ -391,12 +390,16 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
-        return Math.abs(detection.ftcPose.bearing) <= 2.0;
+        double bearing = Math.abs(detection.ftcPose.bearing);
+        if(targetDistance > 60.0) {
+            return bearing <= 0.5;
+        }
+        return bearing <= 2.0;
     }
 
     private boolean isLaunchMotorVelocityWithinThreshold() {
-        return Math.abs(((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0) - targetRPM)
-                <= MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+        double ratio = targetRPM / ((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0);
+        return ratio > 0.995 && ratio <1.005;
     }
 
     private void setLedStates(LedStateEnum ledStateEnum) {

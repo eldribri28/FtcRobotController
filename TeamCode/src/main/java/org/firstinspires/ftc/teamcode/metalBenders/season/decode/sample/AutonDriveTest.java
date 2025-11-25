@@ -35,7 +35,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
 @Autonomous(name="auto drive test")
 public class AutonDriveTest extends LinearOpMode {
     private HardwareManager hardwareManager;
@@ -51,30 +50,96 @@ public class AutonDriveTest extends LinearOpMode {
     private double targetRPM = 0;
     private double actualRPM = 0;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private AutonomousStateEnum currentState = AutonomousStateEnum.FIRE_ALL_ARTIFACTS;
+    private ArtifactBundleEnum currentArtifactBundle = ArtifactBundleEnum.PRELOAD;
+
+    public enum ArtifactBundleEnum {
+        PRELOAD,
+        FIELD_SET_1,
+        FIELD_SET_2,
+        FIELD_SET_3,
+        NONE
+    }
+
+    public enum AutonomousStateEnum {
+        FIRE_ALL_ARTIFACTS,
+        DRIVE_TO_FIELD_SET,
+        INTAKE_ARTIFACTS,
+        RETURN_TO_LAUNCH,
+        EXIT_LAUNCH
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
         initialize();
-        waitForStart();
-        resetRuntime();
-        try {
-            while (artifactInLauncher()) {
-                Actions.runBlocking(
-                        new SequentialAction(
-                                getArtifactColors(),
-                                lockOnTarget(),
-                                shoot(),
-                                runIntake()));
-            }
-        } finally {
-            scheduler.shutdownNow();
+        Thread aprilTagEngineThread = new Thread(aprilTagEngine);
+        while(!isStarted()) {
+            updateArtifactColors();
         }
+        resetRuntime();
+        while(opModeIsActive()) {
+            try {
+                updateArtifactColors();
+                if(currentState == AutonomousStateEnum.FIRE_ALL_ARTIFACTS) {
+                   fireAllArtifacts();
+                   if(currentArtifactBundle == ArtifactBundleEnum.PRELOAD) {
+                       updateStates(AutonomousStateEnum.DRIVE_TO_FIELD_SET, ArtifactBundleEnum.FIELD_SET_1);
+                   } else if (currentArtifactBundle == ArtifactBundleEnum.FIELD_SET_1) {
+                       updateStates(AutonomousStateEnum.DRIVE_TO_FIELD_SET, ArtifactBundleEnum.FIELD_SET_2);
+                   } else if (currentArtifactBundle == ArtifactBundleEnum.FIELD_SET_2) {
+                       updateStates(AutonomousStateEnum.DRIVE_TO_FIELD_SET, ArtifactBundleEnum.FIELD_SET_3);
+                   } else {
+                       updateStates(AutonomousStateEnum.EXIT_LAUNCH, ArtifactBundleEnum.NONE);
+                   }
+                } else if(currentState == AutonomousStateEnum.DRIVE_TO_FIELD_SET) {
+                    driveToFieldSet();
+                } else if(currentState == AutonomousStateEnum.INTAKE_ARTIFACTS) {
+                    intakeArtifacts();
+                } else if(currentState == AutonomousStateEnum.RETURN_TO_LAUNCH) {
+                    returnToLaunch();
+                } else if (currentState == AutonomousStateEnum.EXIT_LAUNCH) {
+                    exitLaunch();
+                }
+            } finally {
+                scheduler.shutdownNow();
+            }
+        }
+    }
 
-        //REPEAT UNTIL TIME UP
-        //drive to next set of artifacts
-        //intake artifacts
-        //drive to launch area
-        //shoot until no balls in turret
+    private void updateArtifactColors() {
+        colorManager.setArtifactColors();
+        launcherArtifactColor = colorManager.getLauncherArtifactColor();
+    }
+
+    private void fireAllArtifacts() {
+        while (artifactInLauncher()) {
+            Actions.runBlocking(
+                    new SequentialAction(
+                        new LockOnTarget(),
+                        new Shoot(),
+                        new RunIntake(500)));
+        }
+    }
+
+    private void driveToFieldSet() {
+
+    }
+
+    private void intakeArtifacts() {
+
+    }
+
+    private void returnToLaunch() {
+
+    }
+
+    private void exitLaunch() {
+
+    }
+
+    private void updateStates(AutonomousStateEnum autonomousStateEnum, ArtifactBundleEnum artifactBundleEnum) {
+        this.currentState = autonomousStateEnum;
+        this.currentArtifactBundle = artifactBundleEnum;
     }
 
     private boolean artifactInLauncher() {
@@ -88,11 +153,6 @@ public class AutonDriveTest extends LinearOpMode {
         //TODO: update initial pose based on field coordinates
         currentPose = new Pose2d(11.8, 61.7, Math.toRadians(90));
         drive = new MecanumDrive(hardwareMap, currentPose);
-        Actions.runBlocking(getArtifactColors());
-    }
-
-    public Action lockOnTarget() {
-        return new LockOnTarget();
     }
     public class LockOnTarget implements Action {
 
@@ -159,10 +219,6 @@ public class AutonDriveTest extends LinearOpMode {
         }
     }
 
-    public Action shoot() {
-        return new Shoot();
-    }
-
     public class Shoot implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -182,10 +238,6 @@ public class AutonDriveTest extends LinearOpMode {
         }
     }
 
-    public Action runIntake() {
-        return new RunIntake(500);
-    }
-
     public class RunIntake implements Action {
         private final long millisecondsToRun;
 
@@ -203,10 +255,6 @@ public class AutonDriveTest extends LinearOpMode {
             scheduler.schedule(stopIntake, millisecondsToRun, TimeUnit.MILLISECONDS);
             return false;
         }
-    }
-
-    public Action getArtifactColors() {
-        return new GetArtifactColors();
     }
 
     public class GetArtifactColors implements Action {
