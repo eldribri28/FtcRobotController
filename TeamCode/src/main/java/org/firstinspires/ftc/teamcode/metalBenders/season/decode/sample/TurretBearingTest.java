@@ -93,12 +93,12 @@ public class TurretBearingTest extends LinearOpMode {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hardwareManager.getTurretMotor().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        otos = hardwareManager.getOtos();
-        SparkFunOTOS.Pose2D offset;
-        otos.setLinearUnit(DistanceUnit.METER);
-        otos.setAngularUnit(AngleUnit.DEGREES);
-        offset = new SparkFunOTOS.Pose2D(0, 0, 90);
-        otos.setOffset(offset);
+        //otos = hardwareManager.getOtos();
+        //SparkFunOTOS.Pose2D offset;
+        //otos.setLinearUnit(DistanceUnit.METER);
+        //otos.setAngularUnit(AngleUnit.DEGREES);
+        //offset = new SparkFunOTOS.Pose2D(0, 0, 90);
+        //otos.setOffset(offset);
         aprilTagEngine = new AprilTagEngine(hardwareManager, AprilTagEnum.RED_TARGET);
         TURRET_CHASSIS_OFFSET = 0;
         TURRET_LEFT_LIMIT_ENCODER_VALUE = 0;

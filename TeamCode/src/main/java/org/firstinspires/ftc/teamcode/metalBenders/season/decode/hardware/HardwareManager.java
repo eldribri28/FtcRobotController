@@ -14,7 +14,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+//import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -49,7 +49,7 @@ public class HardwareManager {
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
     private final IMU imu;
-    private final SparkFunOTOS otos;
+    //private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
     private final LED redLED;
@@ -79,7 +79,7 @@ public class HardwareManager {
         this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
-        this.otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
+        //this.otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         this.imu = hardwareMap.get(IMU.class, "imu");
 //        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
         this.redLED = hardwareMap.get(LED.class, "redLed");
@@ -136,7 +136,7 @@ public class HardwareManager {
 
 //        initializeLimelight();
         initializeIMU();
-        initializeOTOS();
+        //initializeOTOS();
     }
 
     public void postStartInitialization() {
@@ -158,7 +158,7 @@ public class HardwareManager {
 
     /**
      * Configures the SparkFun OTOS.
-     */
+
     public void initializeOTOS() {
 
         SparkFunOTOS.Pose2D offset;
@@ -172,12 +172,13 @@ public class HardwareManager {
         otos.calibrateImu();
         otos.resetTracking();
     }
+    */
 
     public IMU getImu() {
         return imu;
     }
 
-    public SparkFunOTOS getOtos() { return otos; }
+    //public SparkFunOTOS getOtos() { return otos; }
 
     public WebcamName getTurretCam() {
         return turretCam;

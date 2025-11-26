@@ -296,7 +296,7 @@ public class TurretTurnLaunch extends LinearOpMode {
         launchColorSensor = hardwareMap.get(NormalizedColorSensor.class, "launchColorSensor");
         intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeColorSensor");
 
-        otos = hardwareManager.getOtos();
+        //otos = hardwareManager.getOtos();
 
         launchColorSensor.setGain(30);
         intakeColorSensor.setGain(15);

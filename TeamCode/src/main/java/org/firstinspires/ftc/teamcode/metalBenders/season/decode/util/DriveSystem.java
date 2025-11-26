@@ -36,22 +36,22 @@ public class DriveSystem {
 
     HardwareManager hardwareManager;
 
-    SparkFunOTOS otos = hardwareManager.getOtos();
+    //SparkFunOTOS otos = hardwareManager.getOtos();
 
     /*
     Drive to target coordinates
     */
     public void Drive(double x, double y, double h, double tgtTol) {
-        SparkFunOTOS.Pose2D pos = otos.getPosition();
-        ROBOT_FIELD_X = pos.x;
-        ROBOT_FIELD_Y = pos.y;
-        ROBOT_FIELD_H = pos.h;
+        //SparkFunOTOS.Pose2D pos = otos.getPosition();
+        //ROBOT_FIELD_X = pos.x;
+        //ROBOT_FIELD_Y = pos.y;
+        //ROBOT_FIELD_H = pos.h;
         double targetH = AngleUnit.DEGREES.normalize(h);
         while (Math.abs(getDriveDistance(x,y)) > tgtTol) {
-            pos = otos.getPosition();
-            ROBOT_FIELD_X = pos.x;
-            ROBOT_FIELD_Y = pos.y;
-            ROBOT_FIELD_H = pos.h;
+            //pos = otos.getPosition();
+            //ROBOT_FIELD_X = pos.x;
+            //ROBOT_FIELD_Y = pos.y;
+            //ROBOT_FIELD_H = pos.h;
             if (Math.abs(getDriveDistance(x,y)) <= tgtTol) {
                 break;
             }

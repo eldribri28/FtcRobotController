@@ -272,12 +272,12 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
-        otos = hardwareManager.getOtos();
-        otos.setAngularUnit(AngleUnit.DEGREES);
-        otos.setLinearUnit(DistanceUnit.METER);
-        SparkFunOTOS.Pose2D offset;
-        offset = new SparkFunOTOS.Pose2D(0, 0, 0);
-        otos.setOffset(offset);
+        //otos = hardwareManager.getOtos();
+        //otos.setAngularUnit(AngleUnit.DEGREES);
+        //otos.setLinearUnit(DistanceUnit.METER);
+        //SparkFunOTOS.Pose2D offset;
+        //offset = new SparkFunOTOS.Pose2D(0, 0, 0);
+        //otos.setOffset(offset);
         state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
     }
 

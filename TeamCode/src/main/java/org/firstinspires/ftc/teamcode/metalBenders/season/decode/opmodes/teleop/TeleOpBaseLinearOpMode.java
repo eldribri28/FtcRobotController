@@ -38,8 +38,8 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEn
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ColorManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSResult;
+//import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
+//import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -122,10 +122,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
         telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
         telemetry.addData("Turret Angle: (deg)", getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition()));
-        OTOSResult otosData = OTOSCalculator.getCurrentPosition(hardwareManager.getOtos());
-        telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", otosData.getXPos(), otosData.getYPos(), otosData.getHeading()));
+        //OTOSResult otosData = OTOSCalculator.getCurrentPosition(hardwareManager.getOtos());
+        //telemetry.addLine(String.format("Current Position: %6.1f %6.1f %6.1f  (meter, deg)", otosData.getXPos(), otosData.getYPos(), otosData.getHeading()));
 
-        telemetry.addData("Target Calculated Heading (deg)", getTargetBearing(otosData.getXPos(), otosData.getYPos()));
+        //telemetry.addData("Target Calculated Heading (deg)", getTargetBearing(otosData.getXPos(), otosData.getYPos()));
         //telemetry.addData("Turret Calculated Heading (deg)", calculateTurretAngleFromOtos(hardwareManager.getTurretMotor().getCurrentPosition(), otosData.getHeading()));
 
         Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
@@ -342,7 +342,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                         double chassisFieldHeading = (targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
                         telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
                         telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
-                        OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, hardwareManager.getOtos());
+                        //OTOSCalculator.setCurrentPosition(targetDetection.robotPose.getPosition().x, targetDetection.robotPose.getPosition().y, chassisFieldHeading, hardwareManager.getOtos());
                     }
                 } else {
                     hardwareManager.getTurretMotor().setPower(0);

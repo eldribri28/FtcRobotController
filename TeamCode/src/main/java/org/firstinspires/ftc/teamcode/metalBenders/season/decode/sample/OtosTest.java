@@ -45,8 +45,8 @@ public class OtosTest extends LinearOpMode {
 
     private void inititalize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
-        otos = hardwareManager.getOtos();
-        otos.setAngularUnit(AngleUnit.DEGREES);
+        //otos = hardwareManager.getOtos();
+        //otos.setAngularUnit(AngleUnit.DEGREES);
     }
 
 
