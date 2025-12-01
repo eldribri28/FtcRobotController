@@ -22,6 +22,7 @@ public class LaunchCalculator2 {
 
         double bestAngle = 0;
         double bestVelocity = 0;
+        double bestYvelocity = 0;
         double theta = 45; // Deg
         double endAngle = 65; // Deg
 
@@ -38,7 +39,9 @@ public class LaunchCalculator2 {
                 double t = Math.max(Math.abs(t1), Math.abs(t2)); // Take the larger time
                 if (t != 0) {
                     double Vf = Math.sqrt((Vi * Math.cos(theta)) / (Vi * Math.sin(theta) - g * t));  // Landing Velocity in m/s
-                    if (Vf < bestVelocity || bestVelocity == 0) { // If the calculated landing velocity is less than the current best landing velocity
+                    double Vfy = Math.sqrt((Math.pow((Vi * Math.sin(theta)), 2) - 2 * g * (Yi - Yf)));
+                    if ((Vfy < bestYvelocity || bestYvelocity == 0) && Vfy > 0) { // If the calculated landing velocity is less than the current best landing velocity
+                        bestYvelocity = Vfy;
                         bestVelocity = Vf;
                         bestAngle = theta;
                     }
