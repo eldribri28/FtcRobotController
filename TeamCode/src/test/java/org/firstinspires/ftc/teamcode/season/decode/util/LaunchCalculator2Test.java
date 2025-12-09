@@ -7,7 +7,7 @@ public class LaunchCalculator2Test {
 
     @Test
     public void testGetLaunchData() {
-        LaunchCalculator2.LaunchResult launchResult = LaunchCalculator2.getLaunchData(0.3, 1.3, 2);
+        LaunchCalculator2.LaunchResult launchResult = LaunchCalculator2.getLaunchData(0.3, 1.175, 0.5);
         System.out.println();
         System.out.println(launchResult);
         System.out.println();
