@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.FLYWHEEL_DIAMETER_METERS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.VELOCITY_TRANSFER_EFFICIENCY;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 2025-26 FTC Season DECODE
  * <br/>
@@ -42,17 +45,22 @@ public class LaunchCalculator2 {
                 double subCal2 = -(Vi * Math.sin(theta));
                 double t1 = (subCal2 + subCal) / (2 * (-g / 2));
                 double t2 = (subCal2 - subCal) / (2 * (-g / 2));
-                double t = Math.max(Math.abs(t1), Math.abs(t2)); // Take the larger time
-                if (t != 0) {
-                    double Vfy = (Vi * Math.sin(theta) - g * t);
-                    double Vfx = (Vi * Math.cos(theta));
-                    double Vf =  Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
-                    if (Vf < lowestVelocity || bestYVelocity == 0) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
-                        lowestVelocity = Vf;
-                        bestYVelocity = Vfy;
-                        bestXVelocity = Vfx;
-                        bestVelocity = Vi;
-                        bestAngle = theta;
+                List<Double> times = new ArrayList<>();
+                times.add(t1);
+                times.add(t2);
+                //double t = Math.max(Math.abs(t1), Math.abs(t2)); // Take the larger time
+                for (Double t : times) {
+                    if (t != 0) {
+                        double Vfy = (Vi * Math.sin(theta) - g * t);
+                        double Vfx = (Vi * Math.cos(theta));
+                        double Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
+                        if (Vf < lowestVelocity || bestYVelocity == 0) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
+                            lowestVelocity = Vf;
+                            bestYVelocity = Vfy;
+                            bestXVelocity = Vfx;
+                            bestVelocity = Vi;
+                            bestAngle = theta;
+                        }
                     }
                 }
             }
