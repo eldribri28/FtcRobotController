@@ -1,33 +1,9 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop;
 
-import com.arcrobotics.ftclib.controller.PIDController;
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
-
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ColorManager;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator2;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
-
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_METER_PER_SECOND;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateTransitTime;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateVelocity;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
-
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_LAUNCH_SOLUTION;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
@@ -36,22 +12,39 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_NEAR_LAUNCH_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_METER_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_TICKS_PER_DEGREE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_TICKS_PER_SECOND;
-
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateTransitTime;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateVelocity;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
 
+import com.arcrobotics.ftclib.controller.PIDController;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_LAUNCH_SOLUTION;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ColorManager;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator2;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 
 public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private HardwareManager hardwareManager;
@@ -68,12 +61,13 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private ColorManager colorManager;
     abstract AprilTagEnum getTargetAprilTag();
     private boolean isShotTimeoutActive = false;
+    private Thread colorManagerThread;
+    private Thread aprilTagEngineThread;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        initialize();
-        Thread aprilTagEngineThread = new Thread(aprilTagEngine);
-        try {
+        try{
+            initialize();
             waitForStart();
             resetRuntime();
             aprilTagEngineThread.start();
@@ -85,7 +79,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 drive();
                 intakeOrRejectArtifact();
                 clearArtifactFromLaunch();
-                colorManager.setArtifactColors();
                 setArtifactMotifEnum();
                 setManualLaunchOverride(aprilTagEngineThread);
                 launch();
@@ -93,8 +86,13 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             }
         } finally {
             scheduler.shutdownNow();
-            aprilTagEngineThread.interrupt();
-            aprilTagEngine.teardown();
+            if(aprilTagEngineThread != null) {
+                aprilTagEngineThread.interrupt();
+                aprilTagEngine.teardown();
+            }
+            if(colorManagerThread != null) {
+                colorManagerThread.interrupt();
+            }
             telemetry.update();
         }
     }
@@ -102,7 +100,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
+        aprilTagEngineThread = new Thread(aprilTagEngine);
         colorManager = new ColorManager(hardwareManager);
+        colorManagerThread = new Thread(colorManager);
     }
 
     private void updateRuntime() {
@@ -127,11 +127,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
         telemetry.addData("Turret Angle: (deg)", getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition()));
 
-        Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
-        for (String key : aprilTagTelemetry.keySet()) {
-            String value = aprilTagTelemetry.get(key);
-            telemetry.addData(key, value);
-        }
+        aprilTagEngine.getTelemetry().forEach((k, v) -> telemetry.addData(k, v));
     }
 
     private void drive() {
@@ -459,7 +455,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setLaunchAngle(double launchAngle) {
         if (launchAngle != 0) {
-            double positionValue = 0.8 - Range.clip(Math.abs(launchAngle / 72), 0.0, 0.8);
+            double positionValue = Range.clip(Math.abs(launchAngle / 72), 0.0, 0.8);
             hardwareManager.getAngleServo().setPosition(positionValue);
             this.launchAngle = launchAngle;
         }
