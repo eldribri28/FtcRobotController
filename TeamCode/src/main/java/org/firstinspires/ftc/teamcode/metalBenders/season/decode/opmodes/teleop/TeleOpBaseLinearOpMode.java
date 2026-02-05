@@ -459,7 +459,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setLaunchAngle(double launchAngle) {
         if (launchAngle != 0) {
-            double positionValue = 0.8 - Range.clip(Math.abs(launchAngle / 72), 0.0, 0.8);
+            double positionValue = Range.clip(Math.abs(launchAngle / 72), 0.0, 0.8);
             hardwareManager.getAngleServo().setPosition(positionValue);
             this.launchAngle = launchAngle;
         }
