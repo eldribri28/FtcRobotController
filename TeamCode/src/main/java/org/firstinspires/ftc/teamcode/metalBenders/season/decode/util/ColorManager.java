@@ -13,14 +13,21 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Indicator
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ColorManager {
+public class ColorManager implements Runnable {
     private final HardwareManager hardwareManager;
     private final ColorHitCount intakeColorHitCount;
     private final ColorHitCount launcherColorHitCount;
     private ArtifactColorEnum intakeArtifactColor = UNKNOWN;
     private ArtifactColorEnum launcherArtifactColor = UNKNOWN;
+    private final ReentrantReadWriteLock intakeArtifactColorLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock launcherArtifactColorLock = new ReentrantReadWriteLock();
+    private final Map<String, String> telemetry = new ConcurrentHashMap<>();
 
     public ColorManager(HardwareManager hardwareManager) {
         this.hardwareManager = hardwareManager;
@@ -36,7 +43,7 @@ public class ColorManager {
     private void setLauncherArtifactColor() {
         incrementColorHitCounts(launcherColorHitCount, hardwareManager.getLaunchColorSensor(), hardwareManager.getLaunchColorSensor2());
         if(launcherArtifactColor == UNKNOWN || launcherColorHitCount.isMinimumHitCountReached()) {
-            launcherArtifactColor = launcherColorHitCount.getArtifactColorEnum();
+            setLauncherArtifactColor(launcherColorHitCount.getArtifactColorEnum());
             if(launcherArtifactColor == GREEN) {
                 hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
             } else if (launcherArtifactColor == PURPLE){
@@ -45,13 +52,15 @@ public class ColorManager {
                 hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
             }
         }
+        telemetry.put("Launcher Color", getLauncherArtifactColor().name());
     }
 
     private void setIntakeArtifactColor() {
         incrementColorHitCounts(intakeColorHitCount, hardwareManager.getIntakeColorSensor());
         if(intakeArtifactColor == UNKNOWN || intakeColorHitCount.isMinimumHitCountReached()) {
-            intakeArtifactColor = intakeColorHitCount.getArtifactColorEnum();
+            setIntakeArtifactColor(intakeColorHitCount.getArtifactColorEnum());
         }
+        telemetry.put("Intake Color", getIntakeArtifactColor().name());
     }
 
     private void incrementColorHitCounts(ColorHitCount colorHitCount, RevColorSensorV3 ... colorSensors) {
@@ -89,11 +98,46 @@ public class ColorManager {
     }
 
     public ArtifactColorEnum getLauncherArtifactColor() {
-        return launcherArtifactColor;
+        launcherArtifactColorLock.readLock().lock();
+        try {
+            return launcherArtifactColor;
+        } finally {
+            launcherArtifactColorLock.readLock().unlock();
+        }
+    }
+
+    private void setLauncherArtifactColor(ArtifactColorEnum artifactColor) {
+        launcherArtifactColorLock.writeLock().lock();
+        try {
+            this.launcherArtifactColor = artifactColor;
+        } finally {
+            launcherArtifactColorLock.writeLock().unlock();
+        }
     }
 
     public ArtifactColorEnum getIntakeArtifactColor() {
-        return intakeArtifactColor;
+        intakeArtifactColorLock.readLock().lock();
+        try {
+            return intakeArtifactColor;
+        } finally {
+            intakeArtifactColorLock.readLock().unlock();
+        }
+    }
+
+    private void setIntakeArtifactColor(ArtifactColorEnum artifactColor) {
+        intakeArtifactColorLock.writeLock().lock();
+        try {
+            this.intakeArtifactColor = artifactColor;
+        } finally {
+            intakeArtifactColorLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
+            setArtifactColors();
+        }
     }
 
     private static class ColorHitCount {
@@ -116,5 +160,9 @@ public class ColorManager {
         public boolean isMinimumHitCountReached() {
             return hitCount >= MINIMUM_COLOR_HIT_COUNT_TO_CHANGE;
         }
+    }
+
+    public Map<String, String> getTelemetry() {
+        return new HashMap<>(telemetry);
     }
 }
