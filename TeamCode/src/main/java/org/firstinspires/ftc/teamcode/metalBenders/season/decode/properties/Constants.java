@@ -33,7 +33,7 @@ public final class Constants {
      */
     public static final long AGED_DATA_LIMIT_MILLISECONDS = 500;
     public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 50;
-    public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 50;
+    public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 150;
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_START = 1500;
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT = 100;
     public static final double MANUAL_TURRET_MOTOR_MULTIPLIER = 0.5;
@@ -72,8 +72,8 @@ public final class Constants {
     /*
     Launch Servo
      */
-    public static final double LAUNCH_SERVO_UP = 0.0;
-    public static final double LAUNCH_SERVO_DOWN = 0.65;
+    public static final double LAUNCH_SERVO_UP = 0.75;
+    public static final double LAUNCH_SERVO_DOWN = 0.4;
 
     /*
     Color indicator control

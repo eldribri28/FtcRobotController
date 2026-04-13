@@ -32,7 +32,7 @@ public class LaunchCalculator2 {
         double bestVelocity = 0;
         double bestYVelocity = 0;
         double bestXVelocity = 0;
-        double theta = 45; // Deg
+        double theta = 48; // Deg
         double endAngle = 72; // Deg
 
         while (theta < endAngle) {

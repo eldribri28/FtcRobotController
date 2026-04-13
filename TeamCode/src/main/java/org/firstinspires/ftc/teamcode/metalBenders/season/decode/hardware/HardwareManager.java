@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware;
 
-import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.UP;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
@@ -14,7 +14,6 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-//import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -49,7 +48,6 @@ public class HardwareManager {
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
     private final IMU imu;
-    //private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
     private final LED redLED;
@@ -79,7 +77,6 @@ public class HardwareManager {
         this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
-        //this.otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         this.imu = hardwareMap.get(IMU.class, "imu");
 //        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
         this.redLED = hardwareMap.get(LED.class, "redLed");
@@ -151,34 +148,14 @@ public class HardwareManager {
 //    }
 
     private void initializeIMU() {
-        ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RIGHT, UP);
+        ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(LEFT, UP);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
         imu.resetYaw();
     }
 
-    /**
-     * Configures the SparkFun OTOS.
-
-    public void initializeOTOS() {
-
-        SparkFunOTOS.Pose2D offset;
-
-        otos.setLinearUnit(DistanceUnit.METER);
-        otos.setAngularUnit(AngleUnit.DEGREES);
-        offset = new SparkFunOTOS.Pose2D(0, 0, 0);
-        otos.setOffset(offset);
-        otos.setLinearScalar(1);
-        otos.setAngularScalar(1);
-        otos.calibrateImu();
-        otos.resetTracking();
-    }
-    */
-
     public IMU getImu() {
         return imu;
     }
-
-    //public SparkFunOTOS getOtos() { return otos; }
 
     public WebcamName getTurretCam() {
         return turretCam;
