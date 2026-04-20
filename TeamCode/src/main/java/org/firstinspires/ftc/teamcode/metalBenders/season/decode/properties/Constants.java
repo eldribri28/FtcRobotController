@@ -72,8 +72,8 @@ public final class Constants {
     /*
     Launch Servo
      */
-    public static final double LAUNCH_SERVO_UP = 0.75;
-    public static final double LAUNCH_SERVO_DOWN = 0.4;
+    public static final double LAUNCH_GATE_OPEN = 0.75;
+    public static final double LAUNCH_GATE_CLOSE = 0.4;
 
     /*
     Color indicator control

@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
@@ -12,9 +12,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -233,9 +231,9 @@ public class AutonDriveTest2 extends LinearOpMode {
                 actualRPM = getActualRPM();
             }
             if (opModeIsActive()) {
-                hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+                hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
                 Runnable servoDown = () -> {
-                    hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
+                    hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
                 };
                 scheduler.schedule(servoDown, 100, TimeUnit.MILLISECONDS);
             }

@@ -9,7 +9,7 @@ import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 
@@ -26,11 +26,8 @@ import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.List;
 
@@ -137,7 +134,7 @@ public class HardwareManager {
     }
 
     public void postStartInitialization() {
-        launchServo.setPosition(LAUNCH_SERVO_DOWN);
+        launchServo.setPosition(LAUNCH_GATE_CLOSE);
         launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
 

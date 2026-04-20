@@ -6,8 +6,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Le
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_FAR_LAUNCH_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_NEAR_LAUNCH_VELOCITY;
@@ -44,7 +44,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
@@ -61,7 +60,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ColorManager colorManager;
     abstract AprilTagEnum getTargetAprilTag();
-    private boolean isShotTimeoutActive = false;
     private Thread colorManagerThread;
     private Thread aprilTagEngineThread;
 
@@ -425,12 +423,12 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void autoLaunchArtifact() {
-        hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+        hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
         hardwareManager.getIntakeMotor().setPower(-1);
     }
 
     private void stopLaunchArtifact() {
-        hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
+        hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
         hardwareManager.getIntakeMotor().setPower(0);
     }
 
@@ -447,10 +445,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void autoIntakeArtifact() {
         hardwareManager.getIntakeMotor().setPower(1);
-        Runnable stopIntake = () -> {
-            hardwareManager.getIntakeMotor().setPower(0);
-        };
-        scheduler.schedule(stopIntake, 100, TimeUnit.MILLISECONDS);
     }
 
     private void setLaunchAngle(double launchAngle) {

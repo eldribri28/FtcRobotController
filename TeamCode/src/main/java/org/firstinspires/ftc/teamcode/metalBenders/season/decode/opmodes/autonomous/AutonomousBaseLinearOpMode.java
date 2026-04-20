@@ -7,8 +7,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.FAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.NEAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
@@ -396,11 +396,11 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
 
     private void autoLaunchArtifact() {
         if (launcherArtifactColor != ArtifactColorEnum.NONE) {
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
             sleep(150);
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
             sleep(150);
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
             sleep(150);
         }
     }
