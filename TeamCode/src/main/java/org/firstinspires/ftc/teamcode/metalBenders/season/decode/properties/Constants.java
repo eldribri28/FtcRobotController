@@ -41,6 +41,7 @@ public final class Constants {
     /*
     Drive System
      */
+    public static final double DRIVE_MOTOR_POWER = 0.8;
     public static final double DRIVE_MOTOR_MULTIPLIER = 0.3;
     public static final double MAX_DRIVE_VELOCITY_MPS = 2; // Meters per second
     public static final double AUTON_DRIVE_VELOCITY_MPS = 2.2; // Meters per second
