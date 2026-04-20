@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "ServoConf", group="sample")
 public class ServoConf extends LinearOpMode  {
 
-    private Servo launchServo;
+    private Servo angleServo;
 
     @Override
     public void runOpMode() {
@@ -16,9 +16,9 @@ public class ServoConf extends LinearOpMode  {
 
         while (opModeIsActive()) {
             if (gamepad1.a) {
-                launchServo.setPosition(0.75);
+                angleServo.setPosition(0.8);
             } else {
-                launchServo.setPosition(0.4);
+                angleServo.setPosition(0);
             }
         }
 
@@ -28,7 +28,7 @@ public class ServoConf extends LinearOpMode  {
 
 
     private void initialize() {
-        this.launchServo = hardwareMap.get(Servo.class, "launchServo");
+        this.angleServo = hardwareMap.get(Servo.class, "angleServo");
 
 
 

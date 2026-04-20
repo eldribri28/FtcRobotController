@@ -35,7 +35,7 @@ public class LaunchCalculator2 {
         double theta = 48; // Deg
         double endAngle = 72; // Deg
 
-        while (theta < endAngle) {
+        while (theta <= endAngle) {
 
             double g = 9.8; // gravity 9.8 m/s^2
             double denom = (2 * Math.pow(Math.cos(theta), 2) * (targetDistance * Math.tan(theta) + (Yi - Yf)));
@@ -114,9 +114,7 @@ public class LaunchCalculator2 {
             return launchVelocity;
         }
 
-        public double getLaunchYVelocity() {
-            return launchYVelocity;
-        }
+        public double getLaunchYVelocity() { return launchYVelocity; }
         public double getLaunchXVelocity() {
             return launchXVelocity;
         }

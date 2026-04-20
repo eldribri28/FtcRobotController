@@ -54,6 +54,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double launchAngle = 0;
     private double flywheelRPM = 0;
     private double targetRPM = 0;
+    private double LaunchVelocity = 0;
     private AprilTagEngine aprilTagEngine;
     private boolean isManualLaunchOverrideActive = false;
     private double manualLaunchVelocity = MANUAL_LAUNCH_MOTOR_VELOCITY_START;
@@ -124,6 +125,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Launcher artifact color", colorManager.getLauncherArtifactColor().name());
         telemetry.addData("Target distance", targetDistance);
         telemetry.addData("Launch Angle", launchAngle);
+        telemetry.addData("Launch Velocity", LaunchVelocity);
         telemetry.addData("Turret Limit Switch Left Pressed", hardwareManager.getLimitSwitchLeft().isPressed());
         telemetry.addData("Turret Limit Switch Right Pressed", hardwareManager.getLimitSwitchRight().isPressed());
         telemetry.addData("Turret Angle: (deg)", getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition()));
@@ -358,7 +360,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 }
                 */
 
-                if (launchResult.getLaunchVelocity() > 0) {
+                LaunchVelocity = launchResult.getLaunchVelocity();
+
+                if (LaunchVelocity > 0) {
                     setLaunchAngle(launchResult.getLaunchAngle());
                     setLedStates(VIABLE_LAUNCH_SOLUTION);
                 } else {
@@ -449,7 +453,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setLaunchAngle(double launchAngle) {
         if (launchAngle != 0) {
-            double positionValue = Range.clip(Math.abs(((70.0 - launchAngle) / 35.0)), 0.0, 0.55);
+            double positionValue = Range.clip(((launchAngle - 48) * (0.8/(72-48)) - 0), 0.0, 0.8);
             hardwareManager.getAngleServo().setPosition(positionValue);
             this.launchAngle = launchAngle;
         }
