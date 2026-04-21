@@ -64,6 +64,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     abstract AprilTagEnum getTargetAprilTag();
     private Thread colorManagerThread;
     private Thread aprilTagEngineThread;
+    boolean firing = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -373,13 +374,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 telemetry.addData("target RPM", targetRPM);
                 if (hardwareManager.getGamepad1().right_trigger > 0) {
                     targetRPM = Math.round(launchResult.getFlywheelRpm());
-                    if (readyToShoot(targetDetection)) {
+                    if (!firing && readyToShoot(targetDetection)) {
+                        firing = true;
                         autoLaunchArtifact();
-                    } else {
-                        stopLaunchArtifact();
                     }
                 } else {
                     targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
+                    firing = false;
+                    stopLaunchArtifact();
                 }
             } else {
                 setNoTagDetected();

@@ -53,7 +53,7 @@ public class HardwareManager {
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
-    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 7.5);
+    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 6);
 //    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
