@@ -34,7 +34,7 @@ public class DriveTest extends LinearOpMode {
         leftFrontMotor = hardwareMap.get(DcMotorEx.class, "LFmotor");
         rightRearMotor = hardwareMap.get(DcMotorEx.class, "RRmotor");
         leftRearMotor = hardwareMap.get(DcMotorEx.class, "LRmotor");
-        imu =  hardwareMap.get(IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
         initializeHardware();
         initializeIMU();
     }

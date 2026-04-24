@@ -9,10 +9,14 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_HEIGHT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_FAR_LAUNCH_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_LAUNCH_MOTOR_VELOCITY_START;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MANUAL_NEAR_LAUNCH_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCH_ANGLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MIN_LAUNCH_ANGLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TARGET_HEIGHT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_METER_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
@@ -26,6 +30,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.Lau
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateVelocity;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -54,8 +60,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double targetDistance = 0;
     private double launchAngle = 0;
     private double flywheelRPM = 0;
-    private double targetRPM = 0;
+    private double targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
     private double LaunchVelocity = 0;
+    private boolean launchSolution = false;
     private AprilTagEngine aprilTagEngine;
     private boolean isManualLaunchOverrideActive = false;
     private double manualLaunchVelocity = MANUAL_LAUNCH_MOTOR_VELOCITY_START;
@@ -107,6 +114,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         aprilTagEngineThread = new Thread(aprilTagEngine);
         colorManager = new ColorManager(hardwareManager);
         colorManagerThread = new Thread(colorManager);
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     private void updateRuntime() {
@@ -137,14 +145,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void drive() {
         double y = -gamepad1.left_stick_y;
-        double x = -gamepad1.left_stick_x * 1.1;
+        double x = gamepad1.left_stick_x * 1.1;
         double rx = gamepad1.right_stick_x * 0.8;
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
         double botHeading = orientation.getYaw(AngleUnit.RADIANS);
 
         // Rotate the movement direction counter to the bot's rotation
-        double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
-        double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
         //rotX = rotX * 1.1;  // Counteract imperfect strafing
 
@@ -333,7 +341,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing) && targetDetection.id == getTargetAprilTag().getId()) {
                     telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
                     telemetry.addData("Target ID", targetDetection.id);
-                    double setPower = -turretBearingPid.calculate(0, targetDetection.ftcPose.bearing) * 0.5;
+                    double setPower = -turretBearingPid.calculate(0, targetDetection.ftcPose.bearing) * 0.7;
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
@@ -350,7 +358,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
 
-                LaunchCalculator2.LaunchResult launchResult = LaunchCalculator2.getLaunchData(0.3, 1.175, targetDistance);
+                LaunchCalculator2.LaunchResult launchResult = LaunchCalculator2.getLaunchData(LAUNCH_HEIGHT, TARGET_HEIGHT, targetDistance);
 
                 /* Previous launch calculations
                 LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
@@ -363,11 +371,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 */
 
                 LaunchVelocity = launchResult.getLaunchVelocity();
+                launchAngle = LaunchCalculator2.getAngleForFlywheel(LAUNCH_HEIGHT, TARGET_HEIGHT, flywheelRPM, targetDistance);
 
-                if (LaunchVelocity > 0) {
-                    setLaunchAngle(launchResult.getLaunchAngle());
+                if (LaunchVelocity > 0 || launchAngle > 0) {
+                    setLaunchAngle(launchAngle);
                     setLedStates(VIABLE_LAUNCH_SOLUTION);
+                    launchSolution = true;
                 } else {
+                    launchSolution = false;
                     setLedStates(NO_LAUNCH_SOLUTION);
                 }
 
@@ -400,7 +411,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     public boolean readyToShoot(AprilTagDetection targetDetection) {
         return isTurretAngleWithinThreshold(targetDetection)
-                && isLaunchMotorVelocityWithinThreshold();
+                && launchSolution;
     }
 
     private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
@@ -411,10 +422,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         return bearing <= 2.0;
     }
 
-    private boolean isLaunchMotorVelocityWithinThreshold() {
-        double currentRPM = ((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0);
-        return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
-    }
+    //private boolean isLaunchMotorVelocityWithinThreshold() {
+    //    double currentRPM = ((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0);
+    //    return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+    //}
 
     private void setLedStates(LedStateEnum ledStateEnum) {
         if(ledStateEnum == APRIL_TAG_DETECTED) {
@@ -456,7 +467,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void setLaunchAngle(double launchAngle) {
         if (launchAngle != 0) {
-            double positionValue = Range.clip(((launchAngle - 48) * (0.8/(72-48)) - 0), 0.0, 0.8);
+            double positionValue = Range.clip(((launchAngle - MIN_LAUNCH_ANGLE) * (0.65/(MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)) - 0), 0.0, 0.7);
             hardwareManager.getAngleServo().setPosition(positionValue);
             this.launchAngle = launchAngle;
         }

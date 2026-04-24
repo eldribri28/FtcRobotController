@@ -37,6 +37,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.DRIVE_PID_LAST_ERROR;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -279,6 +281,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         //offset = new SparkFunOTOS.Pose2D(0, 0, 0);
         //otos.setOffset(offset);
         state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     private void updateRuntime() {
