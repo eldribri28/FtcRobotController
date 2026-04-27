@@ -6,6 +6,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Le
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_POWER;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_NO_POWER;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_POWER_IN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_POWER_OUT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_UP;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
@@ -25,7 +28,6 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_TICKS_PER_DEGREE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_DRIVE_VELOCITY_TICKS_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.calculateTransitTime;
@@ -220,12 +222,12 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void intakeOrRejectArtifact() {
-        if (hardwareManager.getGamepad1().left_trigger > 0) {
-            hardwareManager.getIntakeMotor().setPower(1);
+        if (hardwareManager.getGamepad1().left_trigger_pressed) {
+            hardwareManager.getIntakeMotor().setPower(INTAKE_POWER_OUT);
         } else if (hardwareManager.getGamepad1().left_bumper) {
-            hardwareManager.getIntakeMotor().setPower(-1);
+            hardwareManager.getIntakeMotor().setPower(INTAKE_POWER_IN);
         } else {
-            hardwareManager.getIntakeMotor().setPower(0);
+            hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
         }
     }
 
@@ -260,9 +262,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         }
         hardwareManager.getLauncherMotor().setVelocity(manualLaunchVelocity);
 
-        if(hardwareManager.getGamepad2().right_trigger > 0) {
+        if(hardwareManager.getGamepad2().right_trigger_pressed) {
             autoLaunchArtifact();
-            autoIntakeArtifact();
         }
     }
 
@@ -343,7 +344,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetDetection.ftcPose.bearing) && targetDetection.id == getTargetAprilTag().getId()) {
                     telemetry.addData("Turret Angle", (targetDetection.ftcPose.bearing));
                     telemetry.addData("Target ID", targetDetection.id);
-                    double setPower = -turretBearingPid.calculate(0, targetDetection.ftcPose.bearing) * 0.7;
+                    double setPower = -turretBearingPid.calculate(0, targetDetection.ftcPose.bearing) * 0.5;
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
@@ -362,16 +363,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
                 LaunchCalculator2.LaunchResult launchResult = LaunchCalculator2.getLaunchData(LAUNCH_HEIGHT, TARGET_HEIGHT, targetDistance);
 
-                /* Previous launch calculations
-                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
-                if (launchResult != null) {
-                    setLaunchAngle(launchResult.getLaunchAngle());
-                    setLedStates(VIABLE_LAUNCH_SOLUTION);
-                } else {
-                    setLedStates(NO_LAUNCH_SOLUTION);
-                }
-                */
-
                 LaunchVelocity = launchResult.getLaunchVelocity();
                 launchAngle = LaunchCalculator2.getAngleForFlywheel(LAUNCH_HEIGHT, TARGET_HEIGHT, flywheelRPM, targetDistance);
 
@@ -385,7 +376,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 }
 
                 telemetry.addData("target RPM", targetRPM);
-                if (hardwareManager.getGamepad1().right_trigger > 0) {
+                if (hardwareManager.getGamepad1().right_trigger_pressed) {
                     targetRPM = Math.round(launchResult.getFlywheelRpm());
                     if (!firing && readyToShoot(targetDetection)) {
                         firing = true;
@@ -450,7 +441,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void stopLaunchArtifact() {
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
-        hardwareManager.getIntakeMotor().setPower(0);
+        hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
     }
 
     private void clearArtifactFromLaunch() {
@@ -462,10 +453,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         if (hardwareManager.getGamepad1().a) {
             autoLaunchArtifact();
         }
-    }
-
-    private void autoIntakeArtifact() {
-        hardwareManager.getIntakeMotor().setPower(1);
     }
 
     private void setLaunchAngle(double launchAngle) {

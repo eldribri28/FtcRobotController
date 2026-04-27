@@ -19,7 +19,7 @@ public final class Constants {
     public static final double LAUNCH_HEIGHT = 0.406;
     public static final double TARGET_HEIGHT = 1.175;
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
-    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.36;
+    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.37;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
     public static final double MAX_LAUNCH_ANGLE = 72;
     public static final double MIN_LAUNCH_ANGLE = 48;
@@ -34,7 +34,7 @@ public final class Constants {
     AprilTag
      */
     public static final long AGED_DATA_LIMIT_MILLISECONDS = 500;
-    public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 50;
+    public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 100;
     public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 150;
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_START = 1500;
     public static final double MANUAL_LAUNCH_MOTOR_VELOCITY_INCREMENT = 100;
@@ -68,7 +68,7 @@ public final class Constants {
     /*
     Turret PID
      */
-    public static final double TURRET_PID_P = 0.035;
+    public static final double TURRET_PID_P = 0.033;
     public static final double TURRET_PID_I = 0.0;
     public static final double TURRET_PID_D = 0.02;
 
@@ -84,4 +84,12 @@ public final class Constants {
     Color indicator control
      */
     public static final int MINIMUM_COLOR_HIT_COUNT_TO_CHANGE = 3;
+
+    /*
+    Intake
+     */
+    public static final double INTAKE_POWER_IN = -1;
+    public static final double INTAKE_POWER_OUT = 1;
+    public static final double INTAKE_NO_POWER = 0;
+
 }

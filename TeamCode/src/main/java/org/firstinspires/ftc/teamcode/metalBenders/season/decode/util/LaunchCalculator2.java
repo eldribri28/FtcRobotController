@@ -59,8 +59,8 @@ public class LaunchCalculator2 {
                         double Vfy = (Vi * Math.sin(theta) - g * t);
                         double Vfx = (Vi * Math.cos(theta));
                         double Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
-                        if (Vfx < lowestVelocity || bestYVelocity == 0) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
-                            lowestVelocity = Vfx;
+                        if (Vf < lowestVelocity || bestYVelocity == 0) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
+                            lowestVelocity = Vf;
                             bestYVelocity = Vfy;
                             bestXVelocity = Vfx;
                             bestVelocity = Vi;
