@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
-import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.UP;
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.UP;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -33,7 +34,7 @@ public class DriveTest extends LinearOpMode {
         leftFrontMotor = hardwareMap.get(DcMotorEx.class, "LFmotor");
         rightRearMotor = hardwareMap.get(DcMotorEx.class, "RRmotor");
         leftRearMotor = hardwareMap.get(DcMotorEx.class, "LRmotor");
-        imu =  hardwareMap.get(IMU.class, "imu");
+        imu = hardwareMap.get(IMU.class, "imu");
         initializeHardware();
         initializeIMU();
     }
@@ -46,19 +47,21 @@ public class DriveTest extends LinearOpMode {
         while (opModeIsActive()) {
             double axial = -gamepad1.left_stick_y;
             double lateral = gamepad1.left_stick_x;
-            double yaw = gamepad1.right_stick_x * 1.1;
+            double yaw = gamepad1.right_stick_x * 0.4;
             YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
             double botHeading = orientation.getYaw(AngleUnit.RADIANS);
-            double cosHeading = Math.cos(botHeading);
-            double sinHeading = Math.sin(botHeading);
-            double rotX = lateral * cosHeading - axial * sinHeading;
-            double rotY = lateral * sinHeading + axial * cosHeading;
+
+            // Rotate the movement direction counter to the bot's rotation
+            double rotX = lateral * Math.cos(-botHeading) - axial * Math.sin(-botHeading);
+            double rotY = lateral * Math.sin(-botHeading) + axial * Math.cos(-botHeading);
+
 
             //calculate power
-            double leftFrontPower = (rotY + rotX + yaw);
-            double rightFrontPower = ((rotY - rotX) - yaw);
-            double leftRearPower = ((rotY - rotX) + yaw) ;
-            double rightRearPower = ((rotY + rotX) - yaw);
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(yaw), 1);
+            double leftFrontPower = (rotY + rotX + yaw) / denominator;
+            double leftRearPower = (rotY - rotX + yaw) / denominator;
+            double rightFrontPower = (rotY - rotX - yaw) / denominator;
+            double rightRearPower = (rotY + rotX - yaw) / denominator;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -73,10 +76,10 @@ public class DriveTest extends LinearOpMode {
                 rightRearPower  /= max;
             }
 
-            leftFrontMotor.setPower(leftFrontPower*0.25);
-            rightFrontMotor.setPower(rightFrontPower*0.25);
-            leftRearMotor.setPower(leftRearPower*0.25);
-            rightRearMotor.setPower(rightRearPower*0.25);
+            leftFrontMotor.setPower(leftFrontPower*1.00);
+            rightFrontMotor.setPower(rightFrontPower*1.00);
+            leftRearMotor.setPower(leftRearPower*1.00);
+            rightRearMotor.setPower(rightRearPower*1.00);
 
             telemetry.addData("Motor (Left Front)", "%.2f", leftFrontPower);
             telemetry.addData("Motor (Right Front)", "%.2f", rightFrontPower);
@@ -94,20 +97,20 @@ public class DriveTest extends LinearOpMode {
     }
 
     private void initializeIMU() {
-        ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RIGHT, UP);
+        ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(UP, LEFT);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
         imu.resetYaw();
         sleep(1000);
     }
 
     private void initializeHardware(){
-        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor)) {
-            motor.setMode(RUN_USING_ENCODER);
+        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
-        for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
-            motor.setMode(RUN_USING_ENCODER);
+        for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor)) {
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }

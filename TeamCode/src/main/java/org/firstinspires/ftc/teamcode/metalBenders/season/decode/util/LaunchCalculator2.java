@@ -1,6 +1,11 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ACCELERATION_DUE_TO_GRAVITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.FLYWHEEL_DIAMETER_METERS;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_HEIGHT;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCH_ANGLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MIN_LAUNCH_ANGLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TARGET_HEIGHT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.VELOCITY_TRANSFER_EFFICIENCY;
 
 import java.util.ArrayList;
@@ -32,10 +37,10 @@ public class LaunchCalculator2 {
         double bestVelocity = 0;
         double bestYVelocity = 0;
         double bestXVelocity = 0;
-        double theta = 45; // Deg
-        double endAngle = 72; // Deg
+        double theta = MIN_LAUNCH_ANGLE; // Deg
+        double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
-        while (theta < endAngle) {
+        while (theta <= endAngle) {
 
             double g = 9.8; // gravity 9.8 m/s^2
             double denom = (2 * Math.pow(Math.cos(theta), 2) * (targetDistance * Math.tan(theta) + (Yi - Yf)));
@@ -82,6 +87,43 @@ public class LaunchCalculator2 {
         return (artifactVelocity / ((FLYWHEEL_DIAMETER_METERS / 2) * VELOCITY_TRANSFER_EFFICIENCY) * 60) / (2 * Math.PI);
     }
 
+    public static double getAngleForFlywheel(double Yi, double Yf, double flyWheelRpm, double distance) {
+
+        boolean solutionViable1 = true;
+        boolean solutionViable2 = true;
+
+        double velocity = calculateVelocity(flyWheelRpm);
+
+        double root = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * distance * distance + 2 * velocity * velocity * (TARGET_HEIGHT - LAUNCH_HEIGHT));
+        double launchAngle1 = Math.toDegrees(Math.atan2(((velocity * velocity) - Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
+        double launchAngle2 = Math.toDegrees(Math.atan2(((velocity * velocity) + Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
+
+        // Solution is Not Viable if launch angle solution is greater than 90 degrees, less than 0 degrees, NaN, or results in a Max Height greater than 1.524m
+        if (launchAngle1 < MIN_LAUNCH_ANGLE || launchAngle1 > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngle1)) {
+            launchAngle1 = 0;
+        }
+        if (launchAngle2 < MIN_LAUNCH_ANGLE || launchAngle2 > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngle2)) {
+            launchAngle2 = 0;
+        }
+
+        return determinePreferredLaunchResult(launchAngle1, launchAngle2);
+
+    }
+    private static double determinePreferredLaunchResult(double launchAngle1, double launchAngle2) {
+        double preferredLaunchResult = 0;
+        if (launchAngle1 > 0 && launchAngle2 > 0) {
+            preferredLaunchResult = Math.max(launchAngle1, launchAngle2);
+        } else if (launchAngle1 > 0) {
+            preferredLaunchResult = launchAngle1;
+        } else if (launchAngle2 > 0) {
+            preferredLaunchResult = launchAngle2;
+        }
+        return preferredLaunchResult;
+    }
+    public static double calculateVelocity(double flywheelRPM) {
+        return (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
+    }
+
     /**
      * LaunchResult Class returns computed Launch Angle
      * and Launch Velocity from LaunchCalculator2.
@@ -114,9 +156,7 @@ public class LaunchCalculator2 {
             return launchVelocity;
         }
 
-        public double getLaunchYVelocity() {
-            return launchYVelocity;
-        }
+        public double getLaunchYVelocity() { return launchYVelocity; }
         public double getLaunchXVelocity() {
             return launchXVelocity;
         }

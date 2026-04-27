@@ -7,8 +7,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.FAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.NEAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
@@ -37,6 +37,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.DRIVE_PID_LAST_ERROR;
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -279,6 +281,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         //offset = new SparkFunOTOS.Pose2D(0, 0, 0);
         //otos.setOffset(offset);
         state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     private void updateRuntime() {
@@ -396,11 +399,11 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
 
     private void autoLaunchArtifact() {
         if (launcherArtifactColor != ArtifactColorEnum.NONE) {
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
             sleep(150);
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_UP);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
             sleep(150);
-            hardwareManager.getLaunchServo().setPosition(LAUNCH_SERVO_DOWN);
+            hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
             sleep(150);
         }
     }

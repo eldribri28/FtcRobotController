@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware;
 
-import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
 import static com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection.UP;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER;
@@ -9,12 +9,11 @@ import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-//import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -27,11 +26,8 @@ import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.List;
 
@@ -45,11 +41,11 @@ public class HardwareManager {
     private final DcMotorEx launcherMotor;
     private final Servo angleServo;
     private final Servo launchServo;
+    private final Servo intakeServo;
     private final Gamepad gamepad1;
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
     private final IMU imu;
-    //private final SparkFunOTOS otos;
     private final RevColorSensorV3 launchColorSensor;
     private final RevColorSensorV3 launchColorSensor2;
     private final LED redLED;
@@ -58,7 +54,7 @@ public class HardwareManager {
     private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
-    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 5);
+    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 6);
 //    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -73,13 +69,13 @@ public class HardwareManager {
         this.angleServo = hardwareMap.get(Servo.class, "angleServo");
         this.turretCam = hardwareMap.get(WebcamName.class, "TurretCam");
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
+        this.intakeServo = hardwareMap.get(Servo.class, "intakeServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
         this.launchColorSensor2 = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor2");
         this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
-        //this.otos = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         this.imu = hardwareMap.get(IMU.class, "imu");
 //        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
         this.redLED = hardwareMap.get(LED.class, "redLed");
@@ -97,16 +93,16 @@ public class HardwareManager {
         }
 
         for(DcMotor motor : List.of(leftFrontMotor, leftRearMotor)) {
-            motor.setMode(STOP_AND_RESET_ENCODER);
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
-            motor.setMode(RUN_USING_ENCODER);
+            //motor.setMode(RUN_USING_ENCODER);
         }
         for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
-            motor.setMode(STOP_AND_RESET_ENCODER);
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
-            motor.setMode(RUN_USING_ENCODER);
+            //motor.setMode(RUN_USING_ENCODER);
         }
         for(DcMotor motor : List.of(intakeMotor)) {
             motor.setMode(RUN_WITHOUT_ENCODER);
@@ -140,7 +136,7 @@ public class HardwareManager {
     }
 
     public void postStartInitialization() {
-        launchServo.setPosition(LAUNCH_SERVO_DOWN);
+        launchServo.setPosition(LAUNCH_GATE_CLOSE);
         launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
 
@@ -151,34 +147,14 @@ public class HardwareManager {
 //    }
 
     private void initializeIMU() {
-        ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RIGHT, UP);
+        ImuOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(LEFT, UP);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
         imu.resetYaw();
     }
 
-    /**
-     * Configures the SparkFun OTOS.
-
-    public void initializeOTOS() {
-
-        SparkFunOTOS.Pose2D offset;
-
-        otos.setLinearUnit(DistanceUnit.METER);
-        otos.setAngularUnit(AngleUnit.DEGREES);
-        offset = new SparkFunOTOS.Pose2D(0, 0, 0);
-        otos.setOffset(offset);
-        otos.setLinearScalar(1);
-        otos.setAngularScalar(1);
-        otos.calibrateImu();
-        otos.resetTracking();
-    }
-    */
-
     public IMU getImu() {
         return imu;
     }
-
-    //public SparkFunOTOS getOtos() { return otos; }
 
     public WebcamName getTurretCam() {
         return turretCam;
@@ -193,6 +169,10 @@ public class HardwareManager {
     }
 
     public Servo getLaunchServo() {
+        return launchServo;
+    }
+
+    public Servo getIntakeServo() {
         return launchServo;
     }
 
