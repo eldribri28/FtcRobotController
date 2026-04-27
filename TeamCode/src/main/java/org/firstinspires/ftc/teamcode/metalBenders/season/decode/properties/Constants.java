@@ -68,7 +68,7 @@ public final class Constants {
     /*
     Turret PID
      */
-    public static final double TURRET_PID_P = 0.032;
+    public static final double TURRET_PID_P = 0.035;
     public static final double TURRET_PID_I = 0.0;
     public static final double TURRET_PID_D = 0.02;
 
@@ -77,6 +77,8 @@ public final class Constants {
      */
     public static final double LAUNCH_GATE_OPEN = 0.75;
     public static final double LAUNCH_GATE_CLOSE = 0.4;
+    public static final double INTAKE_UP = 0.85;
+    public static final double INTAKE_DOWN = 0;
 
     /*
     Color indicator control

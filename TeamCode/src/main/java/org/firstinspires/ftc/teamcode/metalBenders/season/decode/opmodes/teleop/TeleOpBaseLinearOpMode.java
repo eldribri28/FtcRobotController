@@ -6,6 +6,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Le
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.DRIVE_MOTOR_POWER;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_DOWN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_UP;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
@@ -411,21 +413,22 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     public boolean readyToShoot(AprilTagDetection targetDetection) {
         return isTurretAngleWithinThreshold(targetDetection)
+                && isLaunchMotorVelocityWithinThreshold()
                 && launchSolution;
     }
 
     private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
         double bearing = Math.abs(detection.ftcPose.bearing);
-        if(targetDistance > 60.0) {
+        if(targetDistance > 2.0) {
             return bearing <= 0.5;
         }
-        return bearing <= 2.0;
+        return bearing <= 1.0;
     }
 
-    //private boolean isLaunchMotorVelocityWithinThreshold() {
-    //    double currentRPM = ((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0);
-    //    return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
-    //}
+    private boolean isLaunchMotorVelocityWithinThreshold() {
+        double currentRPM = ((hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0);
+        return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+    }
 
     private void setLedStates(LedStateEnum ledStateEnum) {
         if(ledStateEnum == APRIL_TAG_DETECTED) {
@@ -471,6 +474,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             hardwareManager.getAngleServo().setPosition(positionValue);
             this.launchAngle = launchAngle;
         }
+    }
+
+    private void raiseIntake() {
+        hardwareManager.getIntakeServo().setPosition(INTAKE_UP);
+    }
+
+    private void lowerIntake() {
+        hardwareManager.getIntakeServo().setPosition(INTAKE_DOWN);
     }
 
     public double getTargetBearing(double x, double y) {

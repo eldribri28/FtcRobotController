@@ -41,6 +41,7 @@ public class HardwareManager {
     private final DcMotorEx launcherMotor;
     private final Servo angleServo;
     private final Servo launchServo;
+    private final Servo intakeServo;
     private final Gamepad gamepad1;
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
@@ -68,6 +69,7 @@ public class HardwareManager {
         this.angleServo = hardwareMap.get(Servo.class, "angleServo");
         this.turretCam = hardwareMap.get(WebcamName.class, "TurretCam");
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
+        this.intakeServo = hardwareMap.get(Servo.class, "intakeServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
         this.launchColorSensor2 = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor2");
@@ -167,6 +169,10 @@ public class HardwareManager {
     }
 
     public Servo getLaunchServo() {
+        return launchServo;
+    }
+
+    public Servo getIntakeServo() {
         return launchServo;
     }
 
