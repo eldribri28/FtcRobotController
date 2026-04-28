@@ -436,12 +436,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void autoLaunchArtifact() {
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_OPEN);
-        hardwareManager.getIntakeMotor().setPower(-1);
+        hardwareManager.getIntakeMotor().setPower(INTAKE_POWER_IN);
     }
 
     private void stopLaunchArtifact() {
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
-        hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
+        if(!hardwareManager.getGamepad1().left_bumper) {
+            hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
+        }
     }
 
     private void clearArtifactFromLaunch() {
