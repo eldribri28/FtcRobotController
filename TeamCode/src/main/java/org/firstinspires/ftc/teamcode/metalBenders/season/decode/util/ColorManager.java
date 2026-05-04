@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ColorManager implements Runnable {
-    private final HardwareManager hardwareManager;
-    private final ColorHitCount intakeColorHitCount;
-    private final ColorHitCount launcherColorHitCount;
+    //private final HardwareManager hardwareManager;
+    //private final ColorHitCount intakeColorHitCount;
+    //private final ColorHitCount launcherColorHitCount;
     private ArtifactColorEnum intakeArtifactColor = UNKNOWN;
     private ArtifactColorEnum launcherArtifactColor = UNKNOWN;
     private final ReentrantReadWriteLock intakeArtifactColorLock = new ReentrantReadWriteLock();
@@ -30,9 +30,9 @@ public class ColorManager implements Runnable {
     private final Map<String, String> telemetry = new ConcurrentHashMap<>();
 
     public ColorManager(HardwareManager hardwareManager) {
-        this.hardwareManager = hardwareManager;
-        this.intakeColorHitCount = new ColorHitCount();
-        this.launcherColorHitCount = new ColorHitCount();
+        //this.hardwareManager = hardwareManager;
+        //this.intakeColorHitCount = new ColorHitCount();
+        //this.launcherColorHitCount = new ColorHitCount();
     }
 
     public void setArtifactColors() {
@@ -41,26 +41,26 @@ public class ColorManager implements Runnable {
     }
 
     private void setLauncherArtifactColor() {
-        incrementColorHitCounts(launcherColorHitCount, hardwareManager.getLaunchColorSensor(), hardwareManager.getLaunchColorSensor2());
-        if(launcherArtifactColor == UNKNOWN || launcherColorHitCount.isMinimumHitCountReached()) {
-            setLauncherArtifactColor(launcherColorHitCount.getArtifactColorEnum());
-            if(launcherArtifactColor == GREEN) {
-                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
-            } else if (launcherArtifactColor == PURPLE){
-                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
-            } else {
-                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
-            }
-        }
-        telemetry.put("Launcher Color", getLauncherArtifactColor().name());
+//        incrementColorHitCounts(launcherColorHitCount, hardwareManager.getLaunchColorSensor(), hardwareManager.getLaunchColorSensor2());
+//        if(launcherArtifactColor == UNKNOWN || launcherColorHitCount.isMinimumHitCountReached()) {
+//            setLauncherArtifactColor(launcherColorHitCount.getArtifactColorEnum());
+//            if(launcherArtifactColor == GREEN) {
+//                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
+//            } else if (launcherArtifactColor == PURPLE){
+//            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.PURPLE.getLedValue());
+//            } else {
+//                hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLACK.getLedValue());
+//            }
+//        }
+//        telemetry.put("Launcher Color", getLauncherArtifactColor().name());
     }
 
     private void setIntakeArtifactColor() {
-        incrementColorHitCounts(intakeColorHitCount, hardwareManager.getIntakeColorSensor());
-        if(intakeArtifactColor == UNKNOWN || intakeColorHitCount.isMinimumHitCountReached()) {
-            setIntakeArtifactColor(intakeColorHitCount.getArtifactColorEnum());
-        }
-        telemetry.put("Intake Color", getIntakeArtifactColor().name());
+//        incrementColorHitCounts(intakeColorHitCount, hardwareManager.getIntakeColorSensor());
+//        if(intakeArtifactColor == UNKNOWN || intakeColorHitCount.isMinimumHitCountReached()) {
+//            setIntakeArtifactColor(intakeColorHitCount.getArtifactColorEnum());
+//        }
+//        telemetry.put("Intake Color", getIntakeArtifactColor().name());
     }
 
     private void incrementColorHitCounts(ColorHitCount colorHitCount, RevColorSensorV3 ... colorSensors) {

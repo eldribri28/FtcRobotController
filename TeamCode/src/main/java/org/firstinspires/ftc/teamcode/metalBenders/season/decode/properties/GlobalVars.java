@@ -14,6 +14,11 @@ public class GlobalVars {
     public static double ROBOT_FIELD_X = 0;
     public static double ROBOT_FIELD_Y = 0;
     public static double ROBOT_FIELD_H = 0;
+    public static double ROBOT_LAST_DISTANCE = 0;
+    public static double ROBOT_LAST_YAW = 0;
+    public static double ROBOT_TARGET_CLOSE_RATE = 0;
+    public static double ROBOT_TARGET_YAW_RATE = 0;
+    public static double ROBOT_LAST_TIMESTAMP = 0;
 
     /*
     Robot PID Vars
@@ -32,4 +37,6 @@ public class GlobalVars {
     public static double TURRET_CHASSIS_OFFSET = 0;
     public static double TURRET_ANGLE = 0;
     public static double TURRET_CURRENT_ENCODER;
+
 }
+

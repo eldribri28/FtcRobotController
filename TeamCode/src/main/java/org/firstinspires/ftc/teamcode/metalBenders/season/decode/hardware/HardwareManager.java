@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
+//import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -46,15 +46,16 @@ public class HardwareManager {
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
     private final IMU imu;
-    private final RevColorSensorV3 launchColorSensor;
-    private final RevColorSensorV3 launchColorSensor2;
+//    private final RevColorSensorV3 launchColorSensor;
+//    private final RevColorSensorV3 launchColorSensor2;
     private final LED redLED;
     private final LED greenLED;
     private final Servo indicatorLED;
-    private final RevColorSensorV3 intakeColorSensor;
+    //private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
     private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 6);
+    private final PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
 //    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -71,9 +72,9 @@ public class HardwareManager {
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
         this.intakeServo = hardwareMap.get(Servo.class, "intakeServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
-        this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
-        this.launchColorSensor2 = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor2");
-        this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
+//        this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
+//        this.launchColorSensor2 = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor2");
+//        this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
         this.imu = hardwareMap.get(IMU.class, "imu");
@@ -96,23 +97,25 @@ public class HardwareManager {
             motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
-            //motor.setMode(RUN_USING_ENCODER);
         }
         for(DcMotor motor : List.of(rightFrontMotor, rightRearMotor)) {
             motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
-            //motor.setMode(RUN_USING_ENCODER);
         }
         for(DcMotor motor : List.of(intakeMotor)) {
             motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(FLOAT);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
-        for(DcMotor motor : List.of(turretMotor)) {
-            motor.setMode(RUN_WITHOUT_ENCODER);
-            motor.setZeroPowerBehavior(FLOAT);
-            motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        for(DcMotorEx motor : List.of(turretMotor)) {
+            motor.setMode(STOP_AND_RESET_ENCODER);
+            motor.setMode(RUN_USING_ENCODER);
+            motor.setZeroPowerBehavior(BRAKE);
+            motor.setTargetPositionTolerance(5);
+//            motor.setMode(RUN_WITHOUT_ENCODER);
+//            motor.setZeroPowerBehavior(FLOAT);
+            motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
         for(DcMotor motor : List.of(launcherMotor)) {
             motor.setMode(RUN_USING_ENCODER);
@@ -122,17 +125,19 @@ public class HardwareManager {
 
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
+        //turretMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
+        //        TURRET_VELO_PID.p, TURRET_VELO_PID.i, TURRET_VELO_PID.d, TURRET_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
+
         angleServo.setDirection(Servo.Direction.FORWARD);
-        launchColorSensor.setGain(27);
-        launchColorSensor2.setGain(22);
-        intakeColorSensor.setGain(20);
+//        launchColorSensor.setGain(27);
+//        launchColorSensor2.setGain(22);
+//        intakeColorSensor.setGain(20);
 
         redLED.off();
         greenLED.off();
 
 //        initializeLimelight();
         initializeIMU();
-        //initializeOTOS();
     }
 
     public void postStartInitialization() {
@@ -208,16 +213,15 @@ public class HardwareManager {
         return launcherMotor;
     }
 
-    public RevColorSensorV3 getIntakeColorSensor() {
-        return intakeColorSensor;
-    }
-
-    public RevColorSensorV3 getLaunchColorSensor() {
-        return launchColorSensor;
-    }
-    public RevColorSensorV3 getLaunchColorSensor2() {
-        return launchColorSensor2;
-    }
+//    public RevColorSensorV3 getIntakeColorSensor() {
+//        return intakeColorSensor;
+//    }
+//    public RevColorSensorV3 getLaunchColorSensor() {
+//        return launchColorSensor;
+//    }
+//    public RevColorSensorV3 getLaunchColorSensor2() {
+//        return launchColorSensor2;
+//    }
 
     public TouchSensor getLimitSwitchLeft() {
         return limitSwitchLeft;

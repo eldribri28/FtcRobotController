@@ -1,45 +1,21 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum.NONE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 //import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_DOWN;
 //import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_SERVO_UP;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
 
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.ftc.Actions;
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ColorManager;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 @Disabled
 @Autonomous(name="auto drive test")
-public class AutonDriveTest {//extends LinearOpMode {
-//    private HardwareManager hardwareManager;
+public class AutonDriveTest extends LinearOpMode {
+    @Override
+    public void runOpMode() throws InterruptedException {
+        waitForStart();
+    }
+
+    //    private HardwareManager hardwareManager;
 //    private MecanumDrive drive;
 //    private Pose2d currentPose;
 //    private AprilTagEngine aprilTagEngine;

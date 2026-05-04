@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.metalBenders.ignore.systems;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_HEIGHT;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TARGET_HEIGHT;
+
 import android.util.Size;
 
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -8,10 +11,9 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactColorEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
 import org.firstinspires.ftc.teamcode.metalBenders.ignore.systems.types.SystemPriorityEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -122,7 +124,7 @@ public class AutoTargetingLaunchSystem extends AbstractSystem {
         double flywheelRPM = (getHardwareManager().getLauncherMotor().getVelocity()/28.0) * 60.0;
         addTelemetry("flywheel RPM", flywheelRPM);
 
-        LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
+        LaunchCalculator.LaunchResult launchResult = LaunchCalculator.getLaunchData(LAUNCH_HEIGHT, TARGET_HEIGHT, targetDistance, flywheelRPM, 0);
         if(launchResult != null) {
             setLaunchAngle(launchResult.getLaunchAngle());
             double targetRPM = Math.round(((targetDistance / 1.670) * 800) + 1900);
