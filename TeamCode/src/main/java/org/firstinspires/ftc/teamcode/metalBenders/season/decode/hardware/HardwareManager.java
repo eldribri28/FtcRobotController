@@ -55,7 +55,7 @@ public class HardwareManager {
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
     private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 6);
-    private final PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(100, 0, 0, 3);
+    //private final PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(10, 0, 0, 0);
 //    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -109,12 +109,11 @@ public class HardwareManager {
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
         for(DcMotorEx motor : List.of(turretMotor)) {
-            motor.setMode(STOP_AND_RESET_ENCODER);
-            motor.setMode(RUN_USING_ENCODER);
+//            motor.setMode(STOP_AND_RESET_ENCODER);
+//            motor.setMode(RUN_USING_ENCODER);
+//            motor.setTargetPositionTolerance(3);
+            motor.setMode(RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
-            motor.setTargetPositionTolerance(5);
-//            motor.setMode(RUN_WITHOUT_ENCODER);
-//            motor.setZeroPowerBehavior(FLOAT);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
         for(DcMotor motor : List.of(launcherMotor)) {
@@ -178,7 +177,7 @@ public class HardwareManager {
     }
 
     public Servo getIntakeServo() {
-        return launchServo;
+        return intakeServo;
     }
 
     public Servo getAngleServo() {

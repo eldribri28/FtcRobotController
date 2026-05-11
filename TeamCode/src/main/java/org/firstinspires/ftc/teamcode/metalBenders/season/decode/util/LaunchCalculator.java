@@ -41,11 +41,17 @@ public class LaunchCalculator {
         double theta = MIN_LAUNCH_ANGLE; // Deg
         double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
+        targetDistance += 0.100;
+
+        if (targetDistance < 1.200) {
+            theta = MIN_LAUNCH_ANGLE + 21;
+        }
+
         while (theta <= endAngle) {
 
             double denom = (2 * Math.pow(Math.cos(theta), 2) * (targetDistance * Math.tan(theta) + (Yi - Yf)));
             if (denom != 0) {
-                double Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom);
+                double Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom) + targetCloseRate;
                 double subCal = Math.sqrt(Math.pow((Vi * Math.sin(theta)), 2) - 4 * (-ACCELERATION_DUE_TO_GRAVITY / 2) * (Yi - Yf));
                 double subCal2 = -(Vi * Math.sin(theta));
                 double t1 = (subCal2 + subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
@@ -57,7 +63,7 @@ public class LaunchCalculator {
                 for (Double t : times) {
                     if (t != 0) {
                         double Vfy = (Vi * Math.sin(theta) - ACCELERATION_DUE_TO_GRAVITY * t);
-                        double Vfx = (Vi * Math.cos(theta)) - targetCloseRate;
+                        double Vfx = (Vi * Math.cos(theta));
                         double Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
                         if (Vf < lowestVelocity || bestYVelocity == 0) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
                             lowestVelocity = Vf;
@@ -70,7 +76,7 @@ public class LaunchCalculator {
                 }
             }
 
-            theta = theta + 1;
+            theta = theta + 0.5;
 
         }
 

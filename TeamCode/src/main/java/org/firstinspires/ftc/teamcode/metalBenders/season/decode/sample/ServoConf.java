@@ -16,9 +16,9 @@ public class ServoConf extends LinearOpMode  {
 
         while (opModeIsActive()) {
             if (gamepad1.a) {
-                angleServo.setPosition(0.85);
+                angleServo.setPosition(0.8);
             } else {
-                angleServo.setPosition(0);
+                angleServo.setPosition(0.36);
             }
         }
 
@@ -28,7 +28,7 @@ public class ServoConf extends LinearOpMode  {
 
 
     private void initialize() {
-        this.angleServo = hardwareMap.get(Servo.class, "intakeServo");
+        this.angleServo = hardwareMap.get(Servo.class, "launchServo");
 
 
 

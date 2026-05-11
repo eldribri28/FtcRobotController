@@ -30,19 +30,18 @@ public class ShotCalculator {
         double currentTimestamp = System.currentTimeMillis();
         double dt = currentTimestamp - ROBOT_LAST_TIMESTAMP;
 
-        double ROBOT_TARGET_YAW_RATE;
-        double ROBOT_TARGET_CLOSE_RATE;
         if (ROBOT_LAST_TIMESTAMP == 0 || dt > 100) {
             ROBOT_LAST_YAW = targetYaw;
             ROBOT_LAST_DISTANCE = targetDistance;
             ROBOT_TARGET_YAW_RATE = 0;
             ROBOT_TARGET_CLOSE_RATE = 0;
         } else {
-            ROBOT_TARGET_YAW_RATE = ((targetYaw - ROBOT_LAST_YAW) / dt) / 1000; // Yaw change rate in DEGREES/SEC
-            ROBOT_TARGET_CLOSE_RATE = ((targetDistance - ROBOT_LAST_DISTANCE) / dt) / 1000; // Target close rate in M/S
+            ROBOT_TARGET_YAW_RATE = ((targetYaw - ROBOT_LAST_YAW) / dt * 50); // Yaw change rate in DEGREES/SEC
+            ROBOT_TARGET_CLOSE_RATE = ((targetDistance - ROBOT_LAST_DISTANCE) / dt) * 1000; // Target close rate in M/S
             ROBOT_LAST_YAW = targetYaw;
             ROBOT_LAST_DISTANCE = targetDistance;
         }
+        ROBOT_LAST_TIMESTAMP = currentTimestamp;
 
     }
 
