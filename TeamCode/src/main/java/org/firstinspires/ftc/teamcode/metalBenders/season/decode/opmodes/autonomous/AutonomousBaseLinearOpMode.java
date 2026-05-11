@@ -10,7 +10,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_HEIGHT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TARGET_HEIGHT;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
@@ -60,7 +62,6 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AutonStat
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.DriveVelocityResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchResult;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -274,12 +275,6 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     private void initialize() {
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
-        //otos = hardwareManager.getOtos();
-        //otos.setAngularUnit(AngleUnit.DEGREES);
-        //otos.setLinearUnit(DistanceUnit.METER);
-        //SparkFunOTOS.Pose2D offset;
-        //offset = new SparkFunOTOS.Pose2D(0, 0, 0);
-        //otos.setOffset(offset);
         state = AutonStateEnum.WAIT_DRIVE_BACKWARD;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
@@ -305,9 +300,9 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     }
 
     private void setArtifactColors() {
-        intakeArtifactColor = getArtifactColor(hardwareManager.getIntakeColorSensor(), "Intake");
-        launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
-        launcherArtifactColor2 = getArtifactColor(hardwareManager.getLaunchColorSensor2(), "Launcher2");
+        //intakeArtifactColor = getArtifactColor(hardwareManager.getIntakeColorSensor(), "Intake");
+        //launcherArtifactColor = getArtifactColor(hardwareManager.getLaunchColorSensor(), "Launcher");
+        //launcherArtifactColor2 = getArtifactColor(hardwareManager.getLaunchColorSensor2(), "Launcher2");
     }
 
     private ArtifactColorEnum getArtifactColor(RevColorSensorV3 colorSensor, String sensorName) {
@@ -358,7 +353,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
                 targetDistance = targetDetection.ftcPose.range;
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 targetRPM = Math.round(((targetDistance / 1.670) * 900.0) + 1800.0);
-                LaunchResult launchResult = LaunchCalculator.calculatePreferredLaunchResult(flywheelRPM, targetDistance);
+                LaunchCalculator.LaunchResult launchResult = LaunchCalculator.getLaunchData(LAUNCH_HEIGHT, TARGET_HEIGHT, targetDistance, flywheelRPM, 0);
 
                 if (launcherEnabled) {
                     if (launchResult != null) {
