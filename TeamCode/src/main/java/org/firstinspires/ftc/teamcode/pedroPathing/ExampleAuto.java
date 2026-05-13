@@ -71,24 +71,24 @@ public class ExampleAuto extends OpMode {
                 .build();
     }
 
-    public Command autoRoutine() {
-        return sequential(
-                follow(follower, scorePreload),
-                /* Score Preload Command*/
-                follow(follower, grabPickup1, true),
-                /* Grab Sample Command*/
-                follow(follower, scorePickup1, true),
-                /* Score Sample Command*/
-                follow(follower, grabPickup2, true),
-                /* Grab Sample Command*/
-                follow(follower, scorePickup2, true),
-                /* Score Sample Command*/
-                follow(follower, grabPickup3, true),
-                /* Grab Sample Command*/
-                follow(follower, scorePickup3, true)
-                /* Score Sample Command*/
-        );
-    }
+//    public Command autoRoutine() {
+//        return sequential(
+//                follow(follower, scorePreload),
+//                /* Score Preload Command*/
+//                follow(follower, grabPickup1, true),
+//                /* Grab Sample Command*/
+//                follow(follower, scorePickup1, true),
+//                /* Score Sample Command*/
+//                follow(follower, grabPickup2, true),
+//                /* Grab Sample Command*/
+//                follow(follower, scorePickup2, true),
+//                /* Score Sample Command*/
+//                follow(follower, grabPickup3, true),
+//                /* Grab Sample Command*/
+//                follow(follower, scorePickup3, true)
+//                /* Score Sample Command*/
+//        );
+//    }
 
     @Override
     public void init() {
@@ -104,7 +104,7 @@ public class ExampleAuto extends OpMode {
 
     @Override
     public void start() {
-        schedule(autoRoutine());
+//        schedule(autoRoutine());
     }
 
     /**
