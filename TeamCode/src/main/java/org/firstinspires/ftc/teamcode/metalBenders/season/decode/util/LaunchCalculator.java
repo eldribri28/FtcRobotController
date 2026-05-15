@@ -101,9 +101,6 @@ public class LaunchCalculator {
 
     public static double getAngleForFlywheel(double Yi, double Yf, double flyWheelRpm, double distance) {
 
-        boolean solutionViable1 = true;
-        boolean solutionViable2 = true;
-
         double velocity = calculateVelocity(flyWheelRpm);
 
         double root = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * Math.pow(distance, 2) + 2 * (Math.pow(velocity, 2) * (TARGET_HEIGHT - LAUNCH_HEIGHT)));
