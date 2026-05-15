@@ -49,21 +49,24 @@ public class LaunchCalculator {
 
         while (theta <= endAngle) {
 
-            double denom = (2 * Math.pow(Math.cos(theta), 2) * (targetDistance * Math.tan(theta) + (Yi - Yf)));
+            double thetaRads = Math.toRadians(theta);
+
+            double denom = (2 * Math.pow(Math.cos(thetaRads), 2) * (targetDistance * Math.tan(thetaRads) + (Yf - Yi)));
             if (denom != 0) {
-                double Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom) + targetCloseRate;
-                double subCal = Math.sqrt(Math.pow((Vi * Math.sin(theta)), 2) - 4 * (-ACCELERATION_DUE_TO_GRAVITY / 2) * (Yi - Yf));
-                double subCal2 = -(Vi * Math.sin(theta));
-                double t1 = (subCal2 + subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
-                double t2 = (subCal2 - subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
-                List<Double> times = new ArrayList<>();
-                times.add(t1);
-                times.add(t2);
-                //double t = Math.max(Math.abs(t1), Math.abs(t2)); // Take the larger time
-                for (Double t : times) {
-                    if (t != 0) {
-                        double Vfy = (Vi * Math.sin(theta) - ACCELERATION_DUE_TO_GRAVITY * t);
-                        double Vfx = (Vi * Math.cos(theta));
+                double Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom) + targetCloseRate; // need to adjust for close rate only being x component
+                //double subCal = Math.sqrt(Math.pow((Vi * Math.sin(thetaRads)), 2) - 4 * (-ACCELERATION_DUE_TO_GRAVITY / 2) * (Yi - Yf));
+                //double subCal2 = -(Vi * Math.sin(thetaRads));
+                //double t1 = (subCal2 + subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
+                //double t2 = (subCal2 - subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
+                //List<Double> times = new ArrayList<>();
+                //times.add(t1);
+                //times.add(t2);
+                //for (Double t : times) {
+                    //if (t != 0) {
+                double tof = calculateTimeOfFlight(Vi, theta, Yi, Yf);
+                    if (tof > 0) {
+                        double Vfy = (Vi * Math.sin(thetaRads) - ACCELERATION_DUE_TO_GRAVITY * tof);
+                        double Vfx = (Vi * Math.cos(thetaRads));
                         double Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
                         if (Vf < lowestVelocity || bestYVelocity == 0) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
                             lowestVelocity = Vf;
@@ -73,7 +76,7 @@ public class LaunchCalculator {
                             bestAngle = theta;
                         }
                     }
-                }
+                //}
             }
 
             theta = theta + 0.5;
@@ -93,7 +96,7 @@ public class LaunchCalculator {
     }
 
     public static double getFlywheelRpm(double artifactVelocity) {
-        return (artifactVelocity / ((FLYWHEEL_DIAMETER_METERS / 2) * VELOCITY_TRANSFER_EFFICIENCY) * 60) / (2 * Math.PI);
+        return (((artifactVelocity * 60) / VELOCITY_TRANSFER_EFFICIENCY) / (Math.PI * FLYWHEEL_DIAMETER_METERS));
     }
 
     public static double getAngleForFlywheel(double Yi, double Yf, double flyWheelRpm, double distance) {
@@ -103,34 +106,35 @@ public class LaunchCalculator {
 
         double velocity = calculateVelocity(flyWheelRpm);
 
-        double root = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * distance * distance + 2 * velocity * velocity * (TARGET_HEIGHT - LAUNCH_HEIGHT));
-        double launchAngle1 = Math.toDegrees(Math.atan2(((velocity * velocity) - Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
-        double launchAngle2 = Math.toDegrees(Math.atan2(((velocity * velocity) + Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
+        double root = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * Math.pow(distance, 2) + 2 * (Math.pow(velocity, 2) * (TARGET_HEIGHT - LAUNCH_HEIGHT)));
+        double launchAngleLow = Math.toDegrees(Math.atan2(((velocity * velocity) - Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
+        double launchAngleHigh = Math.toDegrees(Math.atan2(((velocity * velocity) + Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
 
         // Solution is Not Viable if launch angle solution is greater than 90 degrees, less than 0 degrees, NaN, or results in a Max Height greater than 1.524m
-        if (launchAngle1 < MIN_LAUNCH_ANGLE || launchAngle1 > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngle1)) {
-            launchAngle1 = 0;
+        if (launchAngleLow < MIN_LAUNCH_ANGLE || launchAngleLow > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngleLow)) {
+            launchAngleLow = 0;
         }
-        if (launchAngle2 < MIN_LAUNCH_ANGLE || launchAngle2 > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngle2)) {
-            launchAngle2 = 0;
+        if (launchAngleHigh < MIN_LAUNCH_ANGLE || launchAngleHigh > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngleHigh)) {
+            launchAngleHigh = 0;
         }
 
-        return determinePreferredLaunchResult(launchAngle1, launchAngle2);
+        return determinePreferredLaunchResult(launchAngleLow, launchAngleHigh);
 
     }
-    private static double determinePreferredLaunchResult(double launchAngle1, double launchAngle2) {
+    private static double determinePreferredLaunchResult(double launchAngleLow, double launchAngleHigh) {
         double preferredLaunchResult = 0;
-        if (launchAngle1 > 0 && launchAngle2 > 0) {
-            preferredLaunchResult = Math.max(launchAngle1, launchAngle2);
-        } else if (launchAngle1 > 0) {
-            preferredLaunchResult = launchAngle1;
-        } else if (launchAngle2 > 0) {
-            preferredLaunchResult = launchAngle2;
+        if (launchAngleLow > MIN_LAUNCH_ANGLE && launchAngleHigh > MIN_LAUNCH_ANGLE) {
+            preferredLaunchResult = Math.max(launchAngleLow, launchAngleHigh);
+        } else if (launchAngleLow > MIN_LAUNCH_ANGLE && launchAngleLow < MAX_LAUNCH_ANGLE) {
+            preferredLaunchResult = launchAngleLow;
+        } else if (launchAngleHigh > MIN_LAUNCH_ANGLE && launchAngleHigh < MAX_LAUNCH_ANGLE) {
+            preferredLaunchResult = launchAngleHigh;
         }
         return preferredLaunchResult;
     }
     public static double calculateVelocity(double flywheelRPM) {
-        return (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
+        // return (((flywheelRPM * (2 * Math.PI)) / 60) * (FLYWHEEL_DIAMETER_METERS / 2)) * VELOCITY_TRANSFER_EFFICIENCY;
+        return (((Math.PI * FLYWHEEL_DIAMETER_METERS * flywheelRPM) / 60) * VELOCITY_TRANSFER_EFFICIENCY) ;
     }
 
     public static double calculateTimeOfFlight(double velocity, double angle, double Yi, double Yf) {
@@ -138,30 +142,18 @@ public class LaunchCalculator {
         double radians = Math.toRadians(angle);
 
         // Initial vertical velocity component
-        double vYi = velocity * Math.sin(radians);
-
-        // Net vertical displacement (Δy = y_final - y_initial)
-        double deltaY = Yf - Yi;
+        double Viy = velocity * Math.sin(radians);
 
         // Using Quadratic Formula: 0 = -0.5 * g * t^2 + vYi * t - deltaY
-        // form: a*t^2 + b*t + c = 0
-        double a = -0.5 * ACCELERATION_DUE_TO_GRAVITY;
-        double b = vYi;
-        double c = -deltaY;
-
         // Discriminant: b^2 - 4ac
-        double discriminant = (b * b) - (4 * a * c);
+        double discriminant = Math.pow(Viy, 2) + (2 * (ACCELERATION_DUE_TO_GRAVITY) * (Yf - Yi));
 
         if (discriminant < 0) {
             // Target height is physically unreachable
             return -1.0;
         }
 
-        // Solving for t: (-b ± sqrt(discriminant)) / 2a
-        // We want the later time (when the projectile is falling)
-        double t = (-b - Math.sqrt(discriminant)) / (2 * a);
-
-        return t;
+        return (Viy + Math.sqrt(discriminant)) / ACCELERATION_DUE_TO_GRAVITY;
     }
 
     /**
