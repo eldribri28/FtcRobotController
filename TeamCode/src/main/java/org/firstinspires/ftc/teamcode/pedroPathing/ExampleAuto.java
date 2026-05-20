@@ -128,6 +128,7 @@ public class ExampleAuto extends LinearOpMode {
 //                    break;
                 case SHOOT_PRELOAD:
                     if(readyToShoot()) {
+                        sleep(500);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -148,11 +149,11 @@ public class ExampleAuto extends LinearOpMode {
                 case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_NEAR_LAUNCH:
                     stopIntake();
                     follower.followPath(nearArtifactGroupToNearShoot);
-                    sleep(1000);
                     currentState = SHOOT_NEAR_ARTIFACT_GROUP;
                     break;
                 case SHOOT_NEAR_ARTIFACT_GROUP:
                     if(readyToShoot()) {
+                        sleep(1000);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -173,11 +174,11 @@ public class ExampleAuto extends LinearOpMode {
                 case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_NEAR_LAUNCH:
                     stopIntake();
                     follower.followPath(middleArtifactGroupToNearShoot);
-                    sleep(1000);
                     currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
                     break;
                 case SHOOT_MIDDLE_ARTIFACT_GROUP:
                     if(readyToShoot()) {
+                        sleep(1000);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -198,11 +199,11 @@ public class ExampleAuto extends LinearOpMode {
                 case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_FAR_LAUNCH:
                     stopIntake();
                     follower.followPath(farArtifactGroupToFarShoot);
-                    sleep(1000);
                     currentState = SHOOT_FAR_ARTIFACT_GROUP;
                     break;
                 case SHOOT_FAR_ARTIFACT_GROUP:
                     if(readyToShoot()) {
+                        sleep(1000);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -222,26 +223,36 @@ public class ExampleAuto extends LinearOpMode {
                 new AutonomousPoseManager(getStartPosition(), getTargetAprilTag());
 //        startToShoot = buildLinearPathChainBetweenTwoPoses(
 //                poseManager.getStartPose(), poseManager.getNearLaunchPose());
+
+        // Handle Move to Near Artifacts, Intake them, Return to Near Shooting Position
         shootToNearArtifactGroup = buildLinearPathChainBetweenTwoPoses(
                 poseManager.getStartPose(), poseManager.getNearArtifactGroupPose());
-        nearArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getNearArtifactGroupPose(), poseManager.getNearLaunchPose());
         intakeNearArtifactGroup = buildLinearPathChainOutAndBack(
                 poseManager.getNearArtifactGroupPose(), poseManager.getNearArtifactEndIntakePose());
+        nearArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
+                poseManager.getNearArtifactGroupPose(), poseManager.getNearLaunchPose());
+
+        // Handle Move to Middle Artifacts, Intake them, Return to Near Shooting Position
         shootToMiddleArtifactGroup = buildLinearPathChainBetweenTwoPoses(
                 poseManager.getNearLaunchPose(), poseManager.getMiddleArtifactGroupPose());
-        middleArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getMiddleArtifactGroupPose(), poseManager.getNearLaunchPose());
         intakeMiddleArtifactGroup = buildLinearPathChainOutAndBack(
                 poseManager.getMiddleArtifactGroupPose(), poseManager.getMiddleArtifactEndIntakePose());
+        middleArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
+                poseManager.getMiddleArtifactGroupPose(), poseManager.getNearLaunchPose());
+
+        // Handle Move to Far Artifacts, Intake them, Return to Far Shooting Position
         shootToFarArtifactGroup = buildLinearPathChainBetweenTwoPoses(
                 poseManager.getNearLaunchPose(), poseManager.getFarArtifactGroupPose());
-        farArtifactGroupToFarShoot = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getFarArtifactGroupPose(), poseManager.getFarLaunchPose());
         intakeFarArtifactGroup = buildLinearPathChainOutAndBack(
                 poseManager.getFarArtifactGroupPose(), poseManager.getFarArtifactEndIntakePose());
+        farArtifactGroupToFarShoot = buildLinearPathChainBetweenTwoPoses(
+                poseManager.getFarArtifactGroupPose(), poseManager.getNearLaunchPose());
+
+        // Move from Far Shooting Position to PArk Positon
         farShootToEnd = buildLinearPathChainBetweenTwoPoses(
                 poseManager.getFarLaunchPose(), poseManager.getEndPose());
+
+        // Set Starting Pose
         follower.setStartingPose(poseManager.getStartPose());
     }
 
@@ -314,7 +325,7 @@ public class ExampleAuto extends LinearOpMode {
                     telemetry.addData("Target ID", targetDetection.id);
 
                     double turretError = targetBearing - launchLeadAngle;
-                    double setPower = turretBearingPid.calculate(0,turretError) * 0.5;
+                    double setPower = turretBearingPid.calculate(0,turretError) * 0.6;
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
