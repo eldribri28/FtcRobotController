@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.pedroPathing; // make sure this aligns with class location
+package org.firstinspires.ftc.teamcode.pedroPathing.autonomous; // make sure this aligns with class location
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.NEAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_DOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_NO_POWER;
@@ -27,14 +28,18 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.calculateLeadAngle;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.updateTargetDiff;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.FAR;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.LOADING_ZONE;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.MIDDLE;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.PRELOAD;
 import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.AutonomousStateEnum.*;
+import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainBetweenTwoPoses;
+import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainOutAndBack;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -49,12 +54,16 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.Hardwa
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
-import org.firstinspires.ftc.teamcode.pedroPathing.autonomous.AutonomousPoseManager;
-import org.firstinspires.ftc.teamcode.pedroPathing.autonomous.AutonomousStateEnum;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.pose.AbstractPoseSupplier;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Autonomous(name = "Example Auto", group = "Examples")
-public class ExampleAuto extends LinearOpMode {
+public class BaseAuto extends LinearOpMode {
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -76,6 +85,7 @@ public class ExampleAuto extends LinearOpMode {
             startToShoot, shootToNearArtifactGroup, intakeNearArtifactGroup, nearArtifactGroupToNearShoot,
             shootToMiddleArtifactGroup, intakeMiddleArtifactGroup, middleArtifactGroupToNearShoot,
             shootToFarArtifactGroup, intakeFarArtifactGroup, farArtifactGroupToFarShoot, farShootToEnd;
+    private List<ArtifactGroup> ARTIFACT_GROUP_ORDER = new ArrayList<>(Arrays.asList(PRELOAD, NEAR, LOADING_ZONE, MIDDLE, FAR));
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -115,6 +125,11 @@ public class ExampleAuto extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
+        if(getStartPosition() == NEAR) {
+            currentState = DRIVE_FROM_START_TO_LAUNCH;
+        } else {
+            currentState = SHOOT_PRELOAD;
+        }
     }
 
     private void updateState() {
@@ -122,10 +137,10 @@ public class ExampleAuto extends LinearOpMode {
             switch (currentState) {
 
                 //PRELOAD STATES
-//                case DRIVE_FROM_START_TO_LAUNCH:
-//                    follower.followPath(startToShoot, true);
-//                    currentState = SHOOT_PRELOAD;
-//                    break;
+                case DRIVE_FROM_START_TO_LAUNCH:
+                    follower.followPath(startToShoot, true);
+                    currentState = SHOOT_PRELOAD;
+                    break;
                 case SHOOT_PRELOAD:
                     if(readyToShoot()) {
                         autoLaunchArtifact();
@@ -218,31 +233,31 @@ public class ExampleAuto extends LinearOpMode {
     }
 
     private void buildPaths() {
-        AutonomousPoseManager poseManager =
-                new AutonomousPoseManager(getStartPosition(), getTargetAprilTag());
-//        startToShoot = buildLinearPathChainBetweenTwoPoses(
-//                poseManager.getStartPose(), poseManager.getNearLaunchPose());
+        AbstractPoseSupplier poseSupplier =
+            AbstractPoseSupplier.getPoseSupplier(getStartPosition(), getTargetAprilTag());
+        startToShoot = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getStartPose(), poseSupplier.getNearLaunchPose());
         shootToNearArtifactGroup = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getStartPose(), poseManager.getNearArtifactGroupPose());
+            follower, poseSupplier.getStartPose(), poseSupplier.getNearArtifactGroupPose());
         nearArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getNearArtifactGroupPose(), poseManager.getNearLaunchPose());
+            follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearLaunchPose());
         intakeNearArtifactGroup = buildLinearPathChainOutAndBack(
-                poseManager.getNearArtifactGroupPose(), poseManager.getNearArtifactEndIntakePose());
+            follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearArtifactEndIntakePose());
         shootToMiddleArtifactGroup = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getNearLaunchPose(), poseManager.getMiddleArtifactGroupPose());
+            follower, poseSupplier.getNearLaunchPose(), poseSupplier.getMiddleArtifactGroupPose());
         middleArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getMiddleArtifactGroupPose(), poseManager.getNearLaunchPose());
+            follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getNearLaunchPose());
         intakeMiddleArtifactGroup = buildLinearPathChainOutAndBack(
-                poseManager.getMiddleArtifactGroupPose(), poseManager.getMiddleArtifactEndIntakePose());
+            follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getMiddleArtifactEndIntakePose());
         shootToFarArtifactGroup = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getNearLaunchPose(), poseManager.getFarArtifactGroupPose());
+            follower, poseSupplier.getNearLaunchPose(), poseSupplier.getFarArtifactGroupPose());
         farArtifactGroupToFarShoot = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getFarArtifactGroupPose(), poseManager.getFarLaunchPose());
+            follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarLaunchPose());
         intakeFarArtifactGroup = buildLinearPathChainOutAndBack(
-                poseManager.getFarArtifactGroupPose(), poseManager.getFarArtifactEndIntakePose());
+            follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarArtifactEndIntakePose());
         farShootToEnd = buildLinearPathChainBetweenTwoPoses(
-                poseManager.getFarLaunchPose(), poseManager.getEndPose());
-        follower.setStartingPose(poseManager.getStartPose());
+            follower, poseSupplier.getFarLaunchPose(), poseSupplier.getEndPose());
+        follower.setStartingPose(poseSupplier.getStartPose());
     }
 
     private void startIntake() {
@@ -251,24 +266,6 @@ public class ExampleAuto extends LinearOpMode {
 
     private void stopIntake() {
         hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
-    }
-
-    private PathChain buildLinearPathChainBetweenTwoPoses(Pose startPose, Pose endPose) {
-        return follower
-                .pathBuilder()
-                .addPath(new BezierLine(startPose, endPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
-                .build();
-    }
-
-    private PathChain buildLinearPathChainOutAndBack(Pose startAndEndPose, Pose midpoint) {
-        return follower
-                .pathBuilder()
-                .addPath(new BezierLine(startAndEndPose, midpoint))
-                .setLinearHeadingInterpolation(startAndEndPose.getHeading(), midpoint.getHeading())
-                .addPath(new BezierLine(midpoint, startAndEndPose))
-                .setLinearHeadingInterpolation(midpoint.getHeading(), startAndEndPose.getHeading())
-                .build();
     }
 
     private AprilTagEnum getTargetAprilTag() {
