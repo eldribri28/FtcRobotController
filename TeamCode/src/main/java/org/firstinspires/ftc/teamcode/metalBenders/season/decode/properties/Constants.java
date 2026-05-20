@@ -20,7 +20,7 @@ public final class Constants {
     public static final double LAUNCH_HEIGHT = 0.406;
     public static final double TARGET_HEIGHT = 1.175;
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
-    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.365;
+    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.28;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
     public static final double MAX_LAUNCH_ANGLE = 72;
     public static final double MIN_LAUNCH_ANGLE = 48;
