@@ -21,6 +21,8 @@ public abstract class AbstractPoseSupplier {
   protected static final double BLUE_NEAR_START_HEADING = Math.toRadians(144);
   protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 41;
   protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 8;
+  protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 0;//TODO
+  protected static final double BLUE_FAR_LAUNCH_X_POSITION = 0;//TODO
 
 
   //RED SPECIFIC
@@ -28,6 +30,8 @@ public abstract class AbstractPoseSupplier {
   protected static final double RED_NEAR_START_HEADING = Math.toRadians(36);
   protected static final double RED_ARTIFACT_GROUP_START_X_POSITION = 101;
   protected static final double RED_ARTIFACT_GROUP_4_X_POSITION = 133;
+  protected static final double RED_NEAR_LAUNCH_X_POSITION = 0;//TODO
+  protected static final double RED_FAR_LAUNCH_X_POSITION = 0;//TODO
 
 
   //NEAR SPECIFIC
@@ -40,14 +44,15 @@ public abstract class AbstractPoseSupplier {
   protected static final double FAR_START_Y_POSITION = 8;
 
   public abstract Pose getStartPose();
-  public abstract Pose getNearLaunchPose();
-  public abstract Pose getFarLaunchPose();
+  public abstract Pose getLaunchPose();
   public abstract Pose getNearArtifactGroupPose();
   public abstract Pose getNearArtifactEndIntakePose();
   public abstract Pose getMiddleArtifactGroupPose();
   public abstract Pose getMiddleArtifactEndIntakePose();
   public abstract Pose getFarArtifactGroupPose();
   public abstract Pose getFarArtifactEndIntakePose();
+  public abstract Pose getLoadingZoneArtifactGroupPose();
+  public abstract Pose getLoadingZoneArtifactEndIntakePose();
   public abstract Pose getEndPose();
 
   public static AbstractPoseSupplier getPoseSupplier(StartPositionEnum startPositionEnum, AprilTagEnum targetAprilTag) {

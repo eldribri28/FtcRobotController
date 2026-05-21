@@ -9,18 +9,19 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier{
   }
 
   @Override
-  public Pose getNearLaunchPose() {
-    return null;
-  }
-
-  @Override
-  public Pose getFarLaunchPose() {
-    return null;
+  public Pose getLaunchPose() {
+    return new Pose(
+            BLUE_FAR_LAUNCH_X_POSITION,
+            FAR_LAUNCH_Y_POSITION,
+            BLUE_DEFAULT_HEADING);
   }
 
   @Override
   public Pose getNearArtifactGroupPose() {
-    return null;
+    return new Pose(
+            BLUE_ARTIFACT_GROUP_4_X_POSITION,
+            ARTIFACT_GROUP_3_Y_POSITION,
+            BLUE_DEFAULT_HEADING);
   }
 
   @Override
@@ -45,6 +46,16 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier{
 
   @Override
   public Pose getFarArtifactEndIntakePose() {
+    return null;
+  }
+
+  @Override
+  public Pose getLoadingZoneArtifactGroupPose() {
+    return null;
+  }
+
+  @Override
+  public Pose getLoadingZoneArtifactEndIntakePose() {
     return null;
   }
 

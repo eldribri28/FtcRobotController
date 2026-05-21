@@ -28,10 +28,12 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.calculateLeadAngle;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.updateTargetDiff;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.FAR;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.LOADING_ZONE;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.MIDDLE;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroup.PRELOAD;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.FAR_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.LOADING_ZONE_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.MIDDLE_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.NEAR_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.NONE;
+import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
 import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.AutonomousStateEnum.*;
 import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainBetweenTwoPoses;
 import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainOutAndBack;
@@ -58,8 +60,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.pose.AbstractPoseSupplier;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 @Autonomous(name = "Example Auto", group = "Examples")
@@ -80,12 +81,21 @@ public class BaseAuto extends LinearOpMode {
     private AprilTagEngine aprilTagEngine;
     private Thread aprilTagEngineThread;
     private Follower follower;
-    private AutonomousStateEnum currentState = SHOOT_PRELOAD;
+    private AutonomousStateEnum currentState;
     private PathChain
-            startToShoot, shootToNearArtifactGroup, intakeNearArtifactGroup, nearArtifactGroupToNearShoot,
-            shootToMiddleArtifactGroup, intakeMiddleArtifactGroup, middleArtifactGroupToNearShoot,
-            shootToFarArtifactGroup, intakeFarArtifactGroup, farArtifactGroupToFarShoot, farShootToEnd;
-    private List<ArtifactGroup> ARTIFACT_GROUP_ORDER = new ArrayList<>(Arrays.asList(PRELOAD, NEAR, LOADING_ZONE, MIDDLE, FAR));
+            startToLaunch,
+            launchToNearArtifactGroup, intakeNearArtifactGroup, nearArtifactGroupToLaunch,
+            launchToMiddleArtifactGroup, intakeMiddleArtifactGroup, middleArtifactGroupToLaunch,
+            launchToFarArtifactGroup, intakeFarArtifactGroup, farArtifactGroupToLaunch,
+            launchToLoadingZoneArtifactGroup, intakeLoadingZoneArtifactGroup, loadingZoneArtifactGroupToLaunch,
+            launchToEnd;
+    private final Iterator<ArtifactGroupEnum> artifactGroupIterator = List.of(
+                    PRELOAD_ARTIFACT_GROUP,
+                    NEAR_ARTIFACT_GROUP,
+                    LOADING_ZONE_ARTIFACT_GROUP,
+                    MIDDLE_ARTIFACT_GROUP,
+                    FAR_ARTIFACT_GROUP).iterator();
+    private ArtifactGroupEnum currentArtifactGroup;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -125,147 +135,217 @@ public class BaseAuto extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
-        if(getStartPosition() == NEAR) {
+        setInitialState();
+    }
+
+    private void setInitialState() {
+        updateToNextArtifactGroup();
+        if(currentArtifactGroup == PRELOAD_ARTIFACT_GROUP && getStartPosition() == NEAR) {
+            //If we are starting with shooting preload, and we are starting at the
+            // near launch zone, we must drive to shoot first
             currentState = DRIVE_FROM_START_TO_LAUNCH;
-        } else {
-            currentState = SHOOT_PRELOAD;
         }
+    }
+
+    private void updateToNextArtifactGroup() {
+        if(artifactGroupIterator.hasNext()) {
+            currentArtifactGroup = artifactGroupIterator.next();
+        } else {
+            currentArtifactGroup = NONE;
+        }
+        currentState = currentArtifactGroup.getStartingState();
     }
 
     private void updateState() {
         if(!follower.isBusy()) {
-            switch (currentState) {
-
-                //PRELOAD STATES
-                case DRIVE_FROM_START_TO_LAUNCH:
-                    follower.followPath(startToShoot, true);
-                    currentState = SHOOT_PRELOAD;
+            switch(currentArtifactGroup) {
+                case PRELOAD_ARTIFACT_GROUP:
+                    updatePreloadStates();
                     break;
-                case SHOOT_PRELOAD:
-                    if(readyToShoot()) {
-                        sleep(500);
-                        autoLaunchArtifact();
-                        sleep(1000);
-                        stopLaunchArtifact();
-                        currentState = DRIVE_FROM_NEAR_LAUNCH_TO_NEAR_ARTIFACT_GROUP;
-                    }
-                   break;
-
-                //NEAR ARTIFACT GROUP
-                case DRIVE_FROM_NEAR_LAUNCH_TO_NEAR_ARTIFACT_GROUP:
-                    follower.followPath(shootToNearArtifactGroup, true);
-                    currentState = INTAKE_NEAR_ARTIFACT_GROUP;
+                case NEAR_ARTIFACT_GROUP:
+                    updateNearArtifactGroupStates();
                     break;
-                case INTAKE_NEAR_ARTIFACT_GROUP:
-                    startIntake();
-                    follower.followPath(intakeNearArtifactGroup);
-                    currentState = DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_NEAR_LAUNCH;
+                case MIDDLE_ARTIFACT_GROUP:
+                    updateMiddleArtifactGroupState();
                     break;
-                case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_NEAR_LAUNCH:
-                    stopIntake();
-                    follower.followPath(nearArtifactGroupToNearShoot);
-                    currentState = SHOOT_NEAR_ARTIFACT_GROUP;
+                case FAR_ARTIFACT_GROUP:
+                    updateFarArtifactGroupState();
                     break;
-                case SHOOT_NEAR_ARTIFACT_GROUP:
-                    if(readyToShoot()) {
-                        sleep(1000);
-                        autoLaunchArtifact();
-                        sleep(1000);
-                        stopLaunchArtifact();
-                        currentState = DRIVE_FROM_NEAR_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP;
-                    }
+                case LOADING_ZONE_ARTIFACT_GROUP:
+                    updateLoadingZoneArtifactGroupState();
                     break;
-
-                //MIDDLE ARTIFACT GROUP
-                case DRIVE_FROM_NEAR_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP:
-                    follower.followPath(shootToMiddleArtifactGroup, true);
-                    currentState = INTAKE_MIDDLE_ARTIFACT_GROUP;
-                    break;
-                case INTAKE_MIDDLE_ARTIFACT_GROUP:
-                    startIntake();
-                    follower.followPath(intakeMiddleArtifactGroup);
-                    currentState = DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_NEAR_LAUNCH;
-                    break;
-                case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_NEAR_LAUNCH:
-                    stopIntake();
-                    follower.followPath(middleArtifactGroupToNearShoot);
-                    currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
-                    break;
-                case SHOOT_MIDDLE_ARTIFACT_GROUP:
-                    if(readyToShoot()) {
-                        sleep(1000);
-                        autoLaunchArtifact();
-                        sleep(1000);
-                        stopLaunchArtifact();
-                        currentState = DRIVE_FROM_NEAR_LAUNCH_TO_FAR_ARTIFACT_GROUP;
-                    }
-                    break;
-
-                //FAR ARTIFACT_GROUP
-                case DRIVE_FROM_NEAR_LAUNCH_TO_FAR_ARTIFACT_GROUP:
-                    follower.followPath(shootToFarArtifactGroup, true);
-                    currentState = INTAKE_FAR_ARTIFACT_GROUP;
-                    break;
-                case INTAKE_FAR_ARTIFACT_GROUP:
-                    startIntake();
-                    follower.followPath(intakeFarArtifactGroup);
-                    currentState = DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_FAR_LAUNCH;
-                    break;
-                case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_FAR_LAUNCH:
-                    stopIntake();
-                    follower.followPath(farArtifactGroupToFarShoot);
-                    currentState = SHOOT_FAR_ARTIFACT_GROUP;
-                    break;
-                case SHOOT_FAR_ARTIFACT_GROUP:
-                    if(readyToShoot()) {
-                        sleep(1000);
-                        autoLaunchArtifact();
-                        sleep(1000);
-                        stopLaunchArtifact();
-                        currentState = DRIVE_FROM_FAR_LAUNCH_TO_END;
-                    }
-                    break;
-                case DRIVE_FROM_FAR_LAUNCH_TO_END:
-                    follower.followPath(farShootToEnd);
-                    currentState = END_STATE;
+                case NONE:
+                    updateNoneArtifactGroupState();
                     break;
             }
+        }
+    }
+
+    private void updatePreloadStates() {
+        switch(currentState) {
+            //PRELOAD STATES
+            case DRIVE_FROM_START_TO_LAUNCH:
+                follower.followPath(startToLaunch, true);
+                currentState = SHOOT_PRELOAD;
+                break;
+            case SHOOT_PRELOAD:
+                shootAndUpdateToNextArtifactGroup();
+                break;
+        }
+    }
+
+    private void updateNearArtifactGroupStates() {
+        switch (currentState) {
+            //NEAR ARTIFACT GROUP
+            case DRIVE_FROM_LAUNCH_TO_NEAR_ARTIFACT_GROUP:
+                follower.followPath(launchToNearArtifactGroup, true);
+                currentState = INTAKE_NEAR_ARTIFACT_GROUP;
+                break;
+            case INTAKE_NEAR_ARTIFACT_GROUP:
+                startIntake();
+                follower.followPath(intakeNearArtifactGroup);
+                currentState = DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH;
+                break;
+            case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH:
+                stopIntake();
+                follower.followPath(nearArtifactGroupToLaunch);
+                currentState = SHOOT_NEAR_ARTIFACT_GROUP;
+                break;
+            case SHOOT_NEAR_ARTIFACT_GROUP:
+                shootAndUpdateToNextArtifactGroup();
+                break;
+        }
+    }
+
+    private void updateMiddleArtifactGroupState() {
+        switch (currentState) {
+            //MIDDLE ARTIFACT GROUP
+            case DRIVE_FROM_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP:
+                follower.followPath(launchToMiddleArtifactGroup, true);
+                currentState = INTAKE_MIDDLE_ARTIFACT_GROUP;
+                break;
+            case INTAKE_MIDDLE_ARTIFACT_GROUP:
+                startIntake();
+                follower.followPath(intakeMiddleArtifactGroup);
+                currentState = DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH;
+                break;
+            case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH:
+                stopIntake();
+                follower.followPath(middleArtifactGroupToLaunch);
+                currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
+                break;
+            case SHOOT_MIDDLE_ARTIFACT_GROUP:
+                shootAndUpdateToNextArtifactGroup();
+                break;
+        }
+    }
+
+    private void updateFarArtifactGroupState() {
+        switch (currentState) {
+            //FAR ARTIFACT_GROUP
+            case DRIVE_FROM_LAUNCH_TO_FAR_ARTIFACT_GROUP:
+                follower.followPath(launchToFarArtifactGroup, true);
+                currentState = INTAKE_FAR_ARTIFACT_GROUP;
+                break;
+            case INTAKE_FAR_ARTIFACT_GROUP:
+                startIntake();
+                follower.followPath(intakeFarArtifactGroup);
+                currentState = DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH;
+                break;
+            case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH:
+                stopIntake();
+                follower.followPath(farArtifactGroupToLaunch);
+                currentState = SHOOT_FAR_ARTIFACT_GROUP;
+                break;
+            case SHOOT_FAR_ARTIFACT_GROUP:
+                shootAndUpdateToNextArtifactGroup();
+                break;
+        }
+    }
+
+    private void updateLoadingZoneArtifactGroupState() {
+        switch (currentState) {
+            //LOADING ZONE ARTIFACT_GROUP
+            case DRIVE_FROM_LAUNCH_TO_LOADING_ZONE_ARTIFACT_GROUP:
+                follower.followPath(launchToFarArtifactGroup, true);
+                currentState = INTAKE_LOADING_ZONE_ARTIFACT_GROUP;
+                break;
+            case INTAKE_LOADING_ZONE_ARTIFACT_GROUP:
+                startIntake();
+                follower.followPath(intakeFarArtifactGroup);
+                currentState = DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH;
+                break;
+            case DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH:
+                stopIntake();
+                follower.followPath(farArtifactGroupToLaunch);
+                currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
+                break;
+            case SHOOT_LOADING_ZONE_ARTIFACT_GROUP:
+                shootAndUpdateToNextArtifactGroup();
+                break;
+        }
+    }
+
+    private void shootAndUpdateToNextArtifactGroup() {
+        if (readyToShoot()) {
+            sleep(1000);
+            autoLaunchArtifact();
+            sleep(1000);
+            stopLaunchArtifact();
+            updateToNextArtifactGroup();
+        }
+    }
+
+    private void updateNoneArtifactGroupState() {
+        switch (currentState) {
+            case DRIVE_FROM_LAUNCH_TO_END:
+                follower.followPath(launchToEnd);
+                currentState = END_STATE;
+                break;
         }
     }
 
     private void buildPaths() {
         AbstractPoseSupplier poseSupplier =
             AbstractPoseSupplier.getPoseSupplier(getStartPosition(), getTargetAprilTag());
-        startToShoot = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getStartPose(), poseSupplier.getNearLaunchPose());
+        startToLaunch = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getStartPose(), poseSupplier.getLaunchPose());
 
-        // Handle Move to Near Artifacts, Intake them, Return to Near Shooting Position
-        shootToNearArtifactGroup = buildLinearPathChainBetweenTwoPoses(
+        // Handle Move to Near Artifacts, Intake them, Return to Launch Position
+        launchToNearArtifactGroup = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getStartPose(), poseSupplier.getNearArtifactGroupPose());
         intakeNearArtifactGroup = buildLinearPathChainOutAndBack(
                 follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearArtifactEndIntakePose());
-        nearArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearLaunchPose());
+        nearArtifactGroupToLaunch = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getLaunchPose());
 
-        // Handle Move to Middle Artifacts, Intake them, Return to Near Shooting Position
-        shootToMiddleArtifactGroup = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getNearLaunchPose(), poseSupplier.getMiddleArtifactGroupPose());
+        // Handle Move to Middle Artifacts, Intake them, Return to Launch Position
+        launchToMiddleArtifactGroup = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getLaunchPose(), poseSupplier.getMiddleArtifactGroupPose());
         intakeMiddleArtifactGroup = buildLinearPathChainOutAndBack(
                 follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getMiddleArtifactEndIntakePose());
-        middleArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getNearLaunchPose());
+        middleArtifactGroupToLaunch = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getLaunchPose());
 
-        // Handle Move to Far Artifacts, Intake them, Return to Far Shooting Position
-        shootToFarArtifactGroup = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getNearLaunchPose(), poseSupplier.getFarArtifactGroupPose());
+        // Handle Move to Far Artifacts, Intake them, Return to Launch Position
+        launchToFarArtifactGroup = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getLaunchPose(), poseSupplier.getFarArtifactGroupPose());
         intakeFarArtifactGroup = buildLinearPathChainOutAndBack(
             follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarArtifactEndIntakePose());
-        farArtifactGroupToFarShoot = buildLinearPathChainBetweenTwoPoses(
-                follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarLaunchPose());
+        farArtifactGroupToLaunch = buildLinearPathChainBetweenTwoPoses(
+                follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getLaunchPose());
 
-        // Move from Far Shooting Position to Park Positon
-        farShootToEnd = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getFarLaunchPose(), poseSupplier.getEndPose());
+        // Handle Move to Loading Zone Artifacts, Intake them, Return to Launch Position
+        launchToLoadingZoneArtifactGroup = buildLinearPathChainBetweenTwoPoses(
+                follower, poseSupplier.getLaunchPose(), poseSupplier.getLoadingZoneArtifactGroupPose());
+        intakeLoadingZoneArtifactGroup = buildLinearPathChainOutAndBack(
+                follower, poseSupplier.getLoadingZoneArtifactGroupPose(), poseSupplier.getLoadingZoneArtifactEndIntakePose());
+        loadingZoneArtifactGroupToLaunch = buildLinearPathChainBetweenTwoPoses(
+                follower, poseSupplier.getLoadingZoneArtifactGroupPose(), poseSupplier.getLaunchPose());
+
+        // Move from Launch Position to Park Positon
+        launchToEnd = buildLinearPathChainBetweenTwoPoses(
+            follower, poseSupplier.getLaunchPose(), poseSupplier.getEndPose());
 
         // Set Starting Pose
         follower.setStartingPose(poseSupplier.getStartPose());

@@ -9,12 +9,7 @@ public class RedNearPoseSupplier extends AbstractPoseSupplier{
   }
 
   @Override
-  public Pose getNearLaunchPose() {
-    return null;
-  }
-
-  @Override
-  public Pose getFarLaunchPose() {
+  public Pose getLaunchPose() {
     return null;
   }
 
@@ -45,6 +40,16 @@ public class RedNearPoseSupplier extends AbstractPoseSupplier{
 
   @Override
   public Pose getFarArtifactEndIntakePose() {
+    return null;
+  }
+
+  @Override
+  public Pose getLoadingZoneArtifactGroupPose() {
+    return null;
+  }
+
+  @Override
+  public Pose getLoadingZoneArtifactEndIntakePose() {
     return null;
   }
 
