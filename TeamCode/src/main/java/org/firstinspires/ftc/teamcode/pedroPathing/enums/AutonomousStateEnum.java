@@ -31,6 +31,7 @@ public enum AutonomousStateEnum {
     SHOOT_LOADING_ZONE_ARTIFACT_GROUP,
 
     //END GAME
+    ABORT,
     DRIVE_FROM_LAUNCH_TO_END,
     END_STATE
 }

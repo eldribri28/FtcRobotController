@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagE
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
 import org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum;
 import org.firstinspires.ftc.teamcode.pedroPathing.pose.AbstractPoseSupplier;
+import org.firstinspires.ftc.teamcode.pedroPathing.pose.BlueFarPoseSupplier;
 import org.firstinspires.ftc.teamcode.pedroPathing.pose.RedFarPoseSupplier;
 
 import java.util.List;
@@ -20,6 +21,8 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnu
 @Disabled
 @Autonomous(name="RED FAR Auto", group="auto-far", preselectTeleOp = "RED Linear TeleOp")
 public class RedFarAuto extends BaseAuto {
+
+    private static final AbstractPoseSupplier POSE_SUPPLIER = new RedFarPoseSupplier();
 
     @Override
     AprilTagEnum getTargetAprilTag() {
@@ -43,6 +46,6 @@ public class RedFarAuto extends BaseAuto {
 
     @Override
     AbstractPoseSupplier getPoseSupplier() {
-        return new RedFarPoseSupplier();
+        return POSE_SUPPLIER;
     }
 }

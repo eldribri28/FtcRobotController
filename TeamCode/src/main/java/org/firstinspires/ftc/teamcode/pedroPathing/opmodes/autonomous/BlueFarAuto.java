@@ -21,6 +21,8 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnu
 @Autonomous(name="BLUE FAR Auto", group="auto-far", preselectTeleOp = "BLUE Linear TeleOp")
 public class BlueFarAuto extends BaseAuto {
 
+    private static final AbstractPoseSupplier POSE_SUPPLIER = new BlueFarPoseSupplier();
+
     @Override
     AprilTagEnum getTargetAprilTag() {
         return AprilTagEnum.BLUE_TARGET;
@@ -43,6 +45,6 @@ public class BlueFarAuto extends BaseAuto {
 
     @Override
     AbstractPoseSupplier getPoseSupplier() {
-        return new BlueFarPoseSupplier();
+        return POSE_SUPPLIER;
     }
 }

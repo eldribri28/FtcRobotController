@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous; // make sure this aligns with class location
+package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
@@ -61,6 +61,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class BaseAuto extends LinearOpMode {
+    private static final double ABORT_TIME_LIMIT = 2;
+    private static final double AUTO_TIME_DURATION = 30;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -145,6 +147,9 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private void updateState() {
+        if(AUTO_TIME_DURATION - getRuntime() < ABORT_TIME_LIMIT && currentState != DRIVE_FROM_LAUNCH_TO_END) {
+            abortAndDriveToEndPosition();
+        }
         follower.update();
         if(!follower.isBusy()) {
             switch(currentArtifactGroup) {
@@ -168,6 +173,12 @@ public abstract class BaseAuto extends LinearOpMode {
                     break;
             }
         }
+    }
+
+    private void abortAndDriveToEndPosition() {
+        follower.breakFollowing();
+        currentArtifactGroup = NONE;
+        currentState = ABORT;
     }
 
     private void updatePreloadStates() {
@@ -291,6 +302,11 @@ public abstract class BaseAuto extends LinearOpMode {
                 follower.followPath(launchToEnd);
                 currentState = END_STATE;
                 break;
+            case ABORT:
+                PathChain pathChain = buildLinearPathChainBetweenTwoPoses(
+                    follower, follower.getPose(), getPoseSupplier().getEndPose());
+                follower.followPath(pathChain);
+                currentState = END_STATE;
         }
     }
 
@@ -484,13 +500,31 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private void updateTelemetry() {
-        telemetry.addData("current artifact group", currentArtifactGroup.name());
-        telemetry.addData("current state", currentState.name());
-        telemetry.addData("follower.isBusy", follower.isBusy());
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
+        updateRuntime();
+        telemetry.addData("Target april tag", getTargetAprilTag().name());
+        telemetry.addData("Start position", getStartPosition().name());
+        telemetry.addData("Artifact group execution order", getArtifactGroupExecutionOrder().toString());
+        telemetry.addData("Current artifact group", currentArtifactGroup.name());
+        telemetry.addData("Current state", currentState.name());
+        telemetry.addData("Follower busy", follower.isBusy());
+        telemetry.addData("X", follower.getPose().getX());
+        telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Heading", follower.getPose().getHeading());
         telemetry.update();
+    }
+
+    private void updateRuntime() {
+        double totalSeconds = getRuntime();
+        telemetry.addData(
+            "Runtime",
+            "%02.0f:%02.0f",
+            totalSeconds / 60,
+            totalSeconds % 60);
+        telemetry.addData(
+            "Remaining Time",
+            "%02.0f:%02.0f",
+            (30 - totalSeconds) / 60,
+            (30 - totalSeconds) % 60);
     }
 
     abstract AprilTagEnum getTargetAprilTag();
