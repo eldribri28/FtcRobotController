@@ -42,7 +42,6 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
-
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum;
@@ -78,29 +77,38 @@ public abstract class BaseAuto extends LinearOpMode {
     private AprilTagEngine aprilTagEngine;
     private Thread aprilTagEngineThread;
     private Follower follower;
-    private PathChain
-            startToLaunch,
-            launchToNearArtifactGroup, intakeNearArtifactGroup, nearArtifactGroupToLaunch,
-            launchToMiddleArtifactGroup, intakeMiddleArtifactGroup, middleArtifactGroupToLaunch,
-            launchToFarArtifactGroup, intakeFarArtifactGroup, farArtifactGroupToLaunch,
-            launchToLoadingZoneArtifactGroup, intakeLoadingZoneArtifactGroup, loadingZoneArtifactGroupToLaunch,
-            launchToEnd;
     private final Iterator<ArtifactGroupEnum> artifactGroupIterator =
         getArtifactGroupExecutionOrder().iterator();
     private ArtifactGroupEnum currentArtifactGroup;
     private AutonomousStateEnum currentState;
     private int initialTurretPosition;
 
+    //PATH CHAINS
+    private PathChain startToLaunch;
+    private PathChain launchToNearArtifactGroup;
+    private PathChain intakeNearArtifactGroup;
+    private PathChain nearArtifactGroupToLaunch;
+    private PathChain launchToMiddleArtifactGroup;
+    private PathChain intakeMiddleArtifactGroup;
+    private PathChain middleArtifactGroupToLaunch;
+    private PathChain launchToFarArtifactGroup;
+    private PathChain intakeFarArtifactGroup;
+    private PathChain farArtifactGroupToLaunch;
+    private PathChain launchToLoadingZoneArtifactGroup;
+    private PathChain intakeLoadingZoneArtifactGroup;
+    private PathChain loadingZoneArtifactGroupToLaunch;
+    private PathChain launchToEnd;
+
     @Override
     public void runOpMode() throws InterruptedException {
         try {
             initialize();
             hardwareManager.getAngleServo().setPosition(0);
+            aprilTagEngineThread.start();
             waitForStart();
             resetRuntime();
-            aprilTagEngineThread.start();
             hardwareManager.postStartInitialization();
-            while (opModeIsActive()) {
+            while (opModeIsActive() && currentState != COMPLETE) {
                 updateState();
                 autoLaunch();
                 updateTelemetry();
@@ -110,7 +118,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 aprilTagEngineThread.interrupt();
                 aprilTagEngine.teardown();
             }
-            telemetry.update();
+            updateTelemetry();
         }
     }
 
@@ -178,6 +186,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     private boolean shouldAbort() {
         return AUTO_TIME_DURATION - getRuntime() < ABORT_TIME_LIMIT
+            && currentState != ABORT
             && currentState != DRIVE_FROM_LAUNCH_TO_END;
     }
 
@@ -286,6 +295,24 @@ public abstract class BaseAuto extends LinearOpMode {
         }
     }
 
+    private void updateNoneArtifactGroupState() {
+        switch (currentState) {
+            case DRIVE_FROM_LAUNCH_TO_END:
+                follower.followPath(launchToEnd);
+                currentState = ENDING_STATE;
+                break;
+            case ABORT:
+                PathChain pathChain = buildLinearPathChainBetweenTwoPoses(
+                    follower, follower.getPose(), getPoseSupplier().getEndPose());
+                follower.followPath(pathChain);
+                currentState = ENDING_STATE;
+                break;
+            case ENDING_STATE:
+                currentState = COMPLETE;
+                break;
+        }
+    }
+
     private void shootAndUpdateToNextArtifactGroup() {
         if (readyToShoot()) {
             sleep(1000);
@@ -296,23 +323,10 @@ public abstract class BaseAuto extends LinearOpMode {
         }
     }
 
-    private void updateNoneArtifactGroupState() {
-        switch (currentState) {
-            case DRIVE_FROM_LAUNCH_TO_END:
-                follower.followPath(launchToEnd);
-                currentState = END_STATE;
-                break;
-            case ABORT:
-                PathChain pathChain = buildLinearPathChainBetweenTwoPoses(
-                    follower, follower.getPose(), getPoseSupplier().getEndPose());
-                follower.followPath(pathChain);
-                currentState = END_STATE;
-                break;
-        }
-    }
-
     private void buildPaths() {
         AbstractPoseSupplier poseSupplier = getPoseSupplier();
+
+        //Handles Move to Launch Position from Starting Position (for Near Start)
         startToLaunch = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getStartPose(), poseSupplier.getLaunchPose());
 
@@ -522,7 +536,7 @@ public abstract class BaseAuto extends LinearOpMode {
             totalSeconds / 60,
             totalSeconds % 60);
         telemetry.addData(
-            "Remaining Time",
+            "Time remaining",
             "%02.0f:%02.0f",
             (30 - totalSeconds) / 60,
             (30 - totalSeconds) % 60);

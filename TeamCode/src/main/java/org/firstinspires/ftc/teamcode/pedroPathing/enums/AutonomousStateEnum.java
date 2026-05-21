@@ -33,5 +33,6 @@ public enum AutonomousStateEnum {
     //END GAME
     ABORT,
     DRIVE_FROM_LAUNCH_TO_END,
-    END_STATE
+    ENDING_STATE,
+    COMPLETE
 }
