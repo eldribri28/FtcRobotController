@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.autonomous; // make sure this aligns with class location
+package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous; // make sure this aligns with class location
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
@@ -28,13 +28,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.calculateLeadAngle;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.updateTargetDiff;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.FAR_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.LOADING_ZONE_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.MIDDLE_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.NEAR_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.NONE;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.autonomous.AutonomousStateEnum.*;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NONE;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.*;
 import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainBetweenTwoPoses;
 import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainOutAndBack;
 
@@ -43,7 +39,6 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -57,14 +52,15 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEn
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TimedAprilTagDetection;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum;
+import org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum;
 import org.firstinspires.ftc.teamcode.pedroPathing.pose.AbstractPoseSupplier;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Iterator;
 import java.util.List;
 
-@Autonomous(name = "Example Auto", group = "Examples")
-public class BaseAuto extends LinearOpMode {
+public abstract class BaseAuto extends LinearOpMode {
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
     private double launchAngle = 0;
@@ -89,12 +85,8 @@ public class BaseAuto extends LinearOpMode {
             launchToFarArtifactGroup, intakeFarArtifactGroup, farArtifactGroupToLaunch,
             launchToLoadingZoneArtifactGroup, intakeLoadingZoneArtifactGroup, loadingZoneArtifactGroupToLaunch,
             launchToEnd;
-    private final Iterator<ArtifactGroupEnum> artifactGroupIterator = List.of(
-                    PRELOAD_ARTIFACT_GROUP,
-                    NEAR_ARTIFACT_GROUP,
-                    LOADING_ZONE_ARTIFACT_GROUP,
-                    MIDDLE_ARTIFACT_GROUP,
-                    FAR_ARTIFACT_GROUP).iterator();
+    private final Iterator<ArtifactGroupEnum> artifactGroupIterator =
+        getArtifactGroupExecutionOrder().iterator();
     private ArtifactGroupEnum currentArtifactGroup;
 
     @Override
@@ -107,15 +99,9 @@ public class BaseAuto extends LinearOpMode {
             aprilTagEngineThread.start();
             hardwareManager.postStartInitialization();
             while (opModeIsActive()) {
-                telemetry.addData("currentState", currentState.name());
-                telemetry.addData("follower.isBusy", follower.isBusy());
-                telemetry.addData("x", follower.getPose().getX());
-                telemetry.addData("y", follower.getPose().getY());
-                telemetry.addData("heading", follower.getPose().getHeading());
                 updateState();
                 autoLaunch();
-                follower.update();
-                telemetry.update();
+                updateTelemetry();
             }
         } finally {
             if(aprilTagEngineThread != null) {
@@ -140,9 +126,9 @@ public class BaseAuto extends LinearOpMode {
 
     private void setInitialState() {
         updateToNextArtifactGroup();
+        // If we are starting with shooting preload, and we are starting at the near launch zone,
+        // we must drive to shoot first
         if(currentArtifactGroup == PRELOAD_ARTIFACT_GROUP && getStartPosition() == NEAR) {
-            //If we are starting with shooting preload, and we are starting at the
-            // near launch zone, we must drive to shoot first
             currentState = DRIVE_FROM_START_TO_LAUNCH;
         }
     }
@@ -157,6 +143,7 @@ public class BaseAuto extends LinearOpMode {
     }
 
     private void updateState() {
+        follower.update();
         if(!follower.isBusy()) {
             switch(currentArtifactGroup) {
                 case PRELOAD_ARTIFACT_GROUP:
@@ -267,17 +254,17 @@ public class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //LOADING ZONE ARTIFACT_GROUP
             case DRIVE_FROM_LAUNCH_TO_LOADING_ZONE_ARTIFACT_GROUP:
-                follower.followPath(launchToFarArtifactGroup, true);
+                follower.followPath(launchToLoadingZoneArtifactGroup, true);
                 currentState = INTAKE_LOADING_ZONE_ARTIFACT_GROUP;
                 break;
             case INTAKE_LOADING_ZONE_ARTIFACT_GROUP:
                 startIntake();
-                follower.followPath(intakeFarArtifactGroup);
+                follower.followPath(intakeLoadingZoneArtifactGroup);
                 currentState = DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH;
                 break;
             case DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(farArtifactGroupToLaunch);
+                follower.followPath(loadingZoneArtifactGroupToLaunch);
                 currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
                 break;
             case SHOOT_LOADING_ZONE_ARTIFACT_GROUP:
@@ -306,8 +293,7 @@ public class BaseAuto extends LinearOpMode {
     }
 
     private void buildPaths() {
-        AbstractPoseSupplier poseSupplier =
-            AbstractPoseSupplier.getPoseSupplier(getStartPosition(), getTargetAprilTag());
+        AbstractPoseSupplier poseSupplier = getPoseSupplier();
         startToLaunch = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getStartPose(), poseSupplier.getLaunchPose());
 
@@ -357,14 +343,6 @@ public class BaseAuto extends LinearOpMode {
 
     private void stopIntake() {
         hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
-    }
-
-    private AprilTagEnum getTargetAprilTag() {
-        return AprilTagEnum.BLUE_TARGET;
-    }
-
-    private StartPositionEnum getStartPosition() {
-        return StartPositionEnum.FAR;
     }
 
     private void autoLaunch() {
@@ -501,4 +479,19 @@ public class BaseAuto extends LinearOpMode {
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
         hardwareManager.getIntakeMotor().setPower(INTAKE_NO_POWER);
     }
+
+    private void updateTelemetry() {
+        telemetry.addData("current artifact group", currentArtifactGroup.name());
+        telemetry.addData("current state", currentState.name());
+        telemetry.addData("follower.isBusy", follower.isBusy());
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.update();
+    }
+
+    abstract AprilTagEnum getTargetAprilTag();
+    abstract StartPositionEnum getStartPosition();
+    abstract List<ArtifactGroupEnum> getArtifactGroupExecutionOrder();
+    abstract AbstractPoseSupplier getPoseSupplier();
 }

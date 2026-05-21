@@ -2,9 +2,11 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.autono
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
 
+@Disabled
 @Autonomous(name="BLUE NEAR Linear Autonomous", group="auto-near", preselectTeleOp = "BLUE Linear TeleOp")
 public class BlueLinearOpModeAutonomousNear extends AutonomousBaseLinearOpMode {
 

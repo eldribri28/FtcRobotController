@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.autonomous;
+package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous;
 
 import com.pedropathing.geometry.Pose;
 

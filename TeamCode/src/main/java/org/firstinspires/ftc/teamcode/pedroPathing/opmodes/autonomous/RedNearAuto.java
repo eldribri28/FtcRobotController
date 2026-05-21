@@ -1,0 +1,48 @@
+package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
+import org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum;
+import org.firstinspires.ftc.teamcode.pedroPathing.pose.AbstractPoseSupplier;
+import org.firstinspires.ftc.teamcode.pedroPathing.pose.RedNearPoseSupplier;
+
+import java.util.List;
+
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.FAR_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.LOADING_ZONE_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.MIDDLE_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NEAR_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
+
+@Disabled
+@Autonomous(name="RED NEAR Auto", group="auto-near", preselectTeleOp = "RED Linear TeleOp")
+public class RedNearAuto extends BaseAuto {
+
+    @Override
+    AprilTagEnum getTargetAprilTag() {
+        return AprilTagEnum.RED_TARGET;
+    }
+
+    @Override
+    StartPositionEnum getStartPosition() {
+        return StartPositionEnum.NEAR;
+    }
+
+    @Override
+    List<ArtifactGroupEnum> getArtifactGroupExecutionOrder() {
+        return List.of(
+            PRELOAD_ARTIFACT_GROUP,
+            NEAR_ARTIFACT_GROUP,
+            MIDDLE_ARTIFACT_GROUP,
+            FAR_ARTIFACT_GROUP,
+            LOADING_ZONE_ARTIFACT_GROUP);
+    }
+
+    @Override
+    AbstractPoseSupplier getPoseSupplier() {
+        return new RedNearPoseSupplier();
+    }
+}

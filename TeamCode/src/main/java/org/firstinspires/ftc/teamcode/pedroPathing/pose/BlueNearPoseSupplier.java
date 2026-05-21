@@ -2,59 +2,92 @@ package org.firstinspires.ftc.teamcode.pedroPathing.pose;
 
 import com.pedropathing.geometry.Pose;
 
-public class BlueNearPoseSupplier extends AbstractPoseSupplier{
+public class BlueNearPoseSupplier extends AbstractPoseSupplier {
+
   @Override
   public Pose getStartPose() {
-    return null;
+    return new Pose(
+        BLUE_NEAR_START_X_POSITION,
+        NEAR_START_Y_POSITION,
+        BLUE_NEAR_START_HEADING);
   }
 
   @Override
   public Pose getLaunchPose() {
-    return null;
+    return new Pose(
+        BLUE_NEAR_LAUNCH_X_POSITION,
+        NEAR_LAUNCH_Y_POSITION,
+        BLUE_DEFAULT_HEADING);
   }
 
   @Override
   public Pose getNearArtifactGroupPose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_START_X_POSITION,
+        ARTIFACT_GROUP_1_Y_POSITION,
+        BLUE_DEFAULT_HEADING);
   }
 
   @Override
   public Pose getNearArtifactEndIntakePose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
+        ARTIFACT_GROUP_1_Y_POSITION,
+        BLUE_DEFAULT_HEADING);
   }
 
   @Override
   public Pose getMiddleArtifactGroupPose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_START_X_POSITION,
+        ARTIFACT_GROUP_2_Y_POSITION,
+        BLUE_DEFAULT_HEADING
+    );
   }
 
   @Override
   public Pose getMiddleArtifactEndIntakePose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
+        ARTIFACT_GROUP_2_Y_POSITION,
+        BLUE_DEFAULT_HEADING);
   }
 
   @Override
   public Pose getFarArtifactGroupPose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_START_X_POSITION,
+        ARTIFACT_GROUP_3_Y_POSITION,
+        BLUE_DEFAULT_HEADING
+    );
   }
 
   @Override
   public Pose getFarArtifactEndIntakePose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
+        ARTIFACT_GROUP_3_Y_POSITION,
+        BLUE_DEFAULT_HEADING);
   }
 
   @Override
   public Pose getLoadingZoneArtifactGroupPose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_4_X_POSITION,
+        ARTIFACT_GROUP_4_Y_POSITION,
+        ARTIFACT_GROUP_4_HEADING);
   }
 
   @Override
   public Pose getLoadingZoneArtifactEndIntakePose() {
-    return null;
+    return new Pose(
+        BLUE_ARTIFACT_GROUP_4_X_POSITION,
+        ARTIFACT_GROUP_4_Y_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
+        ARTIFACT_GROUP_4_HEADING);
   }
 
   @Override
   public Pose getEndPose() {
-    return null;
+    return BLUE_END_POSE;
   }
 }
