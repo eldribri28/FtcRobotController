@@ -74,7 +74,6 @@ public abstract class BaseAuto extends LinearOpMode {
     private double targetBearing = 0;
     private double targetYaw = 0;
     private boolean launchSolution = false;
-    boolean firing = false;
     private HardwareManager hardwareManager;
     private AprilTagEngine aprilTagEngine;
     private Thread aprilTagEngineThread;
@@ -147,8 +146,10 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private void updateState() {
-        if(AUTO_TIME_DURATION - getRuntime() < ABORT_TIME_LIMIT && currentState != DRIVE_FROM_LAUNCH_TO_END) {
-            abortAndDriveToEndPosition();
+        if(shouldAbort()) {
+            follower.breakFollowing();
+            currentArtifactGroup = NONE;
+            currentState = ABORT;
         }
         follower.update();
         if(!follower.isBusy()) {
@@ -175,10 +176,9 @@ public abstract class BaseAuto extends LinearOpMode {
         }
     }
 
-    private void abortAndDriveToEndPosition() {
-        follower.breakFollowing();
-        currentArtifactGroup = NONE;
-        currentState = ABORT;
+    private boolean shouldAbort() {
+        return AUTO_TIME_DURATION - getRuntime() < ABORT_TIME_LIMIT
+            && currentState != DRIVE_FROM_LAUNCH_TO_END;
     }
 
     private void updatePreloadStates() {
@@ -307,6 +307,7 @@ public abstract class BaseAuto extends LinearOpMode {
                     follower, follower.getPose(), getPoseSupplier().getEndPose());
                 follower.followPath(pathChain);
                 currentState = END_STATE;
+                break;
         }
     }
 
