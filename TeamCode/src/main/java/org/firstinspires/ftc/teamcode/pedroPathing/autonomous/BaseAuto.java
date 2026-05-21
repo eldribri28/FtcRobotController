@@ -143,6 +143,7 @@ public class BaseAuto extends LinearOpMode {
                     break;
                 case SHOOT_PRELOAD:
                     if(readyToShoot()) {
+                        sleep(500);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -163,11 +164,11 @@ public class BaseAuto extends LinearOpMode {
                 case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_NEAR_LAUNCH:
                     stopIntake();
                     follower.followPath(nearArtifactGroupToNearShoot);
-                    sleep(1000);
                     currentState = SHOOT_NEAR_ARTIFACT_GROUP;
                     break;
                 case SHOOT_NEAR_ARTIFACT_GROUP:
                     if(readyToShoot()) {
+                        sleep(1000);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -188,11 +189,11 @@ public class BaseAuto extends LinearOpMode {
                 case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_NEAR_LAUNCH:
                     stopIntake();
                     follower.followPath(middleArtifactGroupToNearShoot);
-                    sleep(1000);
                     currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
                     break;
                 case SHOOT_MIDDLE_ARTIFACT_GROUP:
                     if(readyToShoot()) {
+                        sleep(1000);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -213,11 +214,11 @@ public class BaseAuto extends LinearOpMode {
                 case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_FAR_LAUNCH:
                     stopIntake();
                     follower.followPath(farArtifactGroupToFarShoot);
-                    sleep(1000);
                     currentState = SHOOT_FAR_ARTIFACT_GROUP;
                     break;
                 case SHOOT_FAR_ARTIFACT_GROUP:
                     if(readyToShoot()) {
+                        sleep(1000);
                         autoLaunchArtifact();
                         sleep(1000);
                         stopLaunchArtifact();
@@ -237,26 +238,36 @@ public class BaseAuto extends LinearOpMode {
             AbstractPoseSupplier.getPoseSupplier(getStartPosition(), getTargetAprilTag());
         startToShoot = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getStartPose(), poseSupplier.getNearLaunchPose());
+
+        // Handle Move to Near Artifacts, Intake them, Return to Near Shooting Position
         shootToNearArtifactGroup = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getStartPose(), poseSupplier.getNearArtifactGroupPose());
+        intakeNearArtifactGroup = buildLinearPathChainOutAndBack(
+                follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearArtifactEndIntakePose());
         nearArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearLaunchPose());
-        intakeNearArtifactGroup = buildLinearPathChainOutAndBack(
-            follower, poseSupplier.getNearArtifactGroupPose(), poseSupplier.getNearArtifactEndIntakePose());
+
+        // Handle Move to Middle Artifacts, Intake them, Return to Near Shooting Position
         shootToMiddleArtifactGroup = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getNearLaunchPose(), poseSupplier.getMiddleArtifactGroupPose());
+        intakeMiddleArtifactGroup = buildLinearPathChainOutAndBack(
+                follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getMiddleArtifactEndIntakePose());
         middleArtifactGroupToNearShoot = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getNearLaunchPose());
-        intakeMiddleArtifactGroup = buildLinearPathChainOutAndBack(
-            follower, poseSupplier.getMiddleArtifactGroupPose(), poseSupplier.getMiddleArtifactEndIntakePose());
+
+        // Handle Move to Far Artifacts, Intake them, Return to Far Shooting Position
         shootToFarArtifactGroup = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getNearLaunchPose(), poseSupplier.getFarArtifactGroupPose());
-        farArtifactGroupToFarShoot = buildLinearPathChainBetweenTwoPoses(
-            follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarLaunchPose());
         intakeFarArtifactGroup = buildLinearPathChainOutAndBack(
             follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarArtifactEndIntakePose());
+        farArtifactGroupToFarShoot = buildLinearPathChainBetweenTwoPoses(
+                follower, poseSupplier.getFarArtifactGroupPose(), poseSupplier.getFarLaunchPose());
+
+        // Move from Far Shooting Position to Park Positon
         farShootToEnd = buildLinearPathChainBetweenTwoPoses(
             follower, poseSupplier.getFarLaunchPose(), poseSupplier.getEndPose());
+
+        // Set Starting Pose
         follower.setStartingPose(poseSupplier.getStartPose());
     }
 
@@ -311,7 +322,7 @@ public class BaseAuto extends LinearOpMode {
                     telemetry.addData("Target ID", targetDetection.id);
 
                     double turretError = targetBearing - launchLeadAngle;
-                    double setPower = turretBearingPid.calculate(0,turretError) * 0.5;
+                    double setPower = turretBearingPid.calculate(0,turretError) * 0.6;
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
