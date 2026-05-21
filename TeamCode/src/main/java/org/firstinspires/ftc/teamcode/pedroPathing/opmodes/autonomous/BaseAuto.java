@@ -77,7 +77,6 @@ public abstract class BaseAuto extends LinearOpMode {
     private AprilTagEngine aprilTagEngine;
     private Thread aprilTagEngineThread;
     private Follower follower;
-    private AutonomousStateEnum currentState;
     private PathChain
             startToLaunch,
             launchToNearArtifactGroup, intakeNearArtifactGroup, nearArtifactGroupToLaunch,
@@ -88,6 +87,8 @@ public abstract class BaseAuto extends LinearOpMode {
     private final Iterator<ArtifactGroupEnum> artifactGroupIterator =
         getArtifactGroupExecutionOrder().iterator();
     private ArtifactGroupEnum currentArtifactGroup;
+    private AutonomousStateEnum currentState;
+    private int initialTurretPosition;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -118,6 +119,7 @@ public abstract class BaseAuto extends LinearOpMode {
         aprilTagEngineThread = new Thread(aprilTagEngine);
         hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
         hardwareManager.getIntakeServo().setPosition(INTAKE_DOWN);
+        initialTurretPosition = hardwareManager.getTurretMotor().getCurrentPosition();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
@@ -392,7 +394,7 @@ public abstract class BaseAuto extends LinearOpMode {
                     }
                 } else {
                     hardwareManager.getTurretMotor().setPower(0);
-                    setNoTagDetected();
+                    handleNoTagDetected();
                 }
 
                 if (launchVelocity > 0 || launchAngle > 0) {
@@ -406,10 +408,10 @@ public abstract class BaseAuto extends LinearOpMode {
                 }
                 telemetry.addData("target RPM", targetRPM);
             } else {
-                setNoTagDetected();
+                handleNoTagDetected();
             }
         } else {
-            setNoTagDetected();
+            handleNoTagDetected();
         }
         hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
@@ -428,25 +430,26 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private boolean canRotateTurret(double input) {
-        if (input < 0 && hardwareManager.getLimitSwitchRight().isPressed()) {
-            return false;
-        } else if (input > 0 && hardwareManager.getLimitSwitchLeft().isPressed()){
+        if (input < 0 && hardwareManager.getLimitSwitchRight().isPressed()
+            || input > 0 && hardwareManager.getLimitSwitchLeft().isPressed()) {
             return false;
         } else {
             return true;
         }
     }
 
-    private void setNoTagDetected() {
+    private void handleNoTagDetected() {
         hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
         targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
+        hardwareManager.getTurretMotor().setTargetPosition(initialTurretPosition);
         setLedStates(NO_TAG_DETECTED);
     }
 
     public boolean readyToShoot() {
         return isLaunchMotorVelocityWithinThreshold()
-                && launchSolution;
+            && isTurretAngleWithinThreshold(aprilTagEngine.getTimedTargetDetection().getDetection())
+            && launchSolution;
     }
 
     private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
