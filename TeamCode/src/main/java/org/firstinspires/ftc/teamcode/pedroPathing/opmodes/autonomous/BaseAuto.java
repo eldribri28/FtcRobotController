@@ -60,7 +60,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class BaseAuto extends LinearOpMode {
-    private static final double ABORT_TIME_LIMIT = 2;
+    private static final double ABORT_TIME_LIMIT = 0;
     private static final double AUTO_TIME_DURATION = 30;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
     private double targetDistance = 0;
@@ -104,11 +104,11 @@ public abstract class BaseAuto extends LinearOpMode {
         try {
             initialize();
             hardwareManager.getAngleServo().setPosition(0);
-            aprilTagEngineThread.start();
             waitForStart();
             resetRuntime();
+            aprilTagEngineThread.start();
             hardwareManager.postStartInitialization();
-            while (opModeIsActive() && currentState != COMPLETE) {
+            while (opModeIsActive()) {
                 updateState();
                 autoLaunch();
                 updateTelemetry();
@@ -185,7 +185,8 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private boolean shouldAbort() {
-        return AUTO_TIME_DURATION - getRuntime() < ABORT_TIME_LIMIT
+        return ABORT_TIME_LIMIT > 0
+            && AUTO_TIME_DURATION - getRuntime() < ABORT_TIME_LIMIT
             && currentState != ABORT
             && currentState != DRIVE_FROM_LAUNCH_TO_END;
     }
@@ -473,13 +474,14 @@ public abstract class BaseAuto extends LinearOpMode {
         hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
         targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
-        hardwareManager.getTurretMotor().setTargetPosition(initialTurretPosition);
+//        hardwareManager.getTurretMotor().setTargetPosition(initialTurretPosition);
+
         setLedStates(NO_TAG_DETECTED);
     }
 
     public boolean readyToShoot() {
         return isLaunchMotorVelocityWithinThreshold()
-            && isTurretAngleWithinThreshold(aprilTagEngine.getTimedTargetDetection().getDetection())
+            //&& isTurretAngleWithinThreshold(aprilTagEngine.getTimedTargetDetection().getDetection())
             && launchSolution;
     }
 

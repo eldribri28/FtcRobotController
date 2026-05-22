@@ -17,7 +17,6 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnu
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NEAR_ARTIFACT_GROUP;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
 
-@Disabled
 @Autonomous(name="BLUE FAR Auto", group="auto-far", preselectTeleOp = "BLUE Linear TeleOp")
 public class BlueFarAuto extends BaseAuto {
 
@@ -40,7 +39,8 @@ public class BlueFarAuto extends BaseAuto {
             NEAR_ARTIFACT_GROUP,
             LOADING_ZONE_ARTIFACT_GROUP,
             MIDDLE_ARTIFACT_GROUP,
-            FAR_ARTIFACT_GROUP);
+            FAR_ARTIFACT_GROUP
+        );
     }
 
     @Override

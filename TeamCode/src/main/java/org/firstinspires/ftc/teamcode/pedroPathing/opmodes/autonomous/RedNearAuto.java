@@ -18,7 +18,6 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnu
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NEAR_ARTIFACT_GROUP;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
 
-@Disabled
 @Autonomous(name="RED NEAR Auto", group="auto-near", preselectTeleOp = "RED Linear TeleOp")
 public class RedNearAuto extends BaseAuto {
 
@@ -41,7 +40,8 @@ public class RedNearAuto extends BaseAuto {
             NEAR_ARTIFACT_GROUP,
             MIDDLE_ARTIFACT_GROUP,
             FAR_ARTIFACT_GROUP,
-            LOADING_ZONE_ARTIFACT_GROUP);
+            LOADING_ZONE_ARTIFACT_GROUP
+        );
     }
 
     @Override
