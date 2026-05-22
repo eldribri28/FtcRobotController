@@ -81,7 +81,6 @@ public abstract class BaseAuto extends LinearOpMode {
         getArtifactGroupExecutionOrder().iterator();
     private ArtifactGroupEnum currentArtifactGroup;
     private AutonomousStateEnum currentState;
-    private int initialTurretPosition;
 
     //PATH CHAINS
     private PathChain startToLaunch;
@@ -128,7 +127,6 @@ public abstract class BaseAuto extends LinearOpMode {
         aprilTagEngineThread = new Thread(aprilTagEngine);
         hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
         hardwareManager.getIntakeServo().setPosition(INTAKE_DOWN);
-        initialTurretPosition = hardwareManager.getTurretMotor().getCurrentPosition();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
@@ -474,8 +472,6 @@ public abstract class BaseAuto extends LinearOpMode {
         hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
         targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
-//        hardwareManager.getTurretMotor().setTargetPosition(initialTurretPosition);
-
         setLedStates(NO_TAG_DETECTED);
     }
 
