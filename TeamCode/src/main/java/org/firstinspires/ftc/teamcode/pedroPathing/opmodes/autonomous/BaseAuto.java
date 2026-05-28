@@ -20,6 +20,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_H;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_TARGET_CLOSE_RATE;
@@ -42,6 +43,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum;
@@ -390,6 +392,13 @@ public abstract class BaseAuto extends LinearOpMode {
                 targetDistance = targetDetection.ftcPose.range;
                 targetBearing = targetDetection.ftcPose.bearing;
                 targetYaw = targetDetection.ftcPose.yaw;
+                ROBOT_FIELD_X = targetDetection.robotPose.getPosition().x;
+                ROBOT_FIELD_Y = targetDetection.robotPose.getPosition().y;
+                ROBOT_FIELD_H = targetDetection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
+                double turretError = calculateBearingToGoal(ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H);
+                if (targetDistance > 2.7) {
+                    turretError -= 4;
+                }
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
 
@@ -399,23 +408,20 @@ public abstract class BaseAuto extends LinearOpMode {
                 launchVelocity = launchResult.getLaunchVelocity();
                 launchAngle = launchResult.getLaunchAngle();
                 launchTOF = launchResult.getTOF();
-                if (launchTOF > 0) {
-                    launchLeadAngle = calculateLeadAngle(launchTOF);
-                } else {
-                    launchLeadAngle = 0;
-                }
+                //if (launchTOF > 0) {
+                //    launchLeadAngle = calculateLeadAngle(launchTOF);
+                //} else {
+                //    launchLeadAngle = 0;
+                //}
 
                 setLaunchAngle(launchAngle);
-
-                ROBOT_FIELD_X = targetDetection.robotPose.getPosition().x;
-                ROBOT_FIELD_Y = targetDetection.robotPose.getPosition().y;
 
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && canRotateTurret(targetBearing) && targetDetection.id == getTargetAprilTag().getId()) {
                     telemetry.addData("Turret Angle", (targetBearing));
                     telemetry.addData("Target ID", targetDetection.id);
 
-                    double yawCompensation = targetYaw * 0.1;
-                    turretError = targetBearing + yawCompensation;
+                    //double yawCompensation = targetYaw * 0.1;
+                    //turretError = targetBearing + yawCompensation;
                     double setPower = turretBearingPid.calculate(0,turretError) * 0.6;
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
@@ -451,6 +457,34 @@ public abstract class BaseAuto extends LinearOpMode {
         } else {
             return true;
         }
+    }
+
+    private double calculateBearingToGoal(double robotX, double robotY, double robotYaw) {
+
+        double goalX = 0;
+        double goalY = 0;
+
+        if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
+            goalX = -1.8288;
+            goalY = -1.8288;
+        } else {
+            goalX = -1.8288;
+            goalY = 1.8288;
+        }
+
+        // Robot field angle to goal
+        double absoluteAngleToGoal = Math.toDegrees(Math.atan2(goalY - robotY, goalX - robotX));
+
+        telemetry.addData("Angle to Target", absoluteAngleToGoal);
+        // Calculate turret angle to goal
+        double relativeAngleToGoal = absoluteAngleToGoal - robotYaw - 90;
+
+        // Normalize
+        while (relativeAngleToGoal > 180) relativeAngleToGoal -= 360;
+        while (relativeAngleToGoal < -180) relativeAngleToGoal += 360;
+
+        return relativeAngleToGoal * 0.85;
+
     }
 
     private void handleNoTagDetected() {

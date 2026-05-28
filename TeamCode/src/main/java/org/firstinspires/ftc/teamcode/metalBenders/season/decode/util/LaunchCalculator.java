@@ -41,7 +41,11 @@ public class LaunchCalculator {
         double theta = MIN_LAUNCH_ANGLE; // Deg
         double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
-        targetDistance += 0.100;
+        if (targetDistance > 2.7) {
+            targetDistance -= 0.200;
+        } else {
+            targetDistance += 0.100;
+        }
 
         while (theta <= endAngle) {
 
