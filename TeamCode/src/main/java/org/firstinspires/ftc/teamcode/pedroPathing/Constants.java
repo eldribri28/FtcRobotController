@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class Constants {
 
     //TODO measure actual mass
-    private static final double MASS = 10.0;
+    private static final double MASS = 11.3;
 
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(MASS);
@@ -31,7 +31,7 @@ public class Constants {
     }
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .maxPower(.6)
+            .maxPower(.3)
             .rightFrontMotorName("RFmotor")
             .rightRearMotorName("RRmotor")
             .leftRearMotorName("LRmotor")

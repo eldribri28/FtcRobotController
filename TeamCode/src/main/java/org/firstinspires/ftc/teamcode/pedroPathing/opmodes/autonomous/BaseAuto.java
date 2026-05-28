@@ -72,6 +72,8 @@ public abstract class BaseAuto extends LinearOpMode {
     private double launchLeadAngle = 0;
     private double targetBearing = 0;
     private double targetYaw = 0;
+    private double turretError = 0;
+    private int initialTurretPos = 0;
     private boolean launchSolution = false;
     private HardwareManager hardwareManager;
     private AprilTagEngine aprilTagEngine;
@@ -104,6 +106,7 @@ public abstract class BaseAuto extends LinearOpMode {
             initialize();
             hardwareManager.getAngleServo().setPosition(0);
             waitForStart();
+            initialTurretPos = hardwareManager.getTurretMotor().getCurrentPosition();
             resetRuntime();
             aprilTagEngineThread.start();
             hardwareManager.postStartInitialization();
@@ -216,7 +219,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(nearArtifactGroupToLaunch);
+                follower.followPath(nearArtifactGroupToLaunch, true);
                 currentState = SHOOT_NEAR_ARTIFACT_GROUP;
                 break;
             case SHOOT_NEAR_ARTIFACT_GROUP:
@@ -239,7 +242,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(middleArtifactGroupToLaunch);
+                follower.followPath(middleArtifactGroupToLaunch, true);
                 currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
                 break;
             case SHOOT_MIDDLE_ARTIFACT_GROUP:
@@ -262,7 +265,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(farArtifactGroupToLaunch);
+                follower.followPath(farArtifactGroupToLaunch, true);
                 currentState = SHOOT_FAR_ARTIFACT_GROUP;
                 break;
             case SHOOT_FAR_ARTIFACT_GROUP:
@@ -285,7 +288,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(loadingZoneArtifactGroupToLaunch);
+                follower.followPath(loadingZoneArtifactGroupToLaunch, true);
                 currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
                 break;
             case SHOOT_LOADING_ZONE_ARTIFACT_GROUP:
@@ -314,7 +317,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     private void shootAndUpdateToNextArtifactGroup() {
         if (readyToShoot()) {
-            sleep(1000);
+            //sleep(1000);
             autoLaunchArtifact();
             sleep(1000);
             stopLaunchArtifact();
@@ -384,8 +387,6 @@ public abstract class BaseAuto extends LinearOpMode {
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
-                setLedStates(APRIL_TAG_DETECTED);
-
                 targetDistance = targetDetection.ftcPose.range;
                 targetBearing = targetDetection.ftcPose.bearing;
                 targetYaw = targetDetection.ftcPose.yaw;
@@ -396,13 +397,15 @@ public abstract class BaseAuto extends LinearOpMode {
 
                 LaunchCalculator.LaunchResult launchResult = LaunchCalculator.getLaunchData(LAUNCH_HEIGHT, TARGET_HEIGHT, targetDistance, flywheelRPM, ROBOT_TARGET_CLOSE_RATE);
                 launchVelocity = launchResult.getLaunchVelocity();
-                launchAngle = launchResult.getFlyWheelAngle();
+                launchAngle = launchResult.getLaunchAngle();
                 launchTOF = launchResult.getTOF();
                 if (launchTOF > 0) {
                     launchLeadAngle = calculateLeadAngle(launchTOF);
                 } else {
                     launchLeadAngle = 0;
                 }
+
+                setLaunchAngle(launchAngle);
 
                 ROBOT_FIELD_X = targetDetection.robotPose.getPosition().x;
                 ROBOT_FIELD_Y = targetDetection.robotPose.getPosition().y;
@@ -411,17 +414,13 @@ public abstract class BaseAuto extends LinearOpMode {
                     telemetry.addData("Turret Angle", (targetBearing));
                     telemetry.addData("Target ID", targetDetection.id);
 
-                    double turretError = targetBearing - launchLeadAngle;
+                    double yawCompensation = targetYaw * 0.1;
+                    turretError = targetBearing + yawCompensation;
                     double setPower = turretBearingPid.calculate(0,turretError) * 0.6;
                     telemetry.addData("Turret Power", setPower);
                     hardwareManager.getTurretMotor().setPower(setPower);
 
-                    if (TURRET_LEFT_LIMIT_ENCODER_VALUE != 0) {
-                        TURRET_CHASSIS_OFFSET = getTurretChassisOffset(hardwareManager.getTurretMotor().getCurrentPosition());
-                        double chassisFieldHeading = (targetDetection.robotPose.getOrientation().getYaw() - TURRET_CHASSIS_OFFSET);
-                        telemetry.addData("AprilTag Turret Field Heading (deg)", targetDetection.robotPose.getOrientation().getYaw());
-                        telemetry.addData("Calculated Chassis Field Heading (deg)", chassisFieldHeading);
-                    }
+
                 } else {
                     hardwareManager.getTurretMotor().setPower(0);
                     handleNoTagDetected();
@@ -430,7 +429,6 @@ public abstract class BaseAuto extends LinearOpMode {
                 if (launchVelocity > 0 || launchAngle > 0) {
                     launchSolution = true;
                     hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.YELLOW.getLedValue());
-                    setLaunchAngle(launchAngle);
                     targetRPM = Math.round(launchResult.getFlywheelRpm());
                 } else {
                     launchSolution = false;
@@ -446,19 +444,6 @@ public abstract class BaseAuto extends LinearOpMode {
         hardwareManager.getLauncherMotor().setVelocity(((targetRPM / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
 
-    private void setLedStates(LedStateEnum ledStateEnum) {
-        if(ledStateEnum == APRIL_TAG_DETECTED) {
-            hardwareManager.getRedLed().on();
-            hardwareManager.getGreenLed().off();
-        } else if (ledStateEnum == VIABLE_LAUNCH_SOLUTION) {
-            hardwareManager.getRedLed().off();
-            hardwareManager.getGreenLed().on();
-        } else {
-            hardwareManager.getRedLed().off();
-            hardwareManager.getGreenLed().off();
-        }
-    }
-
     private boolean canRotateTurret(double input) {
         if (input < 0 && hardwareManager.getLimitSwitchRight().isPressed()
             || input > 0 && hardwareManager.getLimitSwitchLeft().isPressed()) {
@@ -470,19 +455,39 @@ public abstract class BaseAuto extends LinearOpMode {
 
     private void handleNoTagDetected() {
         hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.RED.getLedValue());
+
+        int currentTurretPos = hardwareManager.getTurretMotor().getCurrentPosition();
+
+        double setPower = 0;
+        if (Math.abs(currentTurretPos - initialTurretPos) < 15) {
+
+            if (currentTurretPos > initialTurretPos) {
+                setPower = -0.2;
+            } else if (currentTurretPos < initialTurretPos) {
+                setPower = 0.2;
+            }
+        }
+        if (canRotateTurret(setPower) && setPower != 0) {
+            hardwareManager.getTurretMotor().setPower(setPower);
+        } else {
+            hardwareManager.getTurretMotor().setPower(0);
+        }
+
         targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
         hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
-        setLedStates(NO_TAG_DETECTED);
     }
 
     public boolean readyToShoot() {
-        return isLaunchMotorVelocityWithinThreshold()
-            //&& isTurretAngleWithinThreshold(aprilTagEngine.getTimedTargetDetection().getDetection())
-            && launchSolution;
+        if (isLaunchMotorVelocityWithinThreshold() && isTurretAngleWithinThreshold() && launchSolution) {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.YELLOW.getLedValue());
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    private boolean isTurretAngleWithinThreshold(AprilTagDetection detection) {
-        double bearing = Math.abs(detection.ftcPose.bearing);
+    private boolean isTurretAngleWithinThreshold() {
+        double bearing = Math.abs(turretError);
         if(targetDistance > 2.0) {
             return bearing <= 0.5;
         }
@@ -494,11 +499,11 @@ public abstract class BaseAuto extends LinearOpMode {
         return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
     }
 
-    private void setLaunchAngle(double launchAngle) {
-        if (launchAngle != 0) {
-            double positionValue = Range.clip(((launchAngle - MIN_LAUNCH_ANGLE) * (0.65/(MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)) - 0), 0.0, 0.7);
+    private void setLaunchAngle(double setAngle) {
+        if (setAngle != 0) {
+            double positionValue = Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (0.65/((MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)))), 0.0, 0.65);
+            //telemetry.addData("servo value", positionValue);
             hardwareManager.getAngleServo().setPosition(positionValue);
-            this.launchAngle = launchAngle;
         }
     }
 

@@ -4,7 +4,7 @@ import com.pedropathing.geometry.Pose;
 
 public abstract class AbstractPoseSupplier {
 
-  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 20;
+  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 26;
 
   //ARTIFACT GROUP SHARED POSITIONS
   protected static final double ARTIFACT_GROUP_4_Y_POSITION = 27;
@@ -18,10 +18,10 @@ public abstract class AbstractPoseSupplier {
   protected static final double BLUE_NEAR_START_HEADING = Math.toRadians(144);
   protected static final double BLUE_NEAR_START_X_POSITION = 20;
   protected static final double BLUE_FAR_START_X_POSITION = 54;
-  protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 41;
-  protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 8;
+  protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 42;
+  protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 10;
   protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 62;
-  protected static final double BLUE_FAR_LAUNCH_X_POSITION = 54;
+  protected static final double BLUE_FAR_LAUNCH_X_POSITION = 52;
   protected static final Pose BLUE_END_POSE = new Pose(60, 90, Math.toRadians(180));
 
   //RED SPECIFIC
@@ -40,7 +40,7 @@ public abstract class AbstractPoseSupplier {
   protected static final double NEAR_START_Y_POSITION = 120;
 
   //FAR SPECIFIC
-  protected static final double FAR_LAUNCH_Y_POSITION = 8;
+  protected static final double FAR_LAUNCH_Y_POSITION = 10;
   protected static final double FAR_START_Y_POSITION = 8;
 
   public abstract Pose getStartPose();

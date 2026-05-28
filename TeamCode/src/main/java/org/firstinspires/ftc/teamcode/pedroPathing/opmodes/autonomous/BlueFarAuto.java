@@ -37,9 +37,9 @@ public class BlueFarAuto extends BaseAuto {
         return List.of(
             PRELOAD_ARTIFACT_GROUP,
             NEAR_ARTIFACT_GROUP,
-            LOADING_ZONE_ARTIFACT_GROUP,
-            MIDDLE_ARTIFACT_GROUP,
-            FAR_ARTIFACT_GROUP
+            MIDDLE_ARTIFACT_GROUP
+            //FAR_ARTIFACT_GROUP
+            //LOADING_ZONE_ARTIFACT_GROUP
         );
     }
 

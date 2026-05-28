@@ -18,12 +18,12 @@ public final class Constants {
     Turret
      */
     public static final double LAUNCH_HEIGHT = 0.406;
-    public static final double TARGET_HEIGHT = 1.175;
+    public static final double TARGET_HEIGHT = 1.000;
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
-    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.28;
+    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.29;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
     public static final double MAX_LAUNCH_ANGLE = 72;
-    public static final double MIN_LAUNCH_ANGLE = 48;
+    public static final double MIN_LAUNCH_ANGLE = 40;
     public static final double TURRET_GEAR_RATIO = 1.872340426;
     public static final double TURRET_TICKS_PER_DEGREE = ( ( TURRET_GEAR_RATIO * YELLOWJACKET_117.getPPR() ) / 360 );
     public static final double MANUAL_NEAR_LAUNCH_VELOCITY = 1500;

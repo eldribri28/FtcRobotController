@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
-
 @Disabled
 @Autonomous(name="RED FAR Linear Autonomous", group="auto-far", preselectTeleOp = "RED Linear TeleOp")
 public class RedLinearOpModeAutonomousFar extends AutonomousBaseLinearOpMode {

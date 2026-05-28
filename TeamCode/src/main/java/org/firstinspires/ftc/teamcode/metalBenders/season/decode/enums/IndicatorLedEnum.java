@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums;
 public enum IndicatorLedEnum {
     BLACK(0.0),
     RED(0.280),
-    ORANGE(0.336),
+    ORANGE(0.326),
     YELLOW(0.391),
     GREEN(0.503),
     BLUE(0.625),
