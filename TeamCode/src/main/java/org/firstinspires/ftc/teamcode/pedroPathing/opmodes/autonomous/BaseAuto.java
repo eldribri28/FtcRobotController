@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.APRIL_TAG_DETECTED;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.NO_TAG_DETECTED;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum.VIABLE_LAUNCH_SOLUTION;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.NEAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_DOWN;
@@ -24,11 +21,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_TARGET_CLOSE_RATE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_CHASSIS_OFFSET;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_LEFT_LIMIT_ENCODER_VALUE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.calculateLeadAngle;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.updateTargetDiff;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NONE;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.*;
@@ -46,7 +39,6 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.AprilTagEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.IndicatorLedEnum;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.LedStateEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine;
@@ -102,6 +94,7 @@ public abstract class BaseAuto extends LinearOpMode {
     private PathChain loadingZoneArtifactGroupToLaunch;
     private PathChain launchToEnd;
     private Double shootTime = null;
+    private Double preShotTimestamp = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -165,11 +158,6 @@ public abstract class BaseAuto extends LinearOpMode {
         }
         follower.update();
         if(!follower.isBusy()) {
-            if(currentState.name().startsWith("DRIVE")
-                    && currentState.name().endsWith("LAUNCH")) {
-                aprilTagEngine.setExposureAndGain();
-                sleep(1000);
-            }
             switch(currentArtifactGroup) {
                 case PRELOAD_ARTIFACT_GROUP:
                     updatePreloadStates();
@@ -205,7 +193,9 @@ public abstract class BaseAuto extends LinearOpMode {
             //PRELOAD STATES
             case DRIVE_FROM_START_TO_LAUNCH:
                 follower.followPath(startToLaunch);
-                currentState = SHOOT_PRELOAD;
+                if (preShotTimer()) {
+                    currentState = SHOOT_PRELOAD;
+                }
                 break;
             case SHOOT_PRELOAD:
                 shootAndUpdateToNextArtifactGroup();
@@ -228,7 +218,9 @@ public abstract class BaseAuto extends LinearOpMode {
             case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
                 follower.followPath(nearArtifactGroupToLaunch);
-                currentState = SHOOT_NEAR_ARTIFACT_GROUP;
+                if (preShotTimer()) {
+                    currentState = SHOOT_NEAR_ARTIFACT_GROUP;
+                }
                 break;
             case SHOOT_NEAR_ARTIFACT_GROUP:
                 shootAndUpdateToNextArtifactGroup();
@@ -251,7 +243,9 @@ public abstract class BaseAuto extends LinearOpMode {
             case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
                 follower.followPath(middleArtifactGroupToLaunch);
-                currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
+                if (preShotTimer()) {
+                    currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
+                }
                 break;
             case SHOOT_MIDDLE_ARTIFACT_GROUP:
                 shootAndUpdateToNextArtifactGroup();
@@ -274,7 +268,9 @@ public abstract class BaseAuto extends LinearOpMode {
             case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
                 follower.followPath(farArtifactGroupToLaunch);
-                currentState = SHOOT_FAR_ARTIFACT_GROUP;
+                if (preShotTimer()) {
+                    currentState = SHOOT_FAR_ARTIFACT_GROUP;
+                }
                 break;
             case SHOOT_FAR_ARTIFACT_GROUP:
                 shootAndUpdateToNextArtifactGroup();
@@ -297,7 +293,9 @@ public abstract class BaseAuto extends LinearOpMode {
             case DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
                 follower.followPath(loadingZoneArtifactGroupToLaunch);
-                currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
+                if (preShotTimer()) {
+                    currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
+                }
                 break;
             case SHOOT_LOADING_ZONE_ARTIFACT_GROUP:
                 shootAndUpdateToNextArtifactGroup();
@@ -524,6 +522,18 @@ public abstract class BaseAuto extends LinearOpMode {
                 shootTime = getRuntime() + 1;
             }
             hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.YELLOW.getLedValue());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean preShotTimer() {
+        if( preShotTimestamp == null) {
+            preShotTimestamp = getRuntime() + 1;
+        }
+        if (preShotTimestamp <= getRuntime()) {
+            preShotTimestamp = null;
             return true;
         } else {
             return false;
