@@ -12,6 +12,7 @@ public class PoseUtil {
         .pathBuilder()
         .addPath(new BezierLine(startPose, endPose))
         .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
+        .setVelocityConstraint(0)
         .build();
   }
 
@@ -22,6 +23,7 @@ public class PoseUtil {
         .setLinearHeadingInterpolation(startAndEndPose.getHeading(), midpoint.getHeading())
         .addPath(new BezierLine(midpoint, startAndEndPose))
         .setLinearHeadingInterpolation(midpoint.getHeading(), startAndEndPose.getHeading())
+        .setVelocityConstraint(0)
         .build();
   }
 }

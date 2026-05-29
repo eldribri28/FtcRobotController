@@ -91,7 +91,7 @@ public class AprilTagEngine implements Runnable {
         visionPortal.close();
     }
 
-    private void setExposureAndGain() {
+    public void setExposureAndGain() {
         ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
         GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
         if (exposureControl != null && gainControl != null && !CAMERA_GAIN_SET) {

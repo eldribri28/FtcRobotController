@@ -42,7 +42,7 @@ public class LaunchCalculator {
         double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
         if (targetDistance > 2.7) {
-            targetDistance -= 0.200;
+            //targetDistance -= 0.100;
         } else {
             targetDistance += 0.100;
         }

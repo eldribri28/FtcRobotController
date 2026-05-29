@@ -101,6 +101,7 @@ public abstract class BaseAuto extends LinearOpMode {
     private PathChain intakeLoadingZoneArtifactGroup;
     private PathChain loadingZoneArtifactGroupToLaunch;
     private PathChain launchToEnd;
+    private Double shootTime = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -164,6 +165,11 @@ public abstract class BaseAuto extends LinearOpMode {
         }
         follower.update();
         if(!follower.isBusy()) {
+            if(currentState.name().startsWith("DRIVE")
+                    && currentState.name().endsWith("LAUNCH")) {
+                aprilTagEngine.setExposureAndGain();
+                sleep(1000);
+            }
             switch(currentArtifactGroup) {
                 case PRELOAD_ARTIFACT_GROUP:
                     updatePreloadStates();
@@ -198,7 +204,7 @@ public abstract class BaseAuto extends LinearOpMode {
         switch(currentState) {
             //PRELOAD STATES
             case DRIVE_FROM_START_TO_LAUNCH:
-                follower.followPath(startToLaunch, true);
+                follower.followPath(startToLaunch);
                 currentState = SHOOT_PRELOAD;
                 break;
             case SHOOT_PRELOAD:
@@ -211,7 +217,7 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //NEAR ARTIFACT GROUP
             case DRIVE_FROM_LAUNCH_TO_NEAR_ARTIFACT_GROUP:
-                follower.followPath(launchToNearArtifactGroup, true);
+                follower.followPath(launchToNearArtifactGroup);
                 currentState = INTAKE_NEAR_ARTIFACT_GROUP;
                 break;
             case INTAKE_NEAR_ARTIFACT_GROUP:
@@ -221,7 +227,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(nearArtifactGroupToLaunch, true);
+                follower.followPath(nearArtifactGroupToLaunch);
                 currentState = SHOOT_NEAR_ARTIFACT_GROUP;
                 break;
             case SHOOT_NEAR_ARTIFACT_GROUP:
@@ -234,7 +240,7 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //MIDDLE ARTIFACT GROUP
             case DRIVE_FROM_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP:
-                follower.followPath(launchToMiddleArtifactGroup, true);
+                follower.followPath(launchToMiddleArtifactGroup);
                 currentState = INTAKE_MIDDLE_ARTIFACT_GROUP;
                 break;
             case INTAKE_MIDDLE_ARTIFACT_GROUP:
@@ -244,7 +250,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(middleArtifactGroupToLaunch, true);
+                follower.followPath(middleArtifactGroupToLaunch);
                 currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
                 break;
             case SHOOT_MIDDLE_ARTIFACT_GROUP:
@@ -257,7 +263,7 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //FAR ARTIFACT_GROUP
             case DRIVE_FROM_LAUNCH_TO_FAR_ARTIFACT_GROUP:
-                follower.followPath(launchToFarArtifactGroup, true);
+                follower.followPath(launchToFarArtifactGroup);
                 currentState = INTAKE_FAR_ARTIFACT_GROUP;
                 break;
             case INTAKE_FAR_ARTIFACT_GROUP:
@@ -267,7 +273,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(farArtifactGroupToLaunch, true);
+                follower.followPath(farArtifactGroupToLaunch);
                 currentState = SHOOT_FAR_ARTIFACT_GROUP;
                 break;
             case SHOOT_FAR_ARTIFACT_GROUP:
@@ -280,7 +286,7 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //LOADING ZONE ARTIFACT_GROUP
             case DRIVE_FROM_LAUNCH_TO_LOADING_ZONE_ARTIFACT_GROUP:
-                follower.followPath(launchToLoadingZoneArtifactGroup, true);
+                follower.followPath(launchToLoadingZoneArtifactGroup);
                 currentState = INTAKE_LOADING_ZONE_ARTIFACT_GROUP;
                 break;
             case INTAKE_LOADING_ZONE_ARTIFACT_GROUP:
@@ -290,7 +296,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(loadingZoneArtifactGroupToLaunch, true);
+                follower.followPath(loadingZoneArtifactGroupToLaunch);
                 currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
                 break;
             case SHOOT_LOADING_ZONE_ARTIFACT_GROUP:
@@ -319,9 +325,10 @@ public abstract class BaseAuto extends LinearOpMode {
 
     private void shootAndUpdateToNextArtifactGroup() {
         if (readyToShoot()) {
-            //sleep(1000);
             autoLaunchArtifact();
-            sleep(1000);
+        }
+        if(shootTime != null && shootTime <= getRuntime()) {
+            shootTime = null;
             stopLaunchArtifact();
             updateToNextArtifactGroup();
         }
@@ -513,6 +520,9 @@ public abstract class BaseAuto extends LinearOpMode {
 
     public boolean readyToShoot() {
         if (isLaunchMotorVelocityWithinThreshold() && isTurretAngleWithinThreshold() && launchSolution) {
+            if(shootTime == null) {
+                shootTime = getRuntime() + 1;
+            }
             hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.YELLOW.getLedValue());
             return true;
         } else {

@@ -15,18 +15,18 @@ public abstract class AbstractPoseSupplier {
 
   //BLUE SPECIFIC
   protected static final double BLUE_DEFAULT_HEADING = Math.toRadians(180);
-  protected static final double BLUE_NEAR_START_HEADING = Math.toRadians(144);
-  protected static final double BLUE_NEAR_START_X_POSITION = 20;
+  protected static final double BLUE_NEAR_START_HEADING = Math.toRadians(180);
+  protected static final double BLUE_NEAR_START_X_POSITION = 22;
   protected static final double BLUE_FAR_START_X_POSITION = 54;
-  protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 42;
+  protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 41;
   protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 10;
-  protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 62;
+  protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 53;
   protected static final double BLUE_FAR_LAUNCH_X_POSITION = 52;
-  protected static final Pose BLUE_END_POSE = new Pose(60, 90, Math.toRadians(180));
+  protected static final Pose BLUE_END_POSE = new Pose(44, 57, Math.toRadians(180));
 
   //RED SPECIFIC
   protected static final double RED_DEFAULT_HEADING = Math.toRadians(0);
-  protected static final double RED_NEAR_START_HEADING = Math.toRadians(36);
+  protected static final double RED_NEAR_START_HEADING = Math.toRadians(0);
   protected static final double RED_NEAR_START_X_POSITION = 121;
   protected static final double RED_FAR_START_X_POSITION = 86;
   protected static final double RED_ARTIFACT_GROUP_START_X_POSITION = 101;
@@ -36,12 +36,12 @@ public abstract class AbstractPoseSupplier {
   protected static final Pose RED_END_POSE = new Pose(4, 90, Math.toRadians(0));
 
   //NEAR SPECIFIC
-  protected static final double NEAR_LAUNCH_Y_POSITION = 84;
-  protected static final double NEAR_START_Y_POSITION = 120;
+  protected static final double NEAR_LAUNCH_Y_POSITION = 88;
+  protected static final double NEAR_START_Y_POSITION = 118;
 
   //FAR SPECIFIC
   protected static final double FAR_LAUNCH_Y_POSITION = 10;
-  protected static final double FAR_START_Y_POSITION = 8;
+  protected static final double FAR_START_Y_POSITION = 7;
 
   public abstract Pose getStartPose();
   public abstract Pose getLaunchPose();
