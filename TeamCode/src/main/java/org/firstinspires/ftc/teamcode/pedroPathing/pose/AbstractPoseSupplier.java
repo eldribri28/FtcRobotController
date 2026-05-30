@@ -4,7 +4,7 @@ import com.pedropathing.geometry.Pose;
 
 public abstract class AbstractPoseSupplier {
 
-  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 26;
+  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 24;
 
   //ARTIFACT GROUP SHARED POSITIONS
   protected static final double ARTIFACT_GROUP_4_Y_POSITION = 27;
@@ -18,11 +18,11 @@ public abstract class AbstractPoseSupplier {
   protected static final double BLUE_NEAR_START_HEADING = Math.toRadians(180);
   protected static final double BLUE_NEAR_START_X_POSITION = 22;
   protected static final double BLUE_FAR_START_X_POSITION = 54;
-  protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 41;
-  protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 10;
+  protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 44;
+  protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 7;
   protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 53;
   protected static final double BLUE_FAR_LAUNCH_X_POSITION = 52;
-  protected static final Pose BLUE_END_POSE = new Pose(44, 57, Math.toRadians(180));
+  protected static final Pose BLUE_END_POSE = new Pose(38, 33, Math.toRadians(180));
 
   //RED SPECIFIC
   protected static final double RED_DEFAULT_HEADING = Math.toRadians(0);
@@ -33,14 +33,14 @@ public abstract class AbstractPoseSupplier {
   protected static final double RED_ARTIFACT_GROUP_4_X_POSITION = 133;
   protected static final double RED_NEAR_LAUNCH_X_POSITION = 82;
   protected static final double RED_FAR_LAUNCH_X_POSITION = 90;
-  protected static final Pose RED_END_POSE = new Pose(4, 90, Math.toRadians(0));
+  protected static final Pose RED_END_POSE = new Pose(106, 33, Math.toRadians(0));
 
   //NEAR SPECIFIC
   protected static final double NEAR_LAUNCH_Y_POSITION = 88;
-  protected static final double NEAR_START_Y_POSITION = 118;
+  protected static final double NEAR_START_Y_POSITION = 121;
 
   //FAR SPECIFIC
-  protected static final double FAR_LAUNCH_Y_POSITION = 10;
+  protected static final double FAR_LAUNCH_Y_POSITION = 13;
   protected static final double FAR_START_Y_POSITION = 7;
 
   public abstract Pose getStartPose();

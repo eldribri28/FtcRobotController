@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_EXPOSURE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_GAIN;
+
 import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -40,11 +43,23 @@ public class TestWebcam extends LinearOpMode {
         builder.setCameraResolution(new Size(640, 480));
         visionPortal = builder.build();
 
+        waitForCameraStreamToStart();
+
         myExposureControl = visionPortal.getCameraControl(ExposureControl.class);
         myGainControl = visionPortal.getCameraControl(GainControl.class);
 
         // Display exposure features and settings of this webcam.
         checkExposureFeatures();
+
+        sleep(100);
+        myExposureControl.setMode(ExposureControl.Mode.Manual);
+        sleep(100);
+        myExposureControl.setAePriority(false);
+        sleep(100);
+        myExposureControl.setExposure(7, TimeUnit.MILLISECONDS);
+        sleep(100);
+        myGainControl.setGain(5);
+        sleep(100);
 
         // Retrieve from webcam its current exposure and gain values.
         curExp = myExposureControl.getExposure(TimeUnit.MILLISECONDS);
@@ -59,10 +74,8 @@ public class TestWebcam extends LinearOpMode {
 
 
         waitForStart();
-        waitForStart();
 
         telemetry.addLine("\nTouch Start arrow to control webcam Exposure and Gain");
-        telemetry.addData("\nCurrent exposure mode", myExposureControl.getMode());
 
         // Get webcam exposure limits.
         minExp = myExposureControl.getMinExposure(TimeUnit.MILLISECONDS);
@@ -72,12 +85,18 @@ public class TestWebcam extends LinearOpMode {
         minGain = myGainControl.getMinGain();
         maxGain = myGainControl.getMaxGain();
 
-        telemetry.addData("Exposure", "Min:%d, Max:%d, Current:%d", minExp, maxExp, curExp);
-        telemetry.addData("Gain", "Min:%d, Max:%d, Current:%d", minGain, maxGain, curGain);
-        telemetry.addData("Gain change successful?", wasSetGainSuccessful);
-        telemetry.addData("Current exposure mode", myExposureControl.getMode());
+        while (!opModeIsActive()) {
+            setAePriority();
+            telemetry.addData("Exposure", "Min:%d, Max:%d, Current:%d", minExp, maxExp, curExp);
+            telemetry.addData("Gain", "Min:%d, Max:%d, Current:%d", minGain, maxGain, curGain);
+            telemetry.addData("Gain change successful?", wasSetGainSuccessful);
+            telemetry.addData("Current exposure mode", myExposureControl.getMode());
 
-        telemetry.update();
+
+            telemetry.update();
+        }
+
+
 
         while (opModeIsActive()) {
 
@@ -101,12 +120,7 @@ public class TestWebcam extends LinearOpMode {
             myExposureControl.setExposure(curExp, TimeUnit.MILLISECONDS);
             wasSetGainSuccessful = myGainControl.setGain(curGain);
 
-            // Manually set Auto-Exposure Priority.
-            if (gamepad1.a) {                           // turn on with green A
-                myExposureControl.setAePriority(true);
-            } else if (gamepad1.b) {                    // turn off with red B
-                myExposureControl.setAePriority(false);
-            }
+            setAePriority();
 
             telemetry.addLine("\nExposure: left stick Y; Gain: right stick Y");
             telemetry.addData("Exposure", "Min:%d, Max:%d, Current:%d", minExp, maxExp, curExp);
@@ -144,4 +158,22 @@ public class TestWebcam extends LinearOpMode {
         }
 
     }   // end method checkExposureFeatures()
+
+    private void waitForCameraStreamToStart() {
+        while (!Thread.currentThread().isInterrupted()
+                && visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e){}
+        }
+    }
+
+    private void setAePriority() {
+        // Manually set Auto-Exposure Priority.
+        if (gamepad1.a) {                           // turn on with green A
+            myExposureControl.setAePriority(true);
+        } else if (gamepad1.b) {                    // turn off with red B
+            myExposureControl.setAePriority(false);
+        }
+    }
 }

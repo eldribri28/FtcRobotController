@@ -97,6 +97,10 @@ public class AprilTagEngine implements Runnable {
         if (exposureControl != null && gainControl != null && !CAMERA_GAIN_SET) {
             exposureControl.setMode(ExposureControl.Mode.Manual);
             try {
+                Thread.sleep(50);
+            } catch (InterruptedException e){}
+            exposureControl.setAePriority(false);
+            try {
                 Thread.sleep(20);
             } catch (InterruptedException e){}
             exposureControl.setExposure(CAMERA_EXPOSURE, TimeUnit.MILLISECONDS);

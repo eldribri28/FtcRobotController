@@ -20,7 +20,7 @@ public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(MASS);
 
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 5);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
@@ -40,11 +40,11 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity(38.14967574472503)
-            .yVelocity(28.661467784971705);
+            .xVelocity(84.5624067651944)
+            .yVelocity(59.93271426703986);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-3)
+            .forwardPodY(3.75)
             .strafePodX(-4)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")

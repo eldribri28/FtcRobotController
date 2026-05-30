@@ -192,7 +192,7 @@ public abstract class BaseAuto extends LinearOpMode {
         switch(currentState) {
             //PRELOAD STATES
             case DRIVE_FROM_START_TO_LAUNCH:
-                follower.followPath(startToLaunch);
+                follower.followPath(startToLaunch, true);
                 if (preShotTimer()) {
                     currentState = SHOOT_PRELOAD;
                 }
@@ -207,17 +207,17 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //NEAR ARTIFACT GROUP
             case DRIVE_FROM_LAUNCH_TO_NEAR_ARTIFACT_GROUP:
-                follower.followPath(launchToNearArtifactGroup);
+                follower.followPath(launchToNearArtifactGroup, true);
                 currentState = INTAKE_NEAR_ARTIFACT_GROUP;
                 break;
             case INTAKE_NEAR_ARTIFACT_GROUP:
                 startIntake();
-                follower.followPath(intakeNearArtifactGroup);
+                follower.followPath(intakeNearArtifactGroup, true);
                 currentState = DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH;
                 break;
             case DRIVE_FROM_NEAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(nearArtifactGroupToLaunch);
+                follower.followPath(nearArtifactGroupToLaunch, true);
                 if (preShotTimer()) {
                     currentState = SHOOT_NEAR_ARTIFACT_GROUP;
                 }
@@ -232,17 +232,17 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //MIDDLE ARTIFACT GROUP
             case DRIVE_FROM_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP:
-                follower.followPath(launchToMiddleArtifactGroup);
+                follower.followPath(launchToMiddleArtifactGroup, true);
                 currentState = INTAKE_MIDDLE_ARTIFACT_GROUP;
                 break;
             case INTAKE_MIDDLE_ARTIFACT_GROUP:
                 startIntake();
-                follower.followPath(intakeMiddleArtifactGroup);
+                follower.followPath(intakeMiddleArtifactGroup, true);
                 currentState = DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH;
                 break;
             case DRIVE_FROM_MIDDLE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(middleArtifactGroupToLaunch);
+                follower.followPath(middleArtifactGroupToLaunch, true);
                 if (preShotTimer()) {
                     currentState = SHOOT_MIDDLE_ARTIFACT_GROUP;
                 }
@@ -257,17 +257,17 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //FAR ARTIFACT_GROUP
             case DRIVE_FROM_LAUNCH_TO_FAR_ARTIFACT_GROUP:
-                follower.followPath(launchToFarArtifactGroup);
+                follower.followPath(launchToFarArtifactGroup, true);
                 currentState = INTAKE_FAR_ARTIFACT_GROUP;
                 break;
             case INTAKE_FAR_ARTIFACT_GROUP:
                 startIntake();
-                follower.followPath(intakeFarArtifactGroup);
+                follower.followPath(intakeFarArtifactGroup, true);
                 currentState = DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH;
                 break;
             case DRIVE_FROM_FAR_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(farArtifactGroupToLaunch);
+                follower.followPath(farArtifactGroupToLaunch, true);
                 if (preShotTimer()) {
                     currentState = SHOOT_FAR_ARTIFACT_GROUP;
                 }
@@ -282,17 +282,17 @@ public abstract class BaseAuto extends LinearOpMode {
         switch (currentState) {
             //LOADING ZONE ARTIFACT_GROUP
             case DRIVE_FROM_LAUNCH_TO_LOADING_ZONE_ARTIFACT_GROUP:
-                follower.followPath(launchToLoadingZoneArtifactGroup);
+                follower.followPath(launchToLoadingZoneArtifactGroup, true);
                 currentState = INTAKE_LOADING_ZONE_ARTIFACT_GROUP;
                 break;
             case INTAKE_LOADING_ZONE_ARTIFACT_GROUP:
                 startIntake();
-                follower.followPath(intakeLoadingZoneArtifactGroup);
+                follower.followPath(intakeLoadingZoneArtifactGroup, true);
                 currentState = DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH;
                 break;
             case DRIVE_FROM_LOADING_ZONE_ARTIFACT_GROUP_TO_LAUNCH:
                 stopIntake();
-                follower.followPath(loadingZoneArtifactGroupToLaunch);
+                follower.followPath(loadingZoneArtifactGroupToLaunch, true);
                 if (preShotTimer()) {
                     currentState = SHOOT_LOADING_ZONE_ARTIFACT_GROUP;
                 }
@@ -306,13 +306,13 @@ public abstract class BaseAuto extends LinearOpMode {
     private void updateNoneArtifactGroupState() {
         switch (currentState) {
             case DRIVE_FROM_LAUNCH_TO_END:
-                follower.followPath(launchToEnd);
+                follower.followPath(launchToEnd, true);
                 currentState = ENDING_STATE;
                 break;
             case ABORT:
                 PathChain pathChain = buildLinearPathChainBetweenTwoPoses(
                     follower, follower.getPose(), getPoseSupplier().getEndPose());
-                follower.followPath(pathChain);
+                follower.followPath(pathChain, true);
                 currentState = ENDING_STATE;
                 break;
             case ENDING_STATE:
@@ -401,8 +401,12 @@ public abstract class BaseAuto extends LinearOpMode {
                 ROBOT_FIELD_Y = targetDetection.robotPose.getPosition().y;
                 ROBOT_FIELD_H = targetDetection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
                 double turretError = calculateBearingToGoal(ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H);
-                if (targetDistance > 2.7) {
-                    turretError -= 4;
+                if (targetDistance > 2.7 && getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
+                    turretError -= 6;
+                    targetDistance += 0.300;
+                } else if (targetDistance > 2.7 && getTargetAprilTag() == AprilTagEnum.RED_TARGET) {
+                    turretError -= 2;
+                    targetDistance += 0.300;
                 }
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
@@ -498,12 +502,12 @@ public abstract class BaseAuto extends LinearOpMode {
         int currentTurretPos = hardwareManager.getTurretMotor().getCurrentPosition();
 
         double setPower = 0;
-        if (Math.abs(currentTurretPos - initialTurretPos) < 15) {
+        if (Math.abs(currentTurretPos - initialTurretPos) < 6) {
 
             if (currentTurretPos > initialTurretPos) {
-                setPower = -0.2;
+                setPower = -0.3;
             } else if (currentTurretPos < initialTurretPos) {
-                setPower = 0.2;
+                setPower = 0.3;
             }
         }
         if (canRotateTurret(setPower) && setPower != 0) {
@@ -519,7 +523,7 @@ public abstract class BaseAuto extends LinearOpMode {
     public boolean readyToShoot() {
         if (isLaunchMotorVelocityWithinThreshold() && isTurretAngleWithinThreshold() && launchSolution) {
             if(shootTime == null) {
-                shootTime = getRuntime() + 1;
+                shootTime = getRuntime() + 1.5;
             }
             hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.YELLOW.getLedValue());
             return true;
@@ -530,7 +534,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     public boolean preShotTimer() {
         if( preShotTimestamp == null) {
-            preShotTimestamp = getRuntime() + 1;
+            preShotTimestamp = getRuntime() + 2.5;
         }
         if (preShotTimestamp <= getRuntime()) {
             preShotTimestamp = null;
@@ -543,9 +547,9 @@ public abstract class BaseAuto extends LinearOpMode {
     private boolean isTurretAngleWithinThreshold() {
         double bearing = Math.abs(turretError);
         if(targetDistance > 2.0) {
-            return bearing <= 0.5;
+            return bearing <= 0.25;
         }
-        return bearing <= 1.0;
+        return bearing <= 0.5;
     }
 
     private boolean isLaunchMotorVelocityWithinThreshold() {
