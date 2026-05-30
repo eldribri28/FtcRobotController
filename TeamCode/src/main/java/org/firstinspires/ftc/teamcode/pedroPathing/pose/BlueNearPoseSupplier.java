@@ -31,7 +31,7 @@ public class BlueNearPoseSupplier extends AbstractPoseSupplier {
   @Override
   public Pose getNearArtifactEndIntakePose() {
     return new Pose(
-        BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
+        BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1,
         ARTIFACT_GROUP_1_Y_POSITION,
         BLUE_DEFAULT_HEADING);
   }

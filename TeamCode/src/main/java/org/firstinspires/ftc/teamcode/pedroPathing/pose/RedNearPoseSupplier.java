@@ -31,7 +31,7 @@ public class RedNearPoseSupplier extends AbstractPoseSupplier {
   @Override
   public Pose getNearArtifactEndIntakePose() {
     return new Pose(
-        RED_ARTIFACT_GROUP_START_X_POSITION + DISTANCE_TO_TRAVEL_DURING_INTAKE,
+        RED_ARTIFACT_GROUP_START_X_POSITION + DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1,
         ARTIFACT_GROUP_1_Y_POSITION,
         RED_DEFAULT_HEADING);
   }

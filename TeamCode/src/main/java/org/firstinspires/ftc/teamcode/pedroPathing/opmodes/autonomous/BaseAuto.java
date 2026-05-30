@@ -22,6 +22,10 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_TARGET_CLOSE_RATE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.updateTargetDiff;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.FAR_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.LOADING_ZONE_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.MIDDLE_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NEAR_ARTIFACT_GROUP;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NONE;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.PRELOAD_ARTIFACT_GROUP;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.*;
@@ -605,6 +609,26 @@ public abstract class BaseAuto extends LinearOpMode {
 
     abstract AprilTagEnum getTargetAprilTag();
     abstract StartPositionEnum getStartPosition();
-    abstract List<ArtifactGroupEnum> getArtifactGroupExecutionOrder();
     abstract AbstractPoseSupplier getPoseSupplier();
+
+    public List<ArtifactGroupEnum> getArtifactGroupExecutionOrder() {
+        //intentionally kept separate for quicker change of near/far orders
+        if(NEAR == getStartPosition()) {
+            return List.of(
+                    PRELOAD_ARTIFACT_GROUP,
+                    NEAR_ARTIFACT_GROUP,
+                    MIDDLE_ARTIFACT_GROUP
+                    //FAR_ARTIFACT_GROUP,
+                    //LOADING_ZONE_ARTIFACT_GROUP
+            );
+        } else {
+            return List.of(
+                    PRELOAD_ARTIFACT_GROUP,
+                    NEAR_ARTIFACT_GROUP,
+                    MIDDLE_ARTIFACT_GROUP,
+                    //FAR_ARTIFACT_GROUP,
+                    LOADING_ZONE_ARTIFACT_GROUP
+            );
+        }
+    }
 }

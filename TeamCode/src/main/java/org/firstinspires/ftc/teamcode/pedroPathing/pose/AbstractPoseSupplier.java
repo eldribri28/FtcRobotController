@@ -5,6 +5,7 @@ import com.pedropathing.geometry.Pose;
 public abstract class AbstractPoseSupplier {
 
   protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 24;
+  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1 = 18;
 
   //ARTIFACT GROUP SHARED POSITIONS
   protected static final double ARTIFACT_GROUP_4_Y_POSITION = 27;

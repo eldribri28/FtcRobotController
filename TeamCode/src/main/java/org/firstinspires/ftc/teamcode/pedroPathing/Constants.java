@@ -31,7 +31,7 @@ public class Constants {
     }
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .maxPower(.5)
+            .maxPower(.4)
             .rightFrontMotorName("RFmotor")
             .rightRearMotorName("RRmotor")
             .leftRearMotorName("LRmotor")
