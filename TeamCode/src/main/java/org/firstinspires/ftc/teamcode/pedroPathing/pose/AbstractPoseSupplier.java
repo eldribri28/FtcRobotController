@@ -23,7 +23,7 @@ public abstract class AbstractPoseSupplier {
   protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 7;
   protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 53;
   protected static final double BLUE_FAR_LAUNCH_X_POSITION = 52;
-  protected static final Pose BLUE_END_POSE = new Pose(38, 33, Math.toRadians(180));
+  protected static final Pose BLUE_END_POSE = new Pose(48, 126, Math.toRadians(180));
 
   //RED SPECIFIC
   protected static final double RED_DEFAULT_HEADING = Math.toRadians(0);
@@ -34,7 +34,7 @@ public abstract class AbstractPoseSupplier {
   protected static final double RED_ARTIFACT_GROUP_4_X_POSITION = 133;
   protected static final double RED_NEAR_LAUNCH_X_POSITION = 82;
   protected static final double RED_FAR_LAUNCH_X_POSITION = 90;
-  protected static final Pose RED_END_POSE = new Pose(106, 33, Math.toRadians(0));
+  protected static final Pose RED_END_POSE = new Pose(96, 126, Math.toRadians(0));
 
   //NEAR SPECIFIC
   protected static final double NEAR_LAUNCH_Y_POSITION = 88;

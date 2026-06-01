@@ -617,8 +617,8 @@ public abstract class BaseAuto extends LinearOpMode {
             return List.of(
                     PRELOAD_ARTIFACT_GROUP,
                     NEAR_ARTIFACT_GROUP,
-                    MIDDLE_ARTIFACT_GROUP
-                    //FAR_ARTIFACT_GROUP,
+                    MIDDLE_ARTIFACT_GROUP,
+                    FAR_ARTIFACT_GROUP//,
                     //LOADING_ZONE_ARTIFACT_GROUP
             );
         } else {
@@ -626,8 +626,8 @@ public abstract class BaseAuto extends LinearOpMode {
                     PRELOAD_ARTIFACT_GROUP,
                     NEAR_ARTIFACT_GROUP,
                     MIDDLE_ARTIFACT_GROUP,
-                    //FAR_ARTIFACT_GROUP,
-                    LOADING_ZONE_ARTIFACT_GROUP
+                    FAR_ARTIFACT_GROUP//,
+                    //LOADING_ZONE_ARTIFACT_GROUP
             );
         }
     }
