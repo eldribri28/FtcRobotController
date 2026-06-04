@@ -1,11 +1,6 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AutonTelemetry;
-
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -28,9 +23,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.DRIVE_PID_ACCUMULATED_ERROR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.DRIVE_PID_LAST_TIME;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.DRIVE_PID_LAST_ERROR;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_H;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_X;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_Y;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_H;
 
 public class DriveSystem {
 
@@ -129,8 +124,8 @@ public class DriveSystem {
      */
     private double normalizedFieldBotHeading() {
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
-        ROBOT_FIELD_H = Double.parseDouble(JavaUtil.formatNumber(AngleUnit.DEGREES.normalize(orientation.getYaw(AngleUnit.DEGREES) + BOT_HEADING_OFFSET), 3));
-        return ROBOT_FIELD_H;
+        CAMERA_FIELD_H = Double.parseDouble(JavaUtil.formatNumber(AngleUnit.DEGREES.normalize(orientation.getYaw(AngleUnit.DEGREES) + BOT_HEADING_OFFSET), 3));
+        return CAMERA_FIELD_H;
     }
 
 
@@ -185,8 +180,8 @@ public class DriveSystem {
     Calculate the distance to the target coordinates
      */
     private double getDriveDistance(double targetX, double targetY) {
-        double deltaX = ROBOT_FIELD_X - targetX;
-        double deltaY = ROBOT_FIELD_Y - targetY;
+        double deltaX = CAMERA_FIELD_X - targetX;
+        double deltaY = CAMERA_FIELD_Y - targetY;
         return Math.abs(Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)));
     }
 
@@ -194,8 +189,8 @@ public class DriveSystem {
     calculate the angle to the target coordinates
      */
     private double getDriveAngle(double targetX, double targetY) {
-        double deltaX = ROBOT_FIELD_X - targetX;
-        double deltaY = ROBOT_FIELD_Y - targetY;
+        double deltaX = CAMERA_FIELD_X - targetX;
+        double deltaY = CAMERA_FIELD_Y - targetY;
         return Math.atan2(deltaY, deltaX) / Math.PI * 180;
     }
 

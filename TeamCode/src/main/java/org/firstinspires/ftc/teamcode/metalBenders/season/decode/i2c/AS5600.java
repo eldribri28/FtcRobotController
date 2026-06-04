@@ -13,17 +13,26 @@ import com.qualcomm.robotcore.util.TypeConversion;
 public class AS5600 extends I2cDeviceSynchDevice<I2cDeviceSynch>
 {
     
-    public double getAngleTicks()
+    public double getAngleTicks(boolean invert)
     {
         short dataRaw = getAngle();
-        return dataRaw;
+        if (invert) {
+            return 4095 - dataRaw;
+        } else {
+            return dataRaw;
+        }
+
     }
     
-    public double getAngleDeg()
+    public double getAngleDeg(boolean invert)
     {
         double dataRaw = getAngle();
         double dataDeg = dataRaw * 360 / 4096;
-        return dataDeg;
+        if (invert) {
+            return 360.0 - dataDeg;
+        } else {
+            return dataDeg;
+        }
     }    
 
     public double getAngleRad()

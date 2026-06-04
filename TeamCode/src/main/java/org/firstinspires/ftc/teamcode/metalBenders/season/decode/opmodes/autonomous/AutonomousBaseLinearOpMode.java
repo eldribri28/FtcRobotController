@@ -18,9 +18,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.BOT_HEADING_OFFSET;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_H;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_H;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_X;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_Y;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ROTATEPID_P;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ROTATEPID_I;
@@ -265,7 +265,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
         telemetry.addData("Robot Heading Offset (deg)", BOT_HEADING_OFFSET);
         telemetry.addData("Launcher Artifact Color", launcherArtifactColor);
         telemetry.addData("Launcher Artifact Color2", launcherArtifactColor2);
-        telemetry.addLine(String.format("Robot Position (x,y,h) (m,m,deg) %6.3f %6.3f %6.3f", ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H));
+        telemetry.addLine(String.format("Robot Position (x,y,h) (m,m,deg) %6.3f %6.3f %6.3f", CAMERA_FIELD_X, CAMERA_FIELD_Y, CAMERA_FIELD_H));
         Map<String, String> aprilTagTelemetry = aprilTagEngine.getTelemetry();
         for (String key : aprilTagTelemetry.keySet()) {
             String value = aprilTagTelemetry.get(key);
@@ -451,9 +451,9 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
 
     private void updateSparkfunOdometry() {
         SparkFunOTOS.Pose2D pos = otos.getPosition();
-        ROBOT_FIELD_X = pos.x;
-        ROBOT_FIELD_Y = pos.y;
-        ROBOT_FIELD_H = pos.h;
+        CAMERA_FIELD_X = pos.x;
+        CAMERA_FIELD_Y = pos.y;
+        CAMERA_FIELD_H = pos.h;
     }
 
     /* Auton Driving Functions ************************************************************************************ */
@@ -543,7 +543,7 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     Function to control rotation speed based on error magnitude
      */
     private double rotatePidPower(double h) {
-        double headingError = AngleUnit.DEGREES.normalize(h - AngleUnit.DEGREES.normalize(ROBOT_FIELD_H));
+        double headingError = AngleUnit.DEGREES.normalize(h - AngleUnit.DEGREES.normalize(CAMERA_FIELD_H));
         // Determine the heading current error.
         if (headingError > 180) {
             headingError = headingError - 360;
@@ -590,8 +590,8 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     Calculate the distance to the target coordinates
      */
     private double getDriveDistance(double targetX, double targetY) {
-        double deltaX = ROBOT_FIELD_X - targetX;
-        double deltaY = ROBOT_FIELD_Y - targetY;
+        double deltaX = CAMERA_FIELD_X - targetX;
+        double deltaY = CAMERA_FIELD_Y - targetY;
         return Math.abs(Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)));
     }
 
@@ -599,8 +599,8 @@ public abstract class AutonomousBaseLinearOpMode extends com.qualcomm.robotcore.
     calculate the angle to the target coordinates
      */
     private double getDriveAngle(double targetX, double targetY) {
-        double deltaX = ROBOT_FIELD_X - targetX;
-        double deltaY = ROBOT_FIELD_Y - targetY;
+        double deltaX = CAMERA_FIELD_X - targetX;
+        double deltaY = CAMERA_FIELD_Y - targetY;
         return Math.atan2(deltaY, deltaX);
     }
 

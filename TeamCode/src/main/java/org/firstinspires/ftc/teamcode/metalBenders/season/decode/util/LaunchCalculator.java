@@ -104,24 +104,24 @@ public class LaunchCalculator {
 
         double velocity = calculateVelocity(flyWheelRpm);
 
-
+        double velocity2 = Math.pow(velocity, 2);
+        double velocity4 = Math.pow(velocity, 4);
+        double distance2 = Math.pow(distance, 2);
         double deltaY = Yf - Yi; // Vertical displacement
 
         // The discriminant from the quadratic formula
-        double discriminant = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * Math.pow(distance, 2) + 2 * deltaY * Math.pow(velocity, 2));
+        double discriminant = velocity4 - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * distance2 + 2 * deltaY * velocity2);
 
         //  If the discriminant is negative, the target is out of reach at this velocity
         if (discriminant < 0) {
             return 0;
         }
 
-        // Calculate both possible values for tan(theta)
-        double launchAngleLow = (Math.pow(velocity, 2) - Math.sqrt(discriminant)) / (ACCELERATION_DUE_TO_GRAVITY * distance);
-        double launchAngleHigh = (Math.pow(velocity, 2) + Math.sqrt(discriminant)) / (ACCELERATION_DUE_TO_GRAVITY * distance);
+        double sqrtDiscriminant = Math.sqrt(discriminant);
 
-        //double root = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * Math.pow(distance, 2) + 2 * (Math.pow(velocity, 2) * (TARGET_HEIGHT - LAUNCH_HEIGHT)));
-        //double launchAngleLow = Math.toDegrees(Math.atan2((Math.pow(velocity, 2) - Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
-        //double launchAngleHigh = Math.toDegrees(Math.atan2((Math.pow(velocity, 2) + Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
+        // Calculate both possible values for tan(theta)
+        double launchAngleLow = (velocity2 - sqrtDiscriminant) / (ACCELERATION_DUE_TO_GRAVITY * distance);
+        double launchAngleHigh = (velocity2 + sqrtDiscriminant) / (ACCELERATION_DUE_TO_GRAVITY * distance);
 
         // Solution is Not Viable if launch angle solution is greater than 90 degrees, less than 0 degrees, NaN, or results in a Max Height greater than 1.524m
         if (launchAngleLow < MIN_LAUNCH_ANGLE || launchAngleLow > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngleLow)) {

@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.i2c.AS5600;
 
 import java.util.List;
 
@@ -48,12 +49,11 @@ public class HardwareManager {
     private final IMU imu;
 //    private final RevColorSensorV3 launchColorSensor;
 //    private final RevColorSensorV3 launchColorSensor2;
-    private final LED redLED;
-    private final LED greenLED;
     private final Servo indicatorLED;
     //private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
+    private final AS5600 turretEncoder;
     private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 8);
     //private final PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(10, 0, 0, 0);
 //    private final Limelight3A limelight;
@@ -79,9 +79,8 @@ public class HardwareManager {
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
         this.imu = hardwareMap.get(IMU.class, "imu");
 //        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        this.redLED = hardwareMap.get(LED.class, "redLed");
-        this.greenLED = hardwareMap.get(LED.class, "greenLed");
         this.indicatorLED = hardwareMap.get(Servo.class, "signalLed");
+        this.turretEncoder = hardwareMap.get(AS5600.class, "turretEncoder");
         initializeHardware(hardwareMap);
     }
 
@@ -112,6 +111,7 @@ public class HardwareManager {
 //            motor.setMode(STOP_AND_RESET_ENCODER);
 //            motor.setMode(RUN_USING_ENCODER);
 //            motor.setTargetPositionTolerance(3);
+            motor.setMode(STOP_AND_RESET_ENCODER);
             motor.setMode(RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -132,16 +132,13 @@ public class HardwareManager {
 //        launchColorSensor2.setGain(22);
 //        intakeColorSensor.setGain(20);
 
-        redLED.off();
-        greenLED.off();
-
 //        initializeLimelight();
         initializeIMU();
     }
 
     public void postStartInitialization() {
         launchServo.setPosition(LAUNCH_GATE_CLOSE);
-        launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
+        //launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
 
 //    private void initializeLimelight() {
@@ -232,9 +229,7 @@ public class HardwareManager {
 
 //    public Limelight3A getLimelight() { return limelight; }
 
-    public LED getRedLed() { return redLED; }
-
-    public LED getGreenLed() { return greenLED; }
-
     public Servo getIndicatorLed() { return indicatorLED; }
+
+    public AS5600 getTurretEncoder() { return turretEncoder; }
 }

@@ -11,9 +11,15 @@ public class GlobalVars {
     Robot Positional Data
      */
     public static double BOT_HEADING_OFFSET = 0;
+    public static double CAMERA_FIELD_X = 0;
+    public static double CAMERA_FIELD_Y = 0;
+    public static double CAMERA_FIELD_H = 0;
     public static double ROBOT_FIELD_X = 0;
     public static double ROBOT_FIELD_Y = 0;
     public static double ROBOT_FIELD_H = 0;
+    public static double TURRET_FIELD_X = 0;
+    public static double TURRET_FIELD_Y = 0;
+    public static double TURRET_FIELD_H = 0;
     public static double ROBOT_LAST_DISTANCE = 0;
     public static double ROBOT_LAST_YAW = 0;
     public static double ROBOT_TARGET_CLOSE_RATE = 0;

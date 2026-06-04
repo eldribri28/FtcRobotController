@@ -17,9 +17,9 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_H;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_H;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_X;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_Y;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_TARGET_CLOSE_RATE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.ShotCalculator.updateTargetDiff;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.NONE;
@@ -317,6 +317,7 @@ public abstract class BaseAuto extends LinearOpMode {
                 break;
             case ENDING_STATE:
                 currentState = COMPLETE;
+                this.requestOpModeStop();
                 break;
         }
     }
@@ -397,10 +398,10 @@ public abstract class BaseAuto extends LinearOpMode {
                 targetDistance = targetDetection.ftcPose.range;
                 targetBearing = targetDetection.ftcPose.bearing;
                 targetYaw = targetDetection.ftcPose.yaw;
-                ROBOT_FIELD_X = targetDetection.robotPose.getPosition().x;
-                ROBOT_FIELD_Y = targetDetection.robotPose.getPosition().y;
-                ROBOT_FIELD_H = targetDetection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
-                double turretError = calculateBearingToGoal(ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H);
+                CAMERA_FIELD_X = targetDetection.robotPose.getPosition().x;
+                CAMERA_FIELD_Y = targetDetection.robotPose.getPosition().y;
+                CAMERA_FIELD_H = targetDetection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
+                double turretError = calculateBearingToGoal(CAMERA_FIELD_X, CAMERA_FIELD_Y, CAMERA_FIELD_H);
                 if (targetDistance > 2.7 && getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
                     turretError -= 6;
                     targetDistance += 0.300;
