@@ -21,7 +21,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getNearArtifactGroupPose() {
+  public Pose getArtifactGroup3StartIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_START_X_POSITION,
         ARTIFACT_GROUP_3_Y_POSITION,
@@ -29,7 +29,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getNearArtifactEndIntakePose() {
+  public Pose getArtifactGroup3EndIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
         ARTIFACT_GROUP_3_Y_POSITION,
@@ -37,7 +37,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getMiddleArtifactGroupPose() {
+  public Pose getArtifactGroup2StartIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_START_X_POSITION,
         ARTIFACT_GROUP_2_Y_POSITION,
@@ -46,7 +46,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getMiddleArtifactEndIntakePose() {
+  public Pose getArtifactGroup2EndIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
         ARTIFACT_GROUP_2_Y_POSITION,
@@ -54,7 +54,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getFarArtifactGroupPose() {
+  public Pose getArtifactGroup1StartIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_START_X_POSITION,
         ARTIFACT_GROUP_1_Y_POSITION,
@@ -63,7 +63,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getFarArtifactEndIntakePose() {
+  public Pose getArtifactGroup1EndIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1,
         ARTIFACT_GROUP_1_Y_POSITION,
@@ -71,7 +71,7 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getLoadingZoneArtifactGroupPose() {
+  public Pose getArtifactGroup4StartIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_4_X_POSITION,
         ARTIFACT_GROUP_4_Y_POSITION,
@@ -79,11 +79,21 @@ public class BlueFarPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
-  public Pose getLoadingZoneArtifactEndIntakePose() {
+  public Pose getArtifactGroup4EndIntakePose() {
     return new Pose(
         BLUE_ARTIFACT_GROUP_4_X_POSITION,
         ARTIFACT_GROUP_4_Y_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
         ARTIFACT_GROUP_4_HEADING);
+  }
+
+  @Override
+  public Pose getClassifierGateStartOpenPose() {
+    return BLUE_CLASSIFIER_GATE_POSE;
+  }
+
+  @Override
+  public Pose getClassifierGateEndOpenPose() {
+    return BLUE_CLASSIFIER_GATE_OPEN_POSE;
   }
 
   @Override

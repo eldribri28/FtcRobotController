@@ -92,5 +92,5 @@ public final class Constants {
     public static final double INTAKE_POWER_IN = -1;
     public static final double INTAKE_POWER_OUT = 1;
     public static final double INTAKE_NO_POWER = 0;
-
+    public static final double INTAKE_IDLE_POWER = 0.2;
 }
