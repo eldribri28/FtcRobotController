@@ -55,10 +55,11 @@ import java.util.List;
 public abstract class BaseAuto extends LinearOpMode {
 
     private static final int MIN_READY_COUNT = 2;
-    int readyToShootCount = 0;
     private static final double ABORT_TIME_LIMIT = 0;
     private static final double AUTO_TIME_DURATION = 30;
+    private static final double HEADING_ERROR_THRESHOLD = 0.1;
     private final PIDController turretBearingPid = new PIDController(TURRET_PID_P, TURRET_PID_I, TURRET_PID_D);
+    private int readyToShootCount = 0;
     private double targetDistance = 0;
     private double launchAngle = 0;
     private double flywheelRPM = 0;
@@ -124,15 +125,26 @@ public abstract class BaseAuto extends LinearOpMode {
             idleIntake();
             while (opModeIsActive()) {
                 updateState();
-                autoLaunch();
+//                if(currentState.name().startsWith("SHOOT")) {
+                    autoLaunch();
+//                }
                 updateTelemetry();
             }
+            stopAllDriveMotors();
         } finally {
             if(aprilTagEngineThread != null) {
                 aprilTagEngineThread.interrupt();
                 aprilTagEngine.teardown();
             }
         }
+    }
+
+    private void stopAllDriveMotors() {
+        //stop all drive motors to eliminate drift after time expires or auto session is completed
+        hardwareManager.getLeftFrontMotor().setPower(0);
+        hardwareManager.getRightFrontMotor().setPower(0);
+        hardwareManager.getLeftRearMotor().setPower(0);
+        hardwareManager.getRightRearMotor().setPower(0);
     }
 
     private void initialize() {
@@ -170,7 +182,7 @@ public abstract class BaseAuto extends LinearOpMode {
     private void updateState() {
         evaluateAndSetAbortState();
         follower.update();
-        if(!follower.isBusy()) {
+        if(canMoveToNextState()) {
             switch(currentArtifactGroup) {
                 case PRELOAD:
                     updatePreloadStates();
@@ -192,6 +204,10 @@ public abstract class BaseAuto extends LinearOpMode {
                     break;
             }
         }
+    }
+
+    private boolean canMoveToNextState() {
+        return !follower.isBusy() || (follower.atParametricEnd() && follower.getHeadingError() < HEADING_ERROR_THRESHOLD);
     }
 
     private void evaluateAndSetAbortState() {

@@ -7,12 +7,16 @@ import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 
 public class PoseUtil {
+  private static final double TIMEOUT_CONSTRAINT = 50;
+  private static final double GLOBAL_DECELERATION = 0.2;
 
-  public static PathChain buildLinearPathChainBetweenPoses(Follower follower, Pose startPose, Pose ... otherPoses) {
+  public static PathChain buildLinearPathChainBetweenPoses(
+          Follower follower, Pose startPose, Pose ... otherPoses) {
     return buildPathChainBetweenPoses(follower, startPose, otherPoses);
   }
 
-  private static PathChain buildPathChainBetweenPoses(Follower follower, Pose startPose, Pose ... otherPoses) {
+  private static PathChain buildPathChainBetweenPoses(
+          Follower follower, Pose startPose, Pose ... otherPoses) {
     PathBuilder pathBuilder = follower.pathBuilder();
     Pose previousPose = startPose;
     for(Pose pose : otherPoses) {
@@ -22,6 +26,7 @@ public class PoseUtil {
       }
       previousPose = pose;
     }
+    pathBuilder.setTimeoutConstraint(TIMEOUT_CONSTRAINT).setGlobalDeceleration(GLOBAL_DECELERATION);
     return pathBuilder.build();
   }
 

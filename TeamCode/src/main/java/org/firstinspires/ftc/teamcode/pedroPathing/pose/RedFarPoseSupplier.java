@@ -98,6 +98,6 @@ public class RedFarPoseSupplier extends AbstractPoseSupplier{
 
   @Override
   public Pose getEndPose() {
-    return RED_END_POSE;
+    return RED_FAR_END_POSE;
   }
 }
