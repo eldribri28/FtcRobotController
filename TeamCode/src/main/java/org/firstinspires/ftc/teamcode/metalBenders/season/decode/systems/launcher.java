@@ -7,11 +7,10 @@ import com.qualcomm.robotcore.util.Range;
 public class launcher {
 
 
-
-
-
     public static double setLaunchAngle(double setAngle) {
-        return Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (0.65/((MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)))), 0.0, 0.65);
+        double servoMin = 0.30;
+        double servoMax = 0.70;
+        return Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (servoMax/((MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)))), servoMin, servoMax);
     }
 
 

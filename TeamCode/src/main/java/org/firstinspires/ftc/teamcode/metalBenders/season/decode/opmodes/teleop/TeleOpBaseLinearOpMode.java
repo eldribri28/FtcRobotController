@@ -4,6 +4,8 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.BLUE_GOAL_POSE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_EXPOSURE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_GAIN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_TURRET_POSE_OFFSET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.RED_GOAL_POSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_ROBOT_POSE_OFFSET;
@@ -88,6 +90,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private long turretMotorEncoderZero = 0;
     private boolean launchSolution = false;
     private double launchVelocity = 0;
+    private long preShotTimestamp = 0;
     private AprilTagEngine aprilTagEngine;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     //private ColorManager colorManager;
@@ -97,6 +100,13 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private PoseHistory robotPoseHistory;
     boolean firing = false;
     long controlLoopStart = 0;
+
+    double lastbuttonstate = 0;
+    double lastbuttonstate2 = 0;
+    double lastbuttonstate3 = 0;
+    double flywheelspeedoffset = 0;
+
+
 
     // START HARDWARE READ VARIABLES
     private double turretAngleEncoder = 0;
@@ -144,7 +154,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double lastAngleServo = 0;
     private double setIntakeServo = 0;
     private double lastIntakeServo = 0;
-    private double setIndicatorLed = IndicatorLedEnum.RED.getLedValue();;
+    private double setIndicatorLed = IndicatorLedEnum.RED.getLedValue();
     private double lastIndicatorLed = 0;
     // END HARDWARE WRITE VARIABLES
 
@@ -169,6 +179,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 updateLauncher();
                 updateTurret();
                 moveIntake();
+                gamepad2();
                 gamepadLaunchArtifact();
                 cacheHardwareWrite();
                 updateTelemetry();
@@ -204,6 +215,17 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         generateLUTs();
         telemetry.addLine("End Generate Trajectory LUT...");
         telemetry.addData("LoopTime", "%d ms", (System.currentTimeMillis() - controlLoopStart));
+
+        telemetry.addData("Distance 1.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[100][0],trajectoryLUT[100][1],trajectoryLUT[100][2]);
+        telemetry.addData("Distance 1.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[150][0],trajectoryLUT[150][1],trajectoryLUT[150][2]);
+        telemetry.addData("Distance 1.900m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[190][0],trajectoryLUT[190][1],trajectoryLUT[190][2]);
+        telemetry.addData("Distance 2.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[200][0],trajectoryLUT[200][1],trajectoryLUT[200][2]);
+        telemetry.addData("Distance 2.100m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[210][0],trajectoryLUT[210][1],trajectoryLUT[210][2]);
+        telemetry.addData("Distance 2.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[250][0],trajectoryLUT[250][1],trajectoryLUT[250][2]);
+        telemetry.addData("Distance 3.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[300][0],trajectoryLUT[300][1],trajectoryLUT[300][2]);
+        telemetry.addData("Distance 3.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[350][0],trajectoryLUT[350][1],trajectoryLUT[350][2]);
+        telemetry.addData("Distance 4.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[400][0],trajectoryLUT[400][1],trajectoryLUT[400][2]);
+
         telemetry.update();
     }
 
@@ -253,9 +275,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     public static boolean isTurretAngleWithinThreshold(double turretError, double targetDistance) {
         double bearing = Math.abs(turretError);
         if(targetDistance > 2.0) {
-            return bearing <= 0.3;
+            return bearing <= 0.25;
         }
-        return bearing <= 0.75;
+        return bearing <= 0.5;
     }
 
     public boolean readyToShoot() {
@@ -358,21 +380,20 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             //double hoodAngle = launchResult.getLaunchAngle();
             // Use trajectory Look Up Table to boost speed.
             int targetDistanceToCM = (int)(targetDistance * 100);
-            if (targetDistanceToCM <= 500 && targetDistanceToCM >= 1) {
-                double targetVelocityOffset = velocityToTarget(robotPose, follower, getTargetAprilTag());
-                //double targetVelocityOffset = 0;
-                launchVelocity = trajectoryLUT[targetDistanceToCM][0] + targetVelocityOffset;
-                double hoodAngle = trajectoryLUT[targetDistanceToCM][1];
-                double calculatedTOF = trajectoryLUT[targetDistanceToCM][2];
-                if (launchVelocity > 0 || hoodAngle > 0) {
-                    launchSolution = true;
-                    targetRPM = getFlywheelRpm(launchVelocity);
-                    //setLauncherMotorVelocity = Math.round(rpmToEncoderVelocity(targetRPM));
-                    launchAngle = hoodAngle;
-                    timeOfFlight = calculatedTOF;
-                } else {
-                    launchSolution = false;
-                }
+            if (targetDistanceToCM > 500) { targetDistanceToCM = 500; }
+        if (targetDistanceToCM < 50) { targetDistanceToCM = 100; }
+            double targetVelocityOffset = velocityToTarget(robotPose, follower, getTargetAprilTag());
+            //double targetVelocityOffset = 0;
+            launchVelocity = trajectoryLUT[targetDistanceToCM][0] + targetVelocityOffset;
+            double hoodAngle = trajectoryLUT[targetDistanceToCM][1];
+            double calculatedTOF = trajectoryLUT[targetDistanceToCM][2];
+            if (launchVelocity > 0 || hoodAngle > 0) {
+                launchSolution = true;
+                targetRPM = getFlywheelRpm(launchVelocity);
+                if (targetRPM < 2000) { targetRPM = 2000; }
+                setLauncherMotorVelocity = Math.round(rpmToEncoderVelocity(targetRPM));
+                launchAngle = hoodAngle;
+                timeOfFlight = calculatedTOF;
             } else {
                 launchSolution = false;
             }
@@ -391,9 +412,25 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
     }
 
-    private void startLaunchArtifact() {
+    public boolean preShotTimer() {
+        if( preShotTimestamp == 0) {
+            preShotTimestamp = System.currentTimeMillis() + 100;
+        } else if (preShotTimestamp <= System.currentTimeMillis()) {
+            return true;
+        }
+        return false;
+    }
+
+    private void startLaunchArtifact(double targetDistance) {
         setLaunchServo = LAUNCH_GATE_OPEN;
-        setIntakeMotorPower = INTAKE_POWER_IN;
+        if (preShotTimer()) {
+            if (targetDistance < 3) {
+                setIntakeMotorPower = INTAKE_POWER_IN;
+            } else {
+                setIntakeMotorPower = INTAKE_POWER_IN * 0.8;
+            }
+
+        }
     }
 
     private void stopLaunchArtifact() {
@@ -401,6 +438,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             setLaunchServo = LAUNCH_GATE_CLOSE;
             if(!gamepad1LT && !gamepad1LB) {
                 setIntakeMotorPower = INTAKE_NO_POWER;
+                preShotTimestamp = 0;
             }
         }
     }
@@ -408,7 +446,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private void gamepadLaunchArtifact() {
         if (gamepad1A) {
             setIndicatorLed = IndicatorLedEnum.BLUE.getLedValue();
-            startLaunchArtifact();
+            startLaunchArtifact(targetDistance);
         } else {
             if (readyToShoot()) {
                 setIndicatorLed = IndicatorLedEnum.GREEN.getLedValue();
@@ -418,6 +456,99 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             stopLaunchArtifact();
         }
     }
+
+    private void gamepad2() {
+
+        telemetry.addData("Editing", "___");
+
+        if (gamepad2.a) {
+
+            telemetry.addData("Editing", "camera gain");
+
+            if (gamepad2.dpad_up && lastbuttonstate == 0) {
+
+                telemetry.addData("camera gain", "+" );
+
+                lastbuttonstate = 1;
+
+                CAMERA_GAIN += 1;
+
+            } else if (gamepad2.dpad_down && lastbuttonstate == 0) {
+
+                telemetry.addData("camera gain", "-");
+
+                lastbuttonstate = 1;
+
+                CAMERA_GAIN -= 1;
+
+            }
+
+        }
+
+        if (gamepad2.x) {
+
+            telemetry.addData("Editing", "camera exposure");
+
+            if (gamepad2.dpad_up && lastbuttonstate2 == 0) {
+
+                telemetry.addData("camera exposure", "+");
+
+                lastbuttonstate2 = 1;
+
+                CAMERA_EXPOSURE += 1;
+
+            } else if (gamepad2.dpad_down && lastbuttonstate2 == 0) {
+
+                telemetry.addData("camera exposure", "-");
+
+                lastbuttonstate2 = 1;
+
+                CAMERA_EXPOSURE -= 1;
+
+            }
+
+
+        }
+
+        if (gamepad2.b) {
+
+            telemetry.addData("Editing", "fly wheel offset");
+
+            if (gamepad2.dpad_up && lastbuttonstate3 == 0) {
+
+                lastbuttonstate3 = 1;
+
+                flywheelspeedoffset += 100;
+
+            } else if (gamepad2.dpad_down && lastbuttonstate3 == 0) {
+
+                lastbuttonstate3 = 1;
+
+                flywheelspeedoffset -= 100;
+
+            }
+
+        }
+
+        if (!gamepad2.dpad_down && !gamepad2.dpad_up) {
+
+            lastbuttonstate = 0;
+
+            lastbuttonstate2 = 0;
+
+            lastbuttonstate3 = 0;
+
+        }
+
+        telemetry.addData("camera exposure value", CAMERA_EXPOSURE);
+
+        telemetry.addData("camera gain value", CAMERA_GAIN);
+
+        telemetry.addData("fly wheel offset", flywheelspeedoffset);
+
+    }
+
+
 
     private void bulkHardwareRead() {
         YawPitchRollAngles orientation = hardwareManager.getImu().getRobotYawPitchRollAngles();
@@ -466,30 +597,30 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             hardwareManager.getTurretMotor().setPower(setTurretMotorPower);
         //    lastTurretMotorPower = setTurretMotorPower;
         //}
-        if (setLauncherMotorVelocity != lastLauncherMotorVelocity) {
+        //if (setLauncherMotorVelocity != lastLauncherMotorVelocity) {
             hardwareManager.getLauncherMotor().setVelocity(setLauncherMotorVelocity);
-            lastLauncherMotorVelocity = setLauncherMotorVelocity;
-        }
-        if (setIntakeMotorPower != lastIntakeMotorPower) {
+        //    lastLauncherMotorVelocity = setLauncherMotorVelocity;
+        //}
+        //if (setIntakeMotorPower != lastIntakeMotorPower) {
             hardwareManager.getIntakeMotor().setPower(setIntakeMotorPower);
-            lastIntakeMotorPower = setIntakeMotorPower;
-        }
-        if (setLaunchServo != lastLaunchServo) {
+        //    lastIntakeMotorPower = setIntakeMotorPower;
+        //}
+        //if (setLaunchServo != lastLaunchServo) {
             hardwareManager.getLaunchServo().setPosition(setLaunchServo);
-            lastLaunchServo = setLaunchServo;
-        }
-        if (setAngleServo != lastAngleServo) {
+        //    lastLaunchServo = setLaunchServo;
+        //}
+        //if (setAngleServo != lastAngleServo) {
             hardwareManager.getAngleServo().setPosition(setAngleServo);
-            lastAngleServo = setAngleServo;
-        }
-        if (setIntakeServo != lastIntakeServo) {
-            hardwareManager.getIntakeServo().setPosition(setIntakeServo);
+        //    lastAngleServo = setAngleServo;
+        //}
+        //if (setIntakeServo != lastIntakeServo) {
+        //    hardwareManager.getIntakeServo().setPosition(setIntakeServo);
             lastIntakeServo = setIntakeServo;
-        }
-        if (setIndicatorLed != lastIndicatorLed) {
+        //}
+        //if (setIndicatorLed != lastIndicatorLed) {
             hardwareManager.getIndicatorLed().setPosition(setIndicatorLed);
-            lastIndicatorLed = setIndicatorLed;
-        }
+        //    lastIndicatorLed = setIndicatorLed;
+        //}
     }
 
     private void updateRuntime() {

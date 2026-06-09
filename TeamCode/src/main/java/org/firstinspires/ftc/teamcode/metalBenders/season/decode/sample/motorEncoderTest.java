@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+@Disabled
 @TeleOp(name="Motor Encoder Test", group="sample")
 public class motorEncoderTest extends LinearOpMode {
 

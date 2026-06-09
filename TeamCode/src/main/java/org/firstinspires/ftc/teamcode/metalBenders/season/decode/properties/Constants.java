@@ -16,19 +16,18 @@ public final class Constants {
     /*
     Camera Settings
      */
-    public static final int CAMERA_GAIN = 5;
-    public static final long CAMERA_EXPOSURE = 7; // In milliseconds
-
+    public static int CAMERA_GAIN = 5;
+    public static long CAMERA_EXPOSURE = 7; // In milliseconds
     /*
     Turret
      */
     public static final double LAUNCH_HEIGHT = 0.406;
-    public static final double TARGET_HEIGHT = 1.000;
+    public static final double TARGET_HEIGHT = 0.880;
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
-    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.27;
+    public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.36;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
-    public static final double MAX_LAUNCH_ANGLE = 72;
-    public static final double MIN_LAUNCH_ANGLE = 40;
+    public static final double MAX_LAUNCH_ANGLE = 50;
+    public static final double MIN_LAUNCH_ANGLE = 35;
     public static final double TURRET_GEAR_RATIO = 1.872340426;
     public static final double TURRET_TICKS_PER_DEGREE = ( ( TURRET_GEAR_RATIO * YELLOWJACKET_223.getPPR() ) / 360 );
     public static final double LAUNCHER_MOTOR_IDLE_VELOCITY = 2200;
@@ -43,15 +42,10 @@ public final class Constants {
     public static final long AGED_DATA_LIMIT_MILLISECONDS = 50;
     public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 100;
     public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 150;
-    public static final double CAMERA_TURRET_OFFSET_X = 0.000; // (meters) Camera to center of turret rotation, forward positive
-    public static final double CAMERA_TURRET_OFFSET_Y = 0.000; // (meters) Camera to center of turret rotation, left positive
-    public static final double TURRET_TO_ROBOT_OFFSET_X = 0.000; // (meters) Turret center to robot center, forward positive
-    public static final double TURRET_TO_ROBOT_OFFSET_Y = 0.000; // (meters) Turret center to robot center, left positive
-
-    public static final Pose2D TURRET_ROBOT_POSE_OFFSET = new Pose2D(DistanceUnit.METER, 0.040, 0, AngleUnit.RADIANS, 0);
-    public static final Pose2D CAMERA_TURRET_POSE_OFFSET = new Pose2D(DistanceUnit.METER, -0.130, 0, AngleUnit.RADIANS, 0);
-    public static final Pose2D RED_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.8288, 1.8288, AngleUnit.RADIANS, 0);
-    public static final Pose2D BLUE_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.8288, -1.8288, AngleUnit.RADIANS, 0);
+    public static final Pose2D TURRET_ROBOT_POSE_OFFSET = new Pose2D(DistanceUnit.METER, -0.040, 0, AngleUnit.RADIANS, 0);
+    public static final Pose2D CAMERA_TURRET_POSE_OFFSET = new Pose2D(DistanceUnit.METER, 0.130, 0, AngleUnit.RADIANS, 0);
+    public static final Pose2D RED_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.680, 1.680, AngleUnit.RADIANS, 0);
+    public static final Pose2D BLUE_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.680, -1.680, AngleUnit.RADIANS, 0);
     /*
     Drive System
      */
@@ -66,7 +60,6 @@ public final class Constants {
     public static final double AUTON_DRIVE_VELOCITY_TICKS_PER_SECOND = AUTON_DRIVE_VELOCITY_MPS * ENCODER_TICKS_PER_METER;
     public static final double MAX_DRIVE_VELOCITY_METER_PER_SECOND = MAX_DRIVE_VELOCITY_TICKS_PER_SECOND / ENCODER_TICKS_PER_METER;
     public static final double ROTATION_ACCURACY = 1;
-
     /*
     Drive PID
      */
@@ -76,14 +69,12 @@ public final class Constants {
     public static final double DRIVEPID_P = 4.0;
     public static final double DRIVEPID_I = 0.0;
     public static final double DRIVEPID_D = 0.0;
-
     /*
     Turret PID
      */
-    public static final double TURRET_PID_P = 0.02;
+    public static final double TURRET_PID_P = 0.015;
     public static final double TURRET_PID_I = 0.0;
-    public static final double TURRET_PID_D = 0.16;
-
+    public static final double TURRET_PID_D = 0.14;
     /*
     Launch Servo
      */
@@ -91,12 +82,10 @@ public final class Constants {
     public static final double LAUNCH_GATE_CLOSE = 0.36;
     public static final double INTAKE_UP = 0.85;
     public static final double INTAKE_DOWN = 0;
-
     /*
     Color indicator control
      */
     public static final int MINIMUM_COLOR_HIT_COUNT_TO_CHANGE = 3;
-
     /*
     Intake
      */

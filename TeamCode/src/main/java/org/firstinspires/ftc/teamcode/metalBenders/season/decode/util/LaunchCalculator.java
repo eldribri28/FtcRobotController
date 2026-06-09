@@ -32,67 +32,59 @@ public class LaunchCalculator {
      */
     public static LaunchResult getLaunchData(double Yi, double Yf, double targetDistance, double currentFlyWheelRPM, double targetCloseRate) {
 
-        double lowestVelocity = 0;
+        double lowestLaunchVelocity = 0;
         double bestAngle = 0;
-        double bestVelocity = 0;
+        double bestLandingVelocity = 0;
         double bestYVelocity = 0;
         double bestXVelocity = 0;
         double timeOfFlight = 0;
         double theta = MIN_LAUNCH_ANGLE; // Deg
         double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
-        if (targetDistance > 2.7) {
-            //targetDistance -= 0.100;
-        } else {
-            targetDistance += 0.100;
-        }
-
         while (theta <= endAngle) {
 
             double thetaRads = Math.toRadians(theta);
 
-            double denom = (2 * Math.pow(Math.cos(thetaRads), 2) * (targetDistance * Math.tan(thetaRads) + (Yf - Yi)));
+            double Vfy = 0;
+            double Vfx = 0;
+            double Vf = 0;
+            double maxHeight = 0;
+            double tof = 0;
+            double Vi = 0;
+            double denom = 0;
+
+            denom = (2 * Math.pow(Math.cos(thetaRads), 2) * (targetDistance * Math.tan(thetaRads) - (Yf - Yi)));
             if (denom != 0) {
-                double Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom) + targetCloseRate; // need to adjust for close rate only being x component
-                //double subCal = Math.sqrt(Math.pow((Vi * Math.sin(thetaRads)), 2) - 4 * (-ACCELERATION_DUE_TO_GRAVITY / 2) * (Yi - Yf));
-                //double subCal2 = -(Vi * Math.sin(thetaRads));
-                //double t1 = (subCal2 + subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
-                //double t2 = (subCal2 - subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
-                //List<Double> times = new ArrayList<>();
-                //times.add(t1);
-                //times.add(t2);
-                //for (Double t : times) {
-                //if (t != 0) {
-                double tof = calculateTimeOfFlight(Vi, theta, Yi, Yf);
+                Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom); // need to adjust for close rate only being x component
+                tof = calculateTimeOfFlight(Vi, theta, Yi, Yf);
                 if (tof > 0) {
-                    double Vfy = (Vi * Math.sin(thetaRads) - ACCELERATION_DUE_TO_GRAVITY * tof);
-                    double Vfx = (Vi * Math.cos(thetaRads));
-                    double Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
-                    double maxHeight = calculateMaxHeight(Vf, thetaRads);
-                    if ((Vf < lowestVelocity || bestYVelocity == 0) && maxHeight > Yf + 0.150) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
-                        lowestVelocity = Vf;
+                    Vfy = (Vi * Math.sin(thetaRads) - ACCELERATION_DUE_TO_GRAVITY * tof);
+                    Vfx = (Vi * Math.cos(thetaRads));
+                    Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
+                    maxHeight = calculateMaxHeight(Vf, thetaRads);
+                    if ((tof < timeOfFlight || lowestLaunchVelocity == 0) && maxHeight > Yf + 0.200) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
+                        timeOfFlight = tof;
+                        lowestLaunchVelocity = Vi;
                         bestYVelocity = Vfy;
                         bestXVelocity = Vfx;
-                        bestVelocity = Vi;
+                        bestLandingVelocity = Vf;
                         bestAngle = theta;
                     }
                 }
                 //}
             }
 
-            theta = theta + 0.5;
+            theta = theta + 0.2;
 
         }
 
         double flyWheelRpm = 0;
         if (bestAngle > 0) {
-            flyWheelRpm = getFlywheelRpm(bestVelocity);
+            flyWheelRpm = getFlywheelRpm(lowestLaunchVelocity);
         }
         double currentFlyWheelAngle = getAngleForFlywheel(Yi, Yf, currentFlyWheelRPM, targetDistance);
 
-        timeOfFlight = calculateTimeOfFlight(bestVelocity, currentFlyWheelAngle, Yi, Yf);
-
-        return new LaunchResult(bestAngle, bestVelocity, bestYVelocity, bestXVelocity, flyWheelRpm, lowestVelocity, currentFlyWheelAngle, timeOfFlight);
+        return new LaunchResult(bestAngle, lowestLaunchVelocity, bestYVelocity, bestXVelocity, flyWheelRpm, bestLandingVelocity, currentFlyWheelAngle, timeOfFlight);
 
     }
 

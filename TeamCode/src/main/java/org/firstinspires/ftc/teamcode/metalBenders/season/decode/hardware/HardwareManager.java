@@ -54,7 +54,7 @@ public class HardwareManager {
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
     private final AS5600 turretEncoder;
-    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 8);
+    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 4, 8);
     //private final PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(10, 0, 0, 0);
 //    private final Limelight3A limelight;
 
@@ -138,7 +138,7 @@ public class HardwareManager {
 
     public void postStartInitialization() {
         launchServo.setPosition(LAUNCH_GATE_CLOSE);
-        //launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
+        launcherMotor.setVelocity(((LAUNCHER_MOTOR_IDLE_VELOCITY / 60.0) * 28.0) + ((300.0 / 60.0) * 28.0));
     }
 
 //    private void initializeLimelight() {

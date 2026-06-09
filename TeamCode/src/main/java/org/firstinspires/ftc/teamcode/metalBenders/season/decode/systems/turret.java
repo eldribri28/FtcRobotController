@@ -30,7 +30,7 @@ public class turret {
 
     public static double rotateTurret(double error, boolean limitSwitchRight, boolean limitSwitchLeft, double turretAngle, boolean robotPoseSetFlag) {
         if (robotPoseSetFlag) {
-            double setPower = turretBearingPid.calculate(0, error) * 1.0;
+            double setPower = turretBearingPid.calculate(0, error) * 0.8;
             if (!canRotateTurret(setPower, limitSwitchRight, limitSwitchLeft, turretAngle)) {
                 setPower = 0;
             }
