@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -31,6 +32,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+@Disabled
 @TeleOp(name="Turret Bearing Test", group="sample")
 public class TurretBearingTest extends LinearOpMode {
 

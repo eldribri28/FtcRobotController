@@ -32,67 +32,68 @@ public class LaunchCalculator {
      */
     public static LaunchResult getLaunchData(double Yi, double Yf, double targetDistance, double currentFlyWheelRPM, double targetCloseRate) {
 
-        double lowestVelocity = 0;
+        double lowestLaunchVelocity = 0;
         double bestAngle = 0;
-        double bestVelocity = 0;
+        double bestLandingVelocity = 0;
         double bestYVelocity = 0;
         double bestXVelocity = 0;
         double timeOfFlight = 0;
         double theta = MIN_LAUNCH_ANGLE; // Deg
         double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
-        if (targetDistance > 2.7) {
-            //targetDistance -= 0.100;
-        } else {
-            targetDistance += 0.100;
-        }
+        //if (targetDistance >= 2.8) { targetDistance += 0.100; }
 
         while (theta <= endAngle) {
 
             double thetaRads = Math.toRadians(theta);
 
-            double denom = (2 * Math.pow(Math.cos(thetaRads), 2) * (targetDistance * Math.tan(thetaRads) + (Yf - Yi)));
+            double Vfy = 0;
+            double Vfx = 0;
+            double Vf = 0;
+            double maxHeight = 0;
+            double tof = 0;
+            double Vi = 0;
+            double denom = 0;
+
+            denom = (2 * Math.pow(Math.cos(thetaRads), 2) * (targetDistance * Math.tan(thetaRads) - (Yf - Yi)));
             if (denom != 0) {
-                double Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom) + targetCloseRate; // need to adjust for close rate only being x component
-                //double subCal = Math.sqrt(Math.pow((Vi * Math.sin(thetaRads)), 2) - 4 * (-ACCELERATION_DUE_TO_GRAVITY / 2) * (Yi - Yf));
-                //double subCal2 = -(Vi * Math.sin(thetaRads));
-                //double t1 = (subCal2 + subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
-                //double t2 = (subCal2 - subCal) / (2 * (-ACCELERATION_DUE_TO_GRAVITY / 2));
-                //List<Double> times = new ArrayList<>();
-                //times.add(t1);
-                //times.add(t2);
-                //for (Double t : times) {
-                //if (t != 0) {
-                double tof = calculateTimeOfFlight(Vi, theta, Yi, Yf);
+                Vi = Math.sqrt((ACCELERATION_DUE_TO_GRAVITY * Math.pow(targetDistance, 2)) / denom); // need to adjust for close rate only being x component
+                tof = calculateTimeOfFlight(Vi, theta, Yi, Yf);
                 if (tof > 0) {
-                    double Vfy = (Vi * Math.sin(thetaRads) - ACCELERATION_DUE_TO_GRAVITY * tof);
-                    double Vfx = (Vi * Math.cos(thetaRads));
-                    double Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
-                    double maxHeight = calculateMaxHeight(Vf, thetaRads);
-                    if ((Vf < lowestVelocity || bestYVelocity == 0) && maxHeight > Yf + 0.150) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
-                        lowestVelocity = Vf;
+                    Vfy = (Vi * Math.sin(thetaRads) - ACCELERATION_DUE_TO_GRAVITY * tof);
+                    Vfx = (Vi * Math.cos(thetaRads));
+                    Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
+                    maxHeight = calculateMaxHeight(Vf, thetaRads);
+                    if ((Vf < bestLandingVelocity || lowestLaunchVelocity == 0) && maxHeight > Yf + 0.200 && targetDistance >= 6) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
+                        timeOfFlight = tof;
+                        lowestLaunchVelocity = Vi;
                         bestYVelocity = Vfy;
                         bestXVelocity = Vfx;
-                        bestVelocity = Vi;
+                        bestLandingVelocity = Vf;
+                        bestAngle = theta;
+                    } else if ((tof < timeOfFlight || lowestLaunchVelocity == 0) && maxHeight > Yf + 0.200 && targetDistance < 6) {
+                        timeOfFlight = tof;
+                        lowestLaunchVelocity = Vi;
+                        bestYVelocity = Vfy;
+                        bestXVelocity = Vfx;
+                        bestLandingVelocity = Vf;
                         bestAngle = theta;
                     }
                 }
-                //}
+
             }
 
-            theta = theta + 0.5;
+            theta = theta + 0.2;
 
         }
 
         double flyWheelRpm = 0;
         if (bestAngle > 0) {
-            flyWheelRpm = getFlywheelRpm(bestVelocity);
+            flyWheelRpm = getFlywheelRpm(lowestLaunchVelocity);
         }
         double currentFlyWheelAngle = getAngleForFlywheel(Yi, Yf, currentFlyWheelRPM, targetDistance);
 
-        timeOfFlight = calculateTimeOfFlight(bestVelocity, currentFlyWheelAngle, Yi, Yf);
-
-        return new LaunchResult(bestAngle, bestVelocity, bestYVelocity, bestXVelocity, flyWheelRpm, lowestVelocity, currentFlyWheelAngle, timeOfFlight);
+        return new LaunchResult(bestAngle, lowestLaunchVelocity, bestYVelocity, bestXVelocity, flyWheelRpm, bestLandingVelocity, currentFlyWheelAngle, timeOfFlight);
 
     }
 
@@ -104,24 +105,24 @@ public class LaunchCalculator {
 
         double velocity = calculateVelocity(flyWheelRpm);
 
-
+        double velocity2 = Math.pow(velocity, 2);
+        double velocity4 = Math.pow(velocity, 4);
+        double distance2 = Math.pow(distance, 2);
         double deltaY = Yf - Yi; // Vertical displacement
 
         // The discriminant from the quadratic formula
-        double discriminant = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * Math.pow(distance, 2) + 2 * deltaY * Math.pow(velocity, 2));
+        double discriminant = velocity4 - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * distance2 + 2 * deltaY * velocity2);
 
         //  If the discriminant is negative, the target is out of reach at this velocity
         if (discriminant < 0) {
             return 0;
         }
 
-        // Calculate both possible values for tan(theta)
-        double launchAngleLow = (Math.pow(velocity, 2) - Math.sqrt(discriminant)) / (ACCELERATION_DUE_TO_GRAVITY * distance);
-        double launchAngleHigh = (Math.pow(velocity, 2) + Math.sqrt(discriminant)) / (ACCELERATION_DUE_TO_GRAVITY * distance);
+        double sqrtDiscriminant = Math.sqrt(discriminant);
 
-        //double root = Math.pow(velocity, 4) - ACCELERATION_DUE_TO_GRAVITY * (ACCELERATION_DUE_TO_GRAVITY * Math.pow(distance, 2) + 2 * (Math.pow(velocity, 2) * (TARGET_HEIGHT - LAUNCH_HEIGHT)));
-        //double launchAngleLow = Math.toDegrees(Math.atan2((Math.pow(velocity, 2) - Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
-        //double launchAngleHigh = Math.toDegrees(Math.atan2((Math.pow(velocity, 2) + Math.sqrt(root)), (ACCELERATION_DUE_TO_GRAVITY * distance)));
+        // Calculate both possible values for tan(theta)
+        double launchAngleLow = (velocity2 - sqrtDiscriminant) / (ACCELERATION_DUE_TO_GRAVITY * distance);
+        double launchAngleHigh = (velocity2 + sqrtDiscriminant) / (ACCELERATION_DUE_TO_GRAVITY * distance);
 
         // Solution is Not Viable if launch angle solution is greater than 90 degrees, less than 0 degrees, NaN, or results in a Max Height greater than 1.524m
         if (launchAngleLow < MIN_LAUNCH_ANGLE || launchAngleLow > MAX_LAUNCH_ANGLE || Double.isNaN(launchAngleLow)) {

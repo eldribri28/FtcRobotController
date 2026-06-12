@@ -8,11 +8,16 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_VELO_PID;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.MOTOR_VELO_PID;
+
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -23,11 +28,13 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 //import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.LED;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.metalBenders.season.decode.i2c.AS5600;
 
 import java.util.List;
 
@@ -46,16 +53,12 @@ public class HardwareManager {
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
     private final IMU imu;
-//    private final RevColorSensorV3 launchColorSensor;
-//    private final RevColorSensorV3 launchColorSensor2;
-    private final LED redLED;
-    private final LED greenLED;
     private final Servo indicatorLED;
     //private final RevColorSensorV3 intakeColorSensor;
     private final TouchSensor limitSwitchLeft;
     private final TouchSensor limitSwitchRight;
-    private final PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(100, 0, 0, 8);
-    //private final PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(10, 0, 0, 0);
+    private final AS5600 turretEncoder;
+
 //    private final Limelight3A limelight;
 
     public HardwareManager(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -72,16 +75,12 @@ public class HardwareManager {
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
         this.intakeServo = hardwareMap.get(Servo.class, "intakeServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
-//        this.launchColorSensor = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor");
-//        this.launchColorSensor2 = hardwareMap.get(RevColorSensorV3.class, "launchColorSensor2");
-//        this.intakeColorSensor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
         this.imu = hardwareMap.get(IMU.class, "imu");
 //        this.limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        this.redLED = hardwareMap.get(LED.class, "redLed");
-        this.greenLED = hardwareMap.get(LED.class, "greenLed");
         this.indicatorLED = hardwareMap.get(Servo.class, "signalLed");
+        this.turretEncoder = hardwareMap.get(AS5600.class, "turretEncoder");
         initializeHardware(hardwareMap);
     }
 
@@ -109,10 +108,9 @@ public class HardwareManager {
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
         for(DcMotorEx motor : List.of(turretMotor)) {
-//            motor.setMode(STOP_AND_RESET_ENCODER);
-//            motor.setMode(RUN_USING_ENCODER);
-//            motor.setTargetPositionTolerance(3);
+            motor.setMode(STOP_AND_RESET_ENCODER);
             motor.setMode(RUN_USING_ENCODER);
+            motor.setTargetPositionTolerance(1);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }
@@ -123,17 +121,11 @@ public class HardwareManager {
         }
 
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
-                MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
-        //turretMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
-        //        TURRET_VELO_PID.p, TURRET_VELO_PID.i, TURRET_VELO_PID.d, TURRET_VELO_PID.f * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
+                MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f)); // * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
+        turretMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
+                TURRET_VELO_PID.p, TURRET_VELO_PID.i, TURRET_VELO_PID.d, TURRET_VELO_PID.f));
 
         angleServo.setDirection(Servo.Direction.FORWARD);
-//        launchColorSensor.setGain(27);
-//        launchColorSensor2.setGain(22);
-//        intakeColorSensor.setGain(20);
-
-        redLED.off();
-        greenLED.off();
 
 //        initializeLimelight();
         initializeIMU();
@@ -212,16 +204,6 @@ public class HardwareManager {
         return launcherMotor;
     }
 
-//    public RevColorSensorV3 getIntakeColorSensor() {
-//        return intakeColorSensor;
-//    }
-//    public RevColorSensorV3 getLaunchColorSensor() {
-//        return launchColorSensor;
-//    }
-//    public RevColorSensorV3 getLaunchColorSensor2() {
-//        return launchColorSensor2;
-//    }
-
     public TouchSensor getLimitSwitchLeft() {
         return limitSwitchLeft;
     }
@@ -232,9 +214,7 @@ public class HardwareManager {
 
 //    public Limelight3A getLimelight() { return limelight; }
 
-    public LED getRedLed() { return redLED; }
-
-    public LED getGreenLed() { return greenLED; }
-
     public Servo getIndicatorLed() { return indicatorLED; }
+
+    public AS5600 getTurretEncoder() { return turretEncoder; }
 }

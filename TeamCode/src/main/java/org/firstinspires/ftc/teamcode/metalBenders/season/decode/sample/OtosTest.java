@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.TurretBearing.getTurretChassisOffset;
 
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.Hardwa
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.OTOSCalculator;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+@Disabled
 @TeleOp(name="Otos Test", group="sample")
 public class OtosTest extends LinearOpMode {
 

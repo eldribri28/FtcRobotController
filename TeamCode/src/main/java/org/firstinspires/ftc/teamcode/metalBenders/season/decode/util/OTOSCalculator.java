@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_H;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_X;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_Y;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_H;
 
 public class OTOSCalculator {
 
@@ -12,10 +12,10 @@ public class OTOSCalculator {
 
         SparkFunOTOS.Pose2D pos;
         pos = OTOS.getPosition();
-        ROBOT_FIELD_X = pos.x;
-        ROBOT_FIELD_Y = pos.y;
-        ROBOT_FIELD_H = (pos.h + 360) % 360;
-        return new OTOSResult(ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H);
+        CAMERA_FIELD_X = pos.x;
+        CAMERA_FIELD_Y = pos.y;
+        CAMERA_FIELD_H = (pos.h + 360) % 360;
+        return new OTOSResult(CAMERA_FIELD_X, CAMERA_FIELD_Y, CAMERA_FIELD_H);
 
     }
 

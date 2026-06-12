@@ -1,25 +1,26 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties;
 
-public class GlobalVars {
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+@Config
+public class GlobalVars {
     /*
     BOOLEAN FLAGS
      */
     public static boolean CAMERA_GAIN_SET = false;
-
     /*
     Robot Positional Data
      */
     public static double BOT_HEADING_OFFSET = 0;
-    public static double ROBOT_FIELD_X = 0;
-    public static double ROBOT_FIELD_Y = 0;
-    public static double ROBOT_FIELD_H = 0;
+    public static double CAMERA_FIELD_X = 0;
+    public static double CAMERA_FIELD_Y = 0;
+    public static double CAMERA_FIELD_H = 0;
     public static double ROBOT_LAST_DISTANCE = 0;
     public static double ROBOT_LAST_YAW = 0;
     public static double ROBOT_TARGET_CLOSE_RATE = 0;
     public static double ROBOT_TARGET_YAW_RATE = 0;
     public static double ROBOT_LAST_TIMESTAMP = 0;
-
     /*
     Robot PID Vars
      */
@@ -29,7 +30,6 @@ public class GlobalVars {
     public static double DRIVE_PID_ACCUMULATED_ERROR = 0;
     public static double DRIVE_PID_LAST_TIME = System.currentTimeMillis();
     public static double DRIVE_PID_LAST_ERROR = 0;
-
     /*
     Turret Vars
      */
@@ -37,6 +37,7 @@ public class GlobalVars {
     public static double TURRET_CHASSIS_OFFSET = 0;
     public static double TURRET_ANGLE = 0;
     public static double TURRET_CURRENT_ENCODER;
-
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(150, 0, 0, 3);
+    public static PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(6.4, 0, 6.2, 6.6);
 }
 
