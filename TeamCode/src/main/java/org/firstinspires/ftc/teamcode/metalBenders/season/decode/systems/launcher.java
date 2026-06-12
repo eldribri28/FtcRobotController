@@ -9,9 +9,12 @@ public class launcher {
 
     public static double setLaunchAngle(double setAngle) {
         double servoMin = 0.30;
-        double servoMax = 0.70;
-        return Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (servoMax/((MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)))), servoMin, servoMax);
+        double servoMax = 0.62;
+        if (setAngle == 0) {
+            return servoMin;
+        } else {
+            return Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (servoMax / ((MAX_LAUNCH_ANGLE - MIN_LAUNCH_ANGLE)))), servoMin, servoMax);
+        }
     }
-
 
 }

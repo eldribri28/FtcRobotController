@@ -35,7 +35,7 @@ public class AprilTagEngine implements Runnable {
     private final AprilTagEnum targetAprilTag;
     private final Map<String, String> telemetry = new ConcurrentHashMap<>();
     private AprilTagProcessor aprilTagProcessor;
-    private VisionPortal visionPortal;
+    private static VisionPortal visionPortal;
     private ArtifactMotifEnum artifactMotif = UNKNOWN;
     private final ReentrantReadWriteLock artifactMotifLock = new ReentrantReadWriteLock();
     private TimedAprilTagDetection targetDetection = null;
@@ -48,8 +48,8 @@ public class AprilTagEngine implements Runnable {
     }
 
     private void initialize() {
-        Position cameraPosition = new Position(DistanceUnit.METER, 0,  -0.20, 0.250, 0);
-        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -90, 0, 0);
+        Position cameraPosition = new Position(DistanceUnit.METER, 0.140,  0.000, 0.319, 0);
+        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -70, 0, 0);
         AprilTagProcessor.Builder aprilTagProcessorBuilder = new AprilTagProcessor.Builder();
         aprilTagProcessorBuilder.setLensIntrinsics(539.0239404, 539.0239404, 316.450283269, 236.364794005);
         aprilTagProcessorBuilder.setCameraPose(cameraPosition, cameraOrientation);
@@ -91,7 +91,7 @@ public class AprilTagEngine implements Runnable {
         visionPortal.close();
     }
 
-    public void setExposureAndGain() {
+    public static void setExposureAndGain() {
         ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
         GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
         if (exposureControl != null && gainControl != null && !CAMERA_GAIN_SET) {

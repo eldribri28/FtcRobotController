@@ -26,8 +26,8 @@ public final class Constants {
     public static final double FLYWHEEL_DIAMETER_METERS = .096;
     public static final double VELOCITY_TRANSFER_EFFICIENCY = 0.36;
     public static final double ACCELERATION_DUE_TO_GRAVITY = 9.81;
-    public static final double MAX_LAUNCH_ANGLE = 50;
-    public static final double MIN_LAUNCH_ANGLE = 35;
+    public static final double MAX_LAUNCH_ANGLE = 55;
+    public static final double MIN_LAUNCH_ANGLE = 40;
     public static final double TURRET_GEAR_RATIO = 1.872340426;
     public static final double TURRET_TICKS_PER_DEGREE = ( ( TURRET_GEAR_RATIO * YELLOWJACKET_223.getPPR() ) / 360 );
     public static final double LAUNCHER_MOTOR_IDLE_VELOCITY = 2200;
@@ -73,8 +73,8 @@ public final class Constants {
     Turret PID
      */
     public static final double TURRET_PID_P = 0.015;
-    public static final double TURRET_PID_I = 0.0;
-    public static final double TURRET_PID_D = 0.14;
+    public static final double TURRET_PID_I = 0.000;
+    public static final double TURRET_PID_D = 0.140;
     /*
     Launch Servo
      */

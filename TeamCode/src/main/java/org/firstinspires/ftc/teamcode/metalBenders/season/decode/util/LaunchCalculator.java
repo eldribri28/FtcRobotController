@@ -41,6 +41,8 @@ public class LaunchCalculator {
         double theta = MIN_LAUNCH_ANGLE; // Deg
         double endAngle = MAX_LAUNCH_ANGLE; // Deg
 
+        //if (targetDistance >= 2.8) { targetDistance += 0.100; }
+
         while (theta <= endAngle) {
 
             double thetaRads = Math.toRadians(theta);
@@ -62,7 +64,14 @@ public class LaunchCalculator {
                     Vfx = (Vi * Math.cos(thetaRads));
                     Vf = Math.sqrt(Math.pow(Vfx, 2) + Math.pow(Vfy, 2));  // Landing Velocity in m/s
                     maxHeight = calculateMaxHeight(Vf, thetaRads);
-                    if ((tof < timeOfFlight || lowestLaunchVelocity == 0) && maxHeight > Yf + 0.200) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
+                    if ((Vf < bestLandingVelocity || lowestLaunchVelocity == 0) && maxHeight > Yf + 0.200 && targetDistance >= 6) { // If the calculated Y component of the landing velocity is less than the current best landing velocity
+                        timeOfFlight = tof;
+                        lowestLaunchVelocity = Vi;
+                        bestYVelocity = Vfy;
+                        bestXVelocity = Vfx;
+                        bestLandingVelocity = Vf;
+                        bestAngle = theta;
+                    } else if ((tof < timeOfFlight || lowestLaunchVelocity == 0) && maxHeight > Yf + 0.200 && targetDistance < 6) {
                         timeOfFlight = tof;
                         lowestLaunchVelocity = Vi;
                         bestYVelocity = Vfy;
@@ -71,7 +80,7 @@ public class LaunchCalculator {
                         bestAngle = theta;
                     }
                 }
-                //}
+
             }
 
             theta = theta + 0.2;

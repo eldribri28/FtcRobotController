@@ -28,10 +28,16 @@ public class turret {
         }
     }
 
-    public static double rotateTurret(double error, boolean limitSwitchRight, boolean limitSwitchLeft, double turretAngle, boolean robotPoseSetFlag) {
+    public static double rotateTurret(double turretError, boolean limitSwitchRight, boolean limitSwitchLeft, double turretAngle, boolean robotPoseSetFlag) {
+        double turretAngleDeg = Math.toDegrees(turretAngle);
         if (robotPoseSetFlag) {
-            double setPower = turretBearingPid.calculate(0, error) * 0.8;
-            if (!canRotateTurret(setPower, limitSwitchRight, limitSwitchLeft, turretAngle)) {
+            if (turretAngleDeg < 0 && turretAngleDeg - turretError < -87) {
+                turretError = 0;
+            } else if (turretAngleDeg > 0 && turretAngleDeg + turretError > 87) {
+                turretError = 0;
+            }
+            double setPower = turretError * 0.7; //turretBearingPid.calculate(0, turretError) * 0.8;
+            if (!canRotateTurret(setPower, limitSwitchRight, limitSwitchLeft, turretAngle, turretError)) {
                 setPower = 0;
             }
             return setPower;
@@ -46,14 +52,26 @@ public class turret {
         return turretMotorEncoder - (long)(currentTurretActualPosition * TURRET_TICKS_PER_DEGREE);
     }
 
-    public static boolean canRotateTurret(double input, boolean limitSwitchRight, boolean limitSwitchLeft, double turretAngle) {
+    public static boolean canRotateTurret(double input, boolean limitSwitchRight, boolean limitSwitchLeft, double turretAngle, double turretError) {
         if ((input < 0 && limitSwitchRight) || (input < 0 && turretAngle < -(Math.PI / 2))) {
             return false;
         } else if ((input > 0 && limitSwitchLeft) || (input > 0 && turretAngle > (Math.PI / 2))) {
             return false;
+        //} else if (Math.abs(turretAngle + turretError) > 88 || Math.abs(turretAngle) > 88) {
+        //    return false;
         } else {
             return true;
         }
+    }
+
+    public static int calculateTurretErrorEncoderPosition(double turretError, double turretAngle, long turretMotorEncoder) {
+        double turretAngleDeg = Math.toDegrees(turretAngle);
+        double turretErrorTicks = turretError * TURRET_TICKS_PER_DEGREE;
+        double turretSetEncoder = turretMotorEncoder + turretErrorTicks;
+        double turretAngleRequired = -turretAngleDeg + turretError;
+        if (turretAngleRequired < -88) { turretSetEncoder = -88 * TURRET_TICKS_PER_DEGREE; }
+        if (turretAngleRequired > 88) { turretSetEncoder = 88 * TURRET_TICKS_PER_DEGREE; }
+        return (int) turretSetEncoder;
     }
 
 

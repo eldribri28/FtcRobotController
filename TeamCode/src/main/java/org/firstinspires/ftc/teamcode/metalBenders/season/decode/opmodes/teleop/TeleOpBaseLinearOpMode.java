@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.opmodes.teleop;
 
 // SYSTEMS
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.BLUE_GOAL_POSE;
@@ -9,6 +10,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_TURRET_POSE_OFFSET;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.RED_GOAL_POSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_ROBOT_POSE_OFFSET;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_VELO_PID;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.drive.calculateDrivePower;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.launcher.setLaunchAngle;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.localization.aprilTagLatencyCompensatedPose;
@@ -30,6 +33,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.trajectory.getHoodAngle;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.trajectory.rpmToEncoderVelocity;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.turret.adjustTurretPowerNearStop;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.turret.calculateTurretErrorEncoderPosition;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.turret.canRotateTurret;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.turret.getTurretAngleFromEncoder;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.turret.rotateTurret;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.systems.turret.setTurretEncoderToMotorEncoderOffset;
@@ -49,6 +54,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_X;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_Y;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_FIELD_H;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.AprilTagEngine.setExposureAndGain;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.util.LaunchCalculator.getFlywheelRpm;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -56,6 +62,8 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.util.PoseHistory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -93,9 +101,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private long preShotTimestamp = 0;
     private AprilTagEngine aprilTagEngine;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    //private ColorManager colorManager;
     abstract AprilTagEnum getTargetAprilTag();
-    //private Thread colorManagerThread;
     private Thread aprilTagEngineThread;
     private PoseHistory robotPoseHistory;
     boolean firing = false;
@@ -131,6 +137,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double gamepad1LSY = 0;
     private double gamepad1RSX = 0;
     private double gamepad1RSY = 0;
+    private double inkakeSensor1Distance = 0;
+    private double inkakeSensor2Distance = 0;
+    private double inkakeSensor3Distance = 0;
+
     // END HARDWARE READ VARIABLES
 
     // START HARDWARE WRITE VARIABLES
@@ -144,6 +154,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double lastLeftRearMotorPower = 0;
     private double setTurretMotorPower = 0;
     private double lastTurretMotorPower = 0;
+    private int turretEncoderTarget = 0;
     private double setLauncherMotorVelocity = 0;
     private double lastLauncherMotorVelocity = 0;
     private double setIntakeMotorPower = 0;
@@ -180,10 +191,18 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 updateTurret();
                 moveIntake();
                 gamepad2();
+                //artifactIntake1();
+                //artifactIntake2();
+                //artifactIntake3();
                 gamepadLaunchArtifact();
                 cacheHardwareWrite();
                 updateTelemetry();
                 telemetry.update();
+
+                //hardwareManager.getTurretMotor().setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
+                //        TURRET_VELO_PID.p, TURRET_VELO_PID.i, TURRET_VELO_PID.d, TURRET_VELO_PID.f));
+                //hardwareManager.getLauncherMotor().setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
+                //        MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f));
             }
         } finally {
             scheduler.shutdownNow();
@@ -202,8 +221,6 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         bulkHardwareRead();
         setIndicatorLed = IndicatorLedEnum.RED.getLedValue();
         setIntakeServo = INTAKE_DOWN;
-        //colorManager = new ColorManager(hardwareManager);
-        //colorManagerThread = new Thread(colorManager);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         hardwareManager.getTurretMotor().setMode(STOP_AND_RESET_ENCODER);
         hardwareManager.getTurretMotor().setMode(RUN_USING_ENCODER);
@@ -216,17 +233,23 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addLine("End Generate Trajectory LUT...");
         telemetry.addData("LoopTime", "%d ms", (System.currentTimeMillis() - controlLoopStart));
 
-        telemetry.addData("Distance 1.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[100][0],trajectoryLUT[100][1],trajectoryLUT[100][2]);
-        telemetry.addData("Distance 1.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[150][0],trajectoryLUT[150][1],trajectoryLUT[150][2]);
-        telemetry.addData("Distance 1.900m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[190][0],trajectoryLUT[190][1],trajectoryLUT[190][2]);
-        telemetry.addData("Distance 2.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[200][0],trajectoryLUT[200][1],trajectoryLUT[200][2]);
-        telemetry.addData("Distance 2.100m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[210][0],trajectoryLUT[210][1],trajectoryLUT[210][2]);
-        telemetry.addData("Distance 2.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[250][0],trajectoryLUT[250][1],trajectoryLUT[250][2]);
-        telemetry.addData("Distance 3.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[300][0],trajectoryLUT[300][1],trajectoryLUT[300][2]);
-        telemetry.addData("Distance 3.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[350][0],trajectoryLUT[350][1],trajectoryLUT[350][2]);
-        telemetry.addData("Distance 4.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[400][0],trajectoryLUT[400][1],trajectoryLUT[400][2]);
+        //while (!isStarted() && !isStopRequested()) {
+            bulkHardwareRead();
+            //artifactIntake1();
+            //artifactIntake2();
+            //artifactIntake3();
+            //telemetry.addData("Distance 1.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[100][0], trajectoryLUT[100][1], trajectoryLUT[100][2]);
+            //telemetry.addData("Distance 1.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[150][0], trajectoryLUT[150][1], trajectoryLUT[150][2]);
+            //telemetry.addData("Distance 1.900m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[190][0], trajectoryLUT[190][1], trajectoryLUT[190][2]);
+            //telemetry.addData("Distance 2.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[200][0], trajectoryLUT[200][1], trajectoryLUT[200][2]);
+            //telemetry.addData("Distance 2.100m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[210][0], trajectoryLUT[210][1], trajectoryLUT[210][2]);
+            //telemetry.addData("Distance 2.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[250][0], trajectoryLUT[250][1], trajectoryLUT[250][2]);
+            //telemetry.addData("Distance 3.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[300][0], trajectoryLUT[300][1], trajectoryLUT[300][2]);
+            //telemetry.addData("Distance 3.500m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[350][0], trajectoryLUT[350][1], trajectoryLUT[350][2]);
+            //telemetry.addData("Distance 4.000m", "%.3f(m/s), %.3f(deg), %.3f(s)", trajectoryLUT[400][0], trajectoryLUT[400][1], trajectoryLUT[400][2]);
 
-        telemetry.update();
+            telemetry.update();
+        //}
     }
 
     private void initPedro() {
@@ -258,13 +281,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Launch Angle", launchAngle);
         telemetry.addData("Launcher RPM (Target)", targetRPM);
         telemetry.addData("Launcher RPM (Actual)", flywheelVelocityToRpm(launcherMotorVelocity));
+        telemetry.addData("Turret Power", setTurretMotorPower);
         //telemetry.addData("Launch Velocity", launchVelocity);
-        telemetry.addData("Turret Limit Switch Left Pressed", limitSwitchLeft);
-        telemetry.addData("Turret Limit Switch Right Pressed", limitSwitchRight);
-        telemetry.addData("Turret Angle: (deg)", Math.toDegrees(getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero)));
-        telemetry.addData("Target Close Rate (M/S)", ROBOT_TARGET_CLOSE_RATE);
-        telemetry.addData("Target Yaw Rate (Deg/S)", ROBOT_TARGET_YAW_RATE);
-        telemetry.addData("Target Last Timestamp (ms)", ROBOT_LAST_TIMESTAMP);
+        //telemetry.addData("Turret Limit Switch Left Pressed", limitSwitchLeft);
+        //telemetry.addData("Turret Limit Switch Right Pressed", limitSwitchRight);
+        //telemetry.addData("Turret Angle: (deg)", Math.toDegrees(getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero)));
+        //telemetry.addData("Target Close Rate (M/S)", ROBOT_TARGET_CLOSE_RATE);
+        //telemetry.addData("Target Yaw Rate (Deg/S)", ROBOT_TARGET_YAW_RATE);
+        //telemetry.addData("Target Last Timestamp (ms)", ROBOT_LAST_TIMESTAMP);
         telemetry.addLine("FIELD COORDINATES");
         telemetry.addData("Camera: x, y, h", "%.2f(m), %.2f(m), %.2f(deg)", cameraX, cameraY, cameraH);
         telemetry.addData("Turret: x, y, h","%.2f(m), %.2f(m), %.2f(deg)", turretX, turretY, turretH);
@@ -317,11 +341,18 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
             if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
+                //if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
+                //    CAMERA_FIELD_X = targetDetection.robotPose.getPosition().x + 0.4;
+                //    CAMERA_FIELD_Y = targetDetection.robotPose.getPosition().y;
+                //} else {
+                //    CAMERA_FIELD_X = targetDetection.robotPose.getPosition().x;
+                //    CAMERA_FIELD_Y = targetDetection.robotPose.getPosition().y - 0.3;
+                //}
                 CAMERA_FIELD_X = targetDetection.robotPose.getPosition().x;
                 CAMERA_FIELD_Y = targetDetection.robotPose.getPosition().y;
                 CAMERA_FIELD_H = AngleUnit.normalizeRadians(targetDetection.robotPose.getOrientation().getYaw(AngleUnit.RADIANS));
                 cameraPose = new Pose2D(DistanceUnit.METER, CAMERA_FIELD_X, CAMERA_FIELD_Y, AngleUnit.RADIANS, CAMERA_FIELD_H);
-                turretPose = cameraFieldPoseToTurretFieldPose(cameraPose, CAMERA_TURRET_POSE_OFFSET);
+                turretPose = cameraPose; //cameraFieldPoseToTurretFieldPose(cameraPose, CAMERA_TURRET_POSE_OFFSET);
                 robotPose = turretFieldPoseToRobotFieldPose(turretPose, TURRET_ROBOT_POSE_OFFSET, getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero));
                 updatePedroFromRobotPose(follower, aprilTagLatencyCompensatedPose(targetDetection.frameAcquisitionNanoTime, robotPose));
                 robotPoseSetFlag = true;
@@ -359,8 +390,18 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             turretErrorRad = AngleUnit.normalizeRadians(calculateTurretError(turretPose, RED_GOAL_POSE));
         }
         turretError = Math.toDegrees(turretErrorRad);
-        setTurretMotorPower = rotateTurret(turretError, limitSwitchRight, limitSwitchLeft, getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero), robotPoseSetFlag);
-        setTurretMotorPower = adjustTurretPowerNearStop(getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero), setTurretMotorPower);
+        double turretAngle = getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero);
+        turretEncoderTarget = calculateTurretErrorEncoderPosition(turretError, turretAngle, turretMotorEncoder);
+        if (canRotateTurret(turretError, limitSwitchRight, limitSwitchLeft, turretAngle, turretError) && robotPoseSetFlag) {
+            setTurretMotorPower = 1.0;
+            telemetry.addData("Turret Angle", Math.toDegrees(turretAngle));
+            telemetry.addData("TurretEncoderTarget", turretEncoderTarget);
+            telemetry.addData("Turret Encoder Current", turretMotorEncoder);
+        } else {
+            setTurretMotorPower = 0.0;
+        }
+        //setTurretMotorPower = rotateTurret(turretError, limitSwitchRight, limitSwitchLeft, turretAngle, robotPoseSetFlag);
+        //setTurretMotorPower = adjustTurretPowerNearStop(turretAngle, setTurretMotorPower);
         setAngleServo = setLaunchAngle(launchAngle);
     }
 
@@ -391,7 +432,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 launchSolution = true;
                 targetRPM = getFlywheelRpm(launchVelocity);
                 if (targetRPM < 2000) { targetRPM = 2000; }
-                setLauncherMotorVelocity = Math.round(rpmToEncoderVelocity(targetRPM));
+                setLauncherMotorVelocity = Math.round(rpmToEncoderVelocity(targetRPM + flywheelspeedoffset));
                 launchAngle = hoodAngle;
                 timeOfFlight = calculatedTOF;
             } else {
@@ -462,88 +503,54 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Editing", "___");
 
         if (gamepad2.a) {
-
             telemetry.addData("Editing", "camera gain");
-
             if (gamepad2.dpad_up && lastbuttonstate == 0) {
-
                 telemetry.addData("camera gain", "+" );
-
                 lastbuttonstate = 1;
-
                 CAMERA_GAIN += 1;
-
+                setExposureAndGain();
             } else if (gamepad2.dpad_down && lastbuttonstate == 0) {
-
                 telemetry.addData("camera gain", "-");
-
                 lastbuttonstate = 1;
-
                 CAMERA_GAIN -= 1;
-
+                setExposureAndGain();
             }
-
         }
 
         if (gamepad2.x) {
-
             telemetry.addData("Editing", "camera exposure");
-
             if (gamepad2.dpad_up && lastbuttonstate2 == 0) {
-
                 telemetry.addData("camera exposure", "+");
-
                 lastbuttonstate2 = 1;
-
                 CAMERA_EXPOSURE += 1;
-
+                setExposureAndGain();
             } else if (gamepad2.dpad_down && lastbuttonstate2 == 0) {
-
                 telemetry.addData("camera exposure", "-");
-
                 lastbuttonstate2 = 1;
-
                 CAMERA_EXPOSURE -= 1;
-
+                setExposureAndGain();
             }
-
-
         }
 
         if (gamepad2.b) {
-
             telemetry.addData("Editing", "fly wheel offset");
-
             if (gamepad2.dpad_up && lastbuttonstate3 == 0) {
-
                 lastbuttonstate3 = 1;
-
                 flywheelspeedoffset += 100;
-
             } else if (gamepad2.dpad_down && lastbuttonstate3 == 0) {
-
                 lastbuttonstate3 = 1;
-
                 flywheelspeedoffset -= 100;
-
             }
-
         }
 
         if (!gamepad2.dpad_down && !gamepad2.dpad_up) {
-
             lastbuttonstate = 0;
-
             lastbuttonstate2 = 0;
-
             lastbuttonstate3 = 0;
-
         }
 
         telemetry.addData("camera exposure value", CAMERA_EXPOSURE);
-
         telemetry.addData("camera gain value", CAMERA_GAIN);
-
         telemetry.addData("fly wheel offset", flywheelspeedoffset);
 
     }
@@ -594,6 +601,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         //    lastLeftRearMotorPower = setLeftRearMotorPower;
         //}
         //if (setTurretMotorPower != lastTurretMotorPower) {
+            hardwareManager.getTurretMotor().setTargetPosition(turretEncoderTarget);
+            hardwareManager.getTurretMotor().setMode(RUN_TO_POSITION);
             hardwareManager.getTurretMotor().setPower(setTurretMotorPower);
         //    lastTurretMotorPower = setTurretMotorPower;
         //}
