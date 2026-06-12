@@ -4,6 +4,14 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 
 public class drive {
 
+    /**
+     * @param gampad1LSY Gamepad 1 Left Stick Y value,
+     * @param gamepad1LSX Gamepad 1 Left Stick X value,
+     * @param gamepad1RSX Gamepad 1 Right Stick X value,
+     * @param gamepad1RB Gamepad 1 Right Bumper value,
+     * @param gamepad1RT Gamepad 1 Right Trigger value,
+     * @param botHeading Robot Heading from IMU in Radians
+     */
     public static DriveMotorPower calculateDrivePower(double gampad1LSY, double gamepad1LSX, double gamepad1RSX, boolean gamepad1RB, boolean gamepad1RT, double botHeading) {
         double y = -gampad1LSY;
         double x = gamepad1LSX * 1.1;

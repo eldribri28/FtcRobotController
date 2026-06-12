@@ -1,18 +1,18 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.enums;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_END;
-import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_FAR_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_LOADING_ZONE_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP;
-import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_NEAR_ARTIFACT_GROUP;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_3;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_2;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_1;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.SHOOT_PRELOAD;
 
 public enum ArtifactGroupEnum {
-  PRELOAD_ARTIFACT_GROUP(SHOOT_PRELOAD),
-  NEAR_ARTIFACT_GROUP(DRIVE_FROM_LAUNCH_TO_NEAR_ARTIFACT_GROUP),
-  MIDDLE_ARTIFACT_GROUP(DRIVE_FROM_LAUNCH_TO_MIDDLE_ARTIFACT_GROUP),
-  FAR_ARTIFACT_GROUP(DRIVE_FROM_LAUNCH_TO_FAR_ARTIFACT_GROUP),
-  LOADING_ZONE_ARTIFACT_GROUP(DRIVE_FROM_LAUNCH_TO_LOADING_ZONE_ARTIFACT_GROUP),
+  PRELOAD(SHOOT_PRELOAD),
+  ARTIFACT_GROUP_1(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_1),
+  ARTIFACT_GROUP_2(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_2),
+  ARTIFACT_GROUP_3(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_3),
+  ARTIFACT_GROUP_4(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4),
   NONE(DRIVE_FROM_LAUNCH_TO_END);
 
   private final AutonomousStateEnum startingState;

@@ -8,16 +8,14 @@ import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENC
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.TURRET_VELO_PID;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.TURRET_VELO_PID;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.LAUNCH_VELO_PID;
 
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCHER_MOTOR_IDLE_VELOCITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -26,9 +24,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
-//import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.LED;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
@@ -48,7 +43,6 @@ public class HardwareManager {
     private final DcMotorEx launcherMotor;
     private final Servo angleServo;
     private final Servo launchServo;
-    private final Servo intakeServo;
     private final Gamepad gamepad1;
     private final Gamepad gamepad2;
     private final WebcamName turretCam;
@@ -73,7 +67,6 @@ public class HardwareManager {
         this.angleServo = hardwareMap.get(Servo.class, "angleServo");
         this.turretCam = hardwareMap.get(WebcamName.class, "TurretCam");
         this.launchServo = hardwareMap.get(Servo.class, "launchServo");
-        this.intakeServo = hardwareMap.get(Servo.class, "intakeServo");
         this.launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         this.limitSwitchLeft = hardwareMap.get(TouchSensor.class, "limitSwitchLeft");
         this.limitSwitchRight = hardwareMap.get(TouchSensor.class, "limitSwitchRight");
@@ -121,7 +114,7 @@ public class HardwareManager {
         }
 
         launcherMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
-                MOTOR_VELO_PID.p, MOTOR_VELO_PID.i, MOTOR_VELO_PID.d, MOTOR_VELO_PID.f)); // * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
+                LAUNCH_VELO_PID.p, LAUNCH_VELO_PID.i, LAUNCH_VELO_PID.d, LAUNCH_VELO_PID.f)); // * 12 / hardwareMap.voltageSensor.iterator().next().getVoltage()));
         turretMotor.setPIDFCoefficients(RUN_USING_ENCODER, new PIDFCoefficients(
                 TURRET_VELO_PID.p, TURRET_VELO_PID.i, TURRET_VELO_PID.d, TURRET_VELO_PID.f));
 
@@ -166,10 +159,6 @@ public class HardwareManager {
 
     public Servo getLaunchServo() {
         return launchServo;
-    }
-
-    public Servo getIntakeServo() {
-        return intakeServo;
     }
 
     public Servo getAngleServo() {

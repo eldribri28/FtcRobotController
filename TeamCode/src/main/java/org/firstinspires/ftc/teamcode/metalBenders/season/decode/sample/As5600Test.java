@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.i2c.AS5600;
 
-//@Disabled
+@Disabled
 @TeleOp(name="As5600Test", group="Sample")
 public class As5600Test extends LinearOpMode {
 

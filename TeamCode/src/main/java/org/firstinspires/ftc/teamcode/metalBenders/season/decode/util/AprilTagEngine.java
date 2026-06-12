@@ -5,8 +5,8 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.Ar
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.PURPLE_PURPLE_GREEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.ArtifactMotifEnum.UNKNOWN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.CAMERA_GAIN_SET;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_GAIN;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_EXPOSURE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.CAMERA_GAIN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.CAMERA_EXPOSURE;
 
 import android.util.Size;
 

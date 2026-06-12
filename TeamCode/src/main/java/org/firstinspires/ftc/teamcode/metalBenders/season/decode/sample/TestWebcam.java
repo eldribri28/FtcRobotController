@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.metalBenders.season.decode.sample;
 
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_EXPOSURE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.CAMERA_GAIN;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.CAMERA_EXPOSURE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.CAMERA_GAIN;
 
 import android.util.Size;
 

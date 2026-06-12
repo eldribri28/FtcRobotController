@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.metalBenders.season.decode.util;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.ACCELERATION_DUE_TO_GRAVITY;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.FLYWHEEL_DIAMETER_METERS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_HEIGHT;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCH_ANGLE;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MIN_LAUNCH_ANGLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.MAX_LAUNCH_ANGLE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.MIN_LAUNCH_ANGLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TARGET_HEIGHT;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.VELOCITY_TRANSFER_EFFICIENCY;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.VELOCITY_TRANSFER_EFFICIENCY;
 
 import java.util.ArrayList;
 import java.util.List;
