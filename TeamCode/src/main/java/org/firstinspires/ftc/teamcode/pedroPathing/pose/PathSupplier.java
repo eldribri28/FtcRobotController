@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnu
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.ARTIFACT_GROUP_2;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.ARTIFACT_GROUP_3;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.ARTIFACT_GROUP_4;
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.ArtifactGroupEnum.ARTIFACT_GROUP_4_DIRECT;
 import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLinearPathChainBetweenPoses;
 import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildIntakePathChainWithOpenGate;
 
@@ -30,6 +31,10 @@ public class PathSupplier {
     private PathChain driveFromLaunchToArtifactGroup4;
     private PathChain intakeArtifactGroup4;
     private PathChain driveFromArtifactGroup4ToLaunch;
+    private PathChain driveFromLaunchToArtifactGroup4Direct;
+    private PathChain intakeArtifactGroup4Direct;
+    private PathChain driveFromArtifactGroup4DirectToLaunch;
+
     private PathChain driveFromLaunchToEnd;
 
     public PathSupplier(
@@ -59,6 +64,7 @@ public class PathSupplier {
         buildArtifactGroup2Paths(follower, poseSupplier, groupsToEmptyClassifierAfterIntake);
         buildArtifactGroup3Paths(follower, poseSupplier, groupsToEmptyClassifierAfterIntake);
         buildArtifactGroup4Paths(follower, poseSupplier, groupsToEmptyClassifierAfterIntake);
+        buildArtifactGroup4DirectPaths(follower, poseSupplier, groupsToEmptyClassifierAfterIntake);
     }
 
     private void buildArtifactGroup1Paths(
@@ -194,6 +200,40 @@ public class PathSupplier {
         }
     }
 
+    private void buildArtifactGroup4DirectPaths(
+            Follower follower,
+            AbstractPoseSupplier poseSupplier,
+            List<ArtifactGroupEnum> groupsToEmptyClassifierAfterIntake) {
+        // Handle Move to Artifact group 4, Intake them, Return to Launch Position
+        driveFromLaunchToArtifactGroup4Direct = buildLinearPathChainBetweenPoses(
+                follower,
+                poseSupplier.getLaunchPose(),
+                poseSupplier.getArtifactGroup4DirectStartIntakePose());
+
+        if(groupsToEmptyClassifierAfterIntake.contains(ARTIFACT_GROUP_4_DIRECT)) {
+            intakeArtifactGroup4Direct = buildIntakePathChainWithOpenGate(
+                    follower,
+                    poseSupplier.getArtifactGroup4DirectStartIntakePose(),
+                    poseSupplier.getArtifactGroup4DirectEndIntakePose(),
+                    poseSupplier.getClassifierGateStartOpenPose(),
+                    poseSupplier.getClassifierGateEndOpenPose());
+            driveFromArtifactGroup4DirectToLaunch = buildLinearPathChainBetweenPoses(
+                    follower,
+                    poseSupplier.getClassifierGateStartOpenPose(),
+                    poseSupplier.getLaunchPose());
+        } else {
+            intakeArtifactGroup4Direct = buildLinearPathChainBetweenPoses(
+                    follower,
+                    poseSupplier.getArtifactGroup4DirectStartIntakePose(),
+                    poseSupplier.getArtifactGroup4DirectEndIntakePose(),
+                    poseSupplier.getArtifactGroup4DirectStartIntakePose());
+            driveFromArtifactGroup4DirectToLaunch = buildLinearPathChainBetweenPoses(
+                    follower,
+                    poseSupplier.getArtifactGroup4DirectStartIntakePose(),
+                    poseSupplier.getLaunchPose());
+        }
+    }
+
     public PathChain getStartToLaunch() {
         return startToLaunch;
     }
@@ -238,12 +278,24 @@ public class PathSupplier {
         return driveFromLaunchToArtifactGroup4;
     }
 
+    public PathChain getDriveFromLaunchToArtifactGroup4Direct() {
+        return driveFromLaunchToArtifactGroup4Direct;
+    }
+
     public PathChain getIntakeArtifactGroup4() {
         return intakeArtifactGroup4;
     }
 
+    public PathChain getIntakeArtifactGroup4Direct() {
+        return intakeArtifactGroup4Direct;
+    }
+
     public PathChain getDriveFromArtifactGroup4ToLaunch() {
         return driveFromArtifactGroup4ToLaunch;
+    }
+
+    public PathChain getDriveFromArtifactGroup4DirectToLaunch() {
+        return driveFromArtifactGroup4DirectToLaunch;
     }
 
     public PathChain getDriveFromLaunchToEnd() {

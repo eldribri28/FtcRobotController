@@ -11,12 +11,11 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_CLOSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.LAUNCH_GATE_OPEN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.HOOD_SERVO_MAX_VALUE;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.HOOD_SERVO_MIN_VALUE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.MAX_LAUNCH_ANGLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.MIN_LAUNCH_ANGLE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_AGE_DATA_LIMIT_MILLISECONDS;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_D;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_I;
-import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_PID_P;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_H;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_X;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.GlobalVars.ROBOT_FIELD_Y;
@@ -33,7 +32,6 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.pose.PoseUtil.buildLin
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -55,6 +53,12 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.Iterator;
 import java.util.List;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public abstract class BaseAuto extends LinearOpMode {
 
@@ -91,26 +95,59 @@ public abstract class BaseAuto extends LinearOpMode {
     private Double preShotTimestamp = null;
     boolean tagDetected = false;
 
+    List<ArtifactGroupEnum> artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
+
     private List<ArtifactGroupEnum> getArtifactGroupExecutionOrder() {
+        File sdcard = new File("/sdcard/FIRST/config");
         //NEAR
         if(NEAR == getStartPosition()) {
-            return List.of(
-                    PRELOAD,
-                    ARTIFACT_GROUP_1,
-                    ARTIFACT_GROUP_2,
-                    ARTIFACT_GROUP_3,
-                    ARTIFACT_GROUP_4
-            );
+            File file = new File(sdcard, "near.cfg");
+            return readCfgFile(file);
+//            return List.of(
+//                    PRELOAD,
+//                    ARTIFACT_GROUP_1,
+//                    ARTIFACT_GROUP_2,
+//                    ARTIFACT_GROUP_3,
+//                    ARTIFACT_GROUP_4
+//            );
             //FAR
         } else {
-            return List.of(
-                    PRELOAD,
-                    ARTIFACT_GROUP_3,
-                    ARTIFACT_GROUP_2,
-                    ARTIFACT_GROUP_1,
-                    ARTIFACT_GROUP_4
-            );
+            File file = new File(sdcard, "far.cfg");
+            return readCfgFile(file);
+//            return List.of(
+//                    PRELOAD,
+//                    ARTIFACT_GROUP_3,
+//                    ARTIFACT_GROUP_2,
+//                    ARTIFACT_GROUP_1,
+//                    ARTIFACT_GROUP_4
+//            );
         }
+    }
+
+    private List<ArtifactGroupEnum> readCfgFile(File cfgFile) {
+        List<ArtifactGroupEnum> enumList = new ArrayList<>();
+        // Attempt to open and read the text file line-by-line
+        try (BufferedReader reader = new BufferedReader(new FileReader(cfgFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String originalLine = line.trim().toUpperCase();
+                String trimmedLine = originalLine.replace("+OPEN_CLASSIFIER", "");
+                // Check if the read text matches any of our defined enum constants
+                try {
+                    ArtifactGroupEnum state = ArtifactGroupEnum.valueOf(trimmedLine);
+                    if (originalLine.endsWith("+OPEN_CLASSIFIER")) {
+                        artifactGroupsToEmptyClassifierAfterIntake.add(state);
+                    }
+                    enumList.add(state);
+                } catch (IllegalArgumentException e) {
+                    // Ignore text lines that do not match a valid enum constant
+                    telemetry.addData("Invalid enum value found in file: ", trimmedLine);
+                }
+            }
+        } catch (IOException e) {
+            telemetry.addData("Error: ", e);
+        }
+        return enumList;
     }
 
     private List<ArtifactGroupEnum> getArtifactGroupsToEmptyClassifierAfterIntake() {
@@ -121,7 +158,7 @@ public abstract class BaseAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         try {
             initialize();
-            hardwareManager.getAngleServo().setPosition(0);
+            hardwareManager.getAngleServo().setPosition(HOOD_SERVO_MIN_VALUE);
             initialTurretPos = hardwareManager.getTurretMotor().getCurrentPosition();
             waitForStart();
             resetRuntime();
@@ -216,6 +253,9 @@ public abstract class BaseAuto extends LinearOpMode {
                     break;
                 case ARTIFACT_GROUP_4:
                     updateArtifactGroup4State();
+                    break;
+                case ARTIFACT_GROUP_4_DIRECT:
+                    updateArtifactGroup4DirectState();
                     break;
                 case NONE:
                     updateNoneArtifactGroupState();
@@ -354,6 +394,31 @@ public abstract class BaseAuto extends LinearOpMode {
         }
     }
 
+    private void updateArtifactGroup4DirectState() {
+        switch (currentState) {
+            //LOADING ZONE ARTIFACT_GROUP
+            case DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4_DIRECT:
+                follower.followPath(pathSupplier.getDriveFromLaunchToArtifactGroup4Direct(), true);
+                currentState = INTAKE_ARTIFACT_GROUP_4_DIRECT;
+                break;
+            case INTAKE_ARTIFACT_GROUP_4_DIRECT:
+                startIntake();
+                follower.followPath(pathSupplier.getIntakeArtifactGroup4Direct(), true);
+                currentState = DRIVE_FROM_ARTIFACT_GROUP_4_DIRECT_TO_LAUNCH;
+                break;
+            case DRIVE_FROM_ARTIFACT_GROUP_4_DIRECT_TO_LAUNCH:
+                idleIntake();
+                follower.followPath(pathSupplier.getDriveFromArtifactGroup4DirectToLaunch(), true);
+                if (preShotTimer()) {
+                    currentState = SHOOT_ARTIFACT_GROUP_4_DIRECT;
+                }
+                break;
+            case SHOOT_ARTIFACT_GROUP_4_DIRECT:
+                shootAndUpdateToNextArtifactGroup();
+                break;
+        }
+    }
+
     private void updateNoneArtifactGroupState() {
         switch (currentState) {
             case DRIVE_FROM_LAUNCH_TO_END:
@@ -407,11 +472,13 @@ public abstract class BaseAuto extends LinearOpMode {
                 ROBOT_FIELD_H = targetDetection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
                 double turretError = calculateBearingToGoal(ROBOT_FIELD_X, ROBOT_FIELD_Y, ROBOT_FIELD_H);
                 if (targetDistance > 2.7 && getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
-                    turretError -= 2;
-                    targetDistance += 0.300;
+                    turretError -= 3;
+                    targetDistance += 0.200;
                 } else if (targetDistance > 2.7 && getTargetAprilTag() == AprilTagEnum.RED_TARGET) {
-                    turretError -= 2;
-                    targetDistance += 0.300;
+                    turretError += 3;
+                    targetDistance += 0.200;
+                } else {
+                    targetDistance += 0.200;
                 }
                 flywheelRPM = (hardwareManager.getLauncherMotor().getVelocity() / 28.0) * 60.0;
                 telemetry.addData("flywheel RPM", flywheelRPM);
@@ -435,7 +502,7 @@ public abstract class BaseAuto extends LinearOpMode {
                     hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.ORANGE.getLedValue());
                 }
 
-                setLaunchAngle(launchAngle);
+                hardwareManager.getAngleServo().setPosition(setLaunchAngle(launchAngle));
 
                 if (detectionAge < TURRET_AGE_DATA_LIMIT_MILLISECONDS && targetDetection.id == getTargetAprilTag().getId()) {
                     telemetry.addData("Turret Angle", (targetBearing));
@@ -469,11 +536,11 @@ public abstract class BaseAuto extends LinearOpMode {
         double goalY = 0;
 
         if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
-            goalX = -1.8288;
-            goalY = -1.8288;
+            goalX = -1.680;
+            goalY = -1.680;
         } else {
-            goalX = -1.8288;
-            goalY = 1.8288;
+            goalX = -1.680;
+            goalY = 1.680;
         }
 
         // Robot field angle to goal
@@ -500,13 +567,14 @@ public abstract class BaseAuto extends LinearOpMode {
         hardwareManager.getTurretMotor().setTargetPosition(initialTurretPos);
         hardwareManager.getTurretMotor().setMode(RUN_TO_POSITION);
         hardwareManager.getTurretMotor().setPower(0.5);
-        targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
-        hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
+        //targetRPM = LAUNCHER_MOTOR_IDLE_VELOCITY;
+        //hardwareManager.getLaunchServo().setPosition(LAUNCH_GATE_CLOSE);
     }
 
     public boolean readyToShoot() {
 
         if(isLaunchMotorVelocityWithinThreshold() && isTurretAngleWithinThreshold() && launchSolution) {
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.GREEN.getLedValue());
             readyToShootCount ++;
         } else {
             readyToShootCount = 0;
@@ -516,7 +584,7 @@ public abstract class BaseAuto extends LinearOpMode {
             if(shootTime == null) {
                 shootTime = getRuntime() + 1.5;
             }
-            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.YELLOW.getLedValue());
+            hardwareManager.getIndicatorLed().setPosition(IndicatorLedEnum.BLUE.getLedValue());
             return true;
         } else {
             return false;
@@ -548,11 +616,14 @@ public abstract class BaseAuto extends LinearOpMode {
         return Math.abs(targetRPM - currentRPM) < MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL;
     }
 
-    private void setLaunchAngle(double setAngle) {
-        if (setAngle != 0) {
-            double positionValue = Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (0.65/((MAX_LAUNCH_ANGLE-MIN_LAUNCH_ANGLE)))), 0.0, 0.65);
-            //telemetry.addData("servo value", positionValue);
-            hardwareManager.getAngleServo().setPosition(positionValue);
+    public static double setLaunchAngle(double setAngle) {
+        double servoMin = HOOD_SERVO_MIN_VALUE;
+        double servoMax = HOOD_SERVO_MAX_VALUE;
+        if (setAngle == 0) {
+            return servoMin;
+        } else {
+            setAngle += 1;
+            return Range.clip(((MAX_LAUNCH_ANGLE - setAngle) * (servoMax / ((MAX_LAUNCH_ANGLE - MIN_LAUNCH_ANGLE)))), servoMin, servoMax);
         }
     }
 

@@ -15,13 +15,12 @@ public class Tuning {
     public static double MIN_LAUNCH_ANGLE = 33;
     public static double HOOD_SERVO_MAX_VALUE = 0.65;
     public static double HOOD_SERVO_MIN_VALUE = 0.30;
-
     public static double VELOCITY_TRANSFER_EFFICIENCY = 0.36;
     /*
     TURRET TUNING
      */
     public static double TURRET_ERROR_SMOOTHING_FACTOR = 0.08; // How much of the last error should be blended into the current error 100% = 1.0
-    public static PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(6.4, 0, 6.2, 6.6);
+    public static PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(6.4, 0.05, 6.2, 6.6);
     /*
     Camera Settings
     */

@@ -4,12 +4,13 @@ import com.pedropathing.geometry.Pose;
 
 public abstract class AbstractPoseSupplier {
 
-  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 26.5;
+  protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE = 24.5;
   protected static final double DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1 = 18;
   protected static final double CLASSIFIER_Y_POSITION = 66;
   protected static final double CLASSIFIER_OPEN_HEADING = 90;
 
   //ARTIFACT GROUP SHARED POSITIONS
+  protected static final double ARTIFACT_GROUP_4_DIRECT_Y_POSITION = 7;
   protected static final double ARTIFACT_GROUP_4_Y_POSITION = 27;
   protected static final double ARTIFACT_GROUP_4_HEADING = Math.toRadians(270);
   protected static final double ARTIFACT_GROUP_3_Y_POSITION = 35;
@@ -22,6 +23,7 @@ public abstract class AbstractPoseSupplier {
   protected static final double BLUE_FAR_START_X_POSITION = 54;
   protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 44;
   protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 2;
+  protected static final double BLUE_ARTIFACT_GROUP_4_DIRECT_X_POSITION = 28;
   protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 53;
   protected static final double BLUE_FAR_LAUNCH_X_POSITION = 52;
   protected static final Pose BLUE_FAR_END_POSE = new Pose(48, 126, BLUE_DEFAULT_HEADING);
@@ -32,10 +34,11 @@ public abstract class AbstractPoseSupplier {
 
   //RED SPECIFIC
   protected static final double RED_DEFAULT_HEADING = Math.toRadians(0);
-  protected static final double RED_NEAR_START_X_POSITION = 121;
+  protected static final double RED_NEAR_START_X_POSITION = 118;
   protected static final double RED_FAR_START_X_POSITION = 86;
-  protected static final double RED_ARTIFACT_GROUP_START_X_POSITION = 101;
-  protected static final double RED_ARTIFACT_GROUP_4_X_POSITION = 142;
+  protected static final double RED_ARTIFACT_GROUP_START_X_POSITION = 93;
+  protected static final double RED_ARTIFACT_GROUP_4_X_POSITION = 136;
+  protected static final double RED_ARTIFACT_GROUP_4_DIRECT_X_POSITION = 108;
   protected static final double RED_NEAR_LAUNCH_X_POSITION = 82;
   protected static final double RED_FAR_LAUNCH_X_POSITION = 90;
   protected static final Pose RED_NEAR_END_POSE = new Pose(96, 126, RED_DEFAULT_HEADING);
@@ -63,6 +66,8 @@ public abstract class AbstractPoseSupplier {
   public abstract Pose getArtifactGroup3EndIntakePose();
   public abstract Pose getArtifactGroup4StartIntakePose();
   public abstract Pose getArtifactGroup4EndIntakePose();
+  public abstract Pose getArtifactGroup4DirectStartIntakePose();
+  public abstract Pose getArtifactGroup4DirectEndIntakePose();
   public abstract Pose getClassifierGateStartOpenPose();
   public abstract Pose getClassifierGateEndOpenPose();
 }

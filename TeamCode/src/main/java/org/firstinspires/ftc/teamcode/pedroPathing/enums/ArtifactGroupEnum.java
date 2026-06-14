@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.enums;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4_DIRECT;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_END;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_3;
 import static org.firstinspires.ftc.teamcode.pedroPathing.enums.AutonomousStateEnum.DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4;
@@ -13,6 +14,7 @@ public enum ArtifactGroupEnum {
   ARTIFACT_GROUP_2(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_2),
   ARTIFACT_GROUP_3(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_3),
   ARTIFACT_GROUP_4(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4),
+  ARTIFACT_GROUP_4_DIRECT(DRIVE_FROM_LAUNCH_TO_ARTIFACT_GROUP_4_DIRECT),
   NONE(DRIVE_FROM_LAUNCH_TO_END);
 
   private final AutonomousStateEnum startingState;

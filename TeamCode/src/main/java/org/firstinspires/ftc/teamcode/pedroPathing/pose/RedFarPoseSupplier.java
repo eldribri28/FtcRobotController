@@ -82,8 +82,24 @@ public class RedFarPoseSupplier extends AbstractPoseSupplier{
   public Pose getArtifactGroup4EndIntakePose() {
     return new Pose(
             RED_ARTIFACT_GROUP_4_X_POSITION,
-            ARTIFACT_GROUP_4_Y_POSITION + DISTANCE_TO_TRAVEL_DURING_INTAKE,
+            ARTIFACT_GROUP_4_Y_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
             ARTIFACT_GROUP_4_HEADING);
+  }
+
+  @Override
+  public Pose getArtifactGroup4DirectStartIntakePose() {
+    return new Pose(
+            RED_ARTIFACT_GROUP_4_DIRECT_X_POSITION,
+            ARTIFACT_GROUP_4_DIRECT_Y_POSITION,
+            RED_DEFAULT_HEADING);
+  }
+
+  @Override
+  public Pose getArtifactGroup4DirectEndIntakePose() {
+    return new Pose(
+            RED_ARTIFACT_GROUP_4_DIRECT_X_POSITION + DISTANCE_TO_TRAVEL_DURING_INTAKE,
+            ARTIFACT_GROUP_4_DIRECT_Y_POSITION,
+            RED_DEFAULT_HEADING);
   }
 
   @Override

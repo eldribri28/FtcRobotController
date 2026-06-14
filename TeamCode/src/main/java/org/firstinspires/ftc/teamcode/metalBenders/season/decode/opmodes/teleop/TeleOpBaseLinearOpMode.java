@@ -301,7 +301,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("Turret: x, y, h","%.2f m, %.2f m, %.2f deg", turretX, turretY, turretH);
         telemetry.addData("Robot: x, y, h", "%.2f m, %.2f m, %.2f deg", robotX, robotY, robotH);
         //telemetry.addData("---GAMEPAD 2--------------------------", "");
-        telemetry.addData("Editing", "___");
+        telemetry.addData("Editing", "");
         telemetry.addData("Camera Exposure", CAMERA_EXPOSURE);
         telemetry.addData("Camera Gain", CAMERA_GAIN);
         telemetry.addData("Flywheel Offset", flywheelspeedoffset);

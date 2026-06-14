@@ -87,6 +87,22 @@ public class BlueNearPoseSupplier extends AbstractPoseSupplier {
   }
 
   @Override
+  public Pose getArtifactGroup4DirectStartIntakePose() {
+    return new Pose(
+            BLUE_ARTIFACT_GROUP_4_DIRECT_X_POSITION,
+            ARTIFACT_GROUP_4_DIRECT_Y_POSITION,
+            BLUE_DEFAULT_HEADING);
+  }
+
+  @Override
+  public Pose getArtifactGroup4DirectEndIntakePose() {
+    return new Pose(
+            BLUE_ARTIFACT_GROUP_4_DIRECT_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE,
+            ARTIFACT_GROUP_4_DIRECT_Y_POSITION,
+            BLUE_DEFAULT_HEADING);
+  }
+
+  @Override
   public Pose getClassifierGateStartOpenPose() {
     return BLUE_CLASSIFIER_GATE_POSE;
   }
