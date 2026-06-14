@@ -97,7 +97,7 @@ public class HardwareManager {
         }
         for(DcMotor motor : List.of(intakeMotor)) {
             motor.setMode(RUN_WITHOUT_ENCODER);
-            motor.setZeroPowerBehavior(FLOAT);
+            motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.REVERSE);
         }
         for(DcMotorEx motor : List.of(turretMotor)) {
