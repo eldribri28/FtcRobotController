@@ -214,6 +214,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         generateLUTs();
         telemetry.addLine("End Generate Trajectory LUT...");
         telemetry.addData("LoopTime", "%d ms", (System.currentTimeMillis() - controlLoopStart));
+        setExposureAndGain();
 
         //while (!isStarted() && !isStopRequested()) {
             bulkHardwareRead();
@@ -257,7 +258,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("AprilTagEngine exception","");
         //telemetry.addLine("---GAMEPAD 2---");
         //telemetry.addLine("_________________________________________________________________");
-        telemetry.addData("Editing", "___");
+        telemetry.addData("Editing", "");
         telemetry.addData("camera exposure value", CAMERA_EXPOSURE);
         telemetry.addData("camera gain value", CAMERA_GAIN);
         telemetry.addData("fly wheel offset", flywheelspeedoffset);
@@ -385,7 +386,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void updateTurret() {
-        double angularMovementCompensation = robotAngularRateToTarget(robotPose, follower, getTargetAprilTag());
+        //double angularMovementCompensation = robotAngularRateToTarget(robotPose, follower, getTargetAprilTag());
         double turretErrorRad = turretError;
         if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
             turretErrorRad = AngleUnit.normalizeRadians(calculateTurretError(turretPose, BLUE_GOAL_POSE));
@@ -527,10 +528,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             telemetry.addData("Editing", "Flywheel Offset");
             if (gamepad2.dpad_up && lastbuttonstate3 == 0) {
                 lastbuttonstate3 = 1;
-                flywheelspeedoffset += 100;
+                flywheelspeedoffset += 10;
             } else if (gamepad2.dpad_down && lastbuttonstate3 == 0) {
                 lastbuttonstate3 = 1;
-                flywheelspeedoffset -= 100;
+                flywheelspeedoffset -= 10;
             }
         }
 

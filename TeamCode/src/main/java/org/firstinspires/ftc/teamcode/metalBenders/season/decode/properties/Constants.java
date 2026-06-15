@@ -35,8 +35,8 @@ public final class Constants {
     public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 100;
     public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 150;
     public static final Pose2D TURRET_ROBOT_POSE_OFFSET = new Pose2D(DistanceUnit.METER, -0.040, 0, AngleUnit.RADIANS, 0);
-    public static final Pose2D RED_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.680, 1.680, AngleUnit.RADIANS, 0);
-    public static final Pose2D BLUE_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.680, -1.680, AngleUnit.RADIANS, 0);
+    public static final Pose2D RED_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.680, 1.600, AngleUnit.RADIANS, 0);
+    public static final Pose2D BLUE_GOAL_POSE = new Pose2D(DistanceUnit.METER, -1.680, -1.780, AngleUnit.RADIANS, 0);
     /*
     Drive System
      */

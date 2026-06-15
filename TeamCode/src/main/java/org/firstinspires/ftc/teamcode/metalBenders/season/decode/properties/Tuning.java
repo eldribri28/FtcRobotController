@@ -19,8 +19,8 @@ public class Tuning {
     /*
     TURRET TUNING
      */
-    public static double TURRET_ERROR_SMOOTHING_FACTOR = 0.08; // How much of the last error should be blended into the current error 100% = 1.0
-    public static PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(6.4, 0.05, 6.2, 6.6);
+    public static double TURRET_ERROR_SMOOTHING_FACTOR = 0.25; // How much of the last error should be blended into the current error 100% = 1.0
+    public static PIDFCoefficients TURRET_VELO_PID = new PIDFCoefficients(6.4, 0.5, 6.0, 6.6);
     /*
     Camera Settings
     */

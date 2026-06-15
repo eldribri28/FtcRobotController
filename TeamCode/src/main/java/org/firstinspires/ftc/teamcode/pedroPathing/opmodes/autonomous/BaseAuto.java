@@ -95,7 +95,7 @@ public abstract class BaseAuto extends LinearOpMode {
     private Double preShotTimestamp = null;
     boolean tagDetected = false;
 
-    List<ArtifactGroupEnum> artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
+    private List<ArtifactGroupEnum> artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
 
     private List<ArtifactGroupEnum> getArtifactGroupExecutionOrder() {
         File sdcard = new File("/sdcard/FIRST/config");
@@ -126,6 +126,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     private List<ArtifactGroupEnum> readCfgFile(File cfgFile) {
         List<ArtifactGroupEnum> enumList = new ArrayList<>();
+        artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
         // Attempt to open and read the text file line-by-line
         try (BufferedReader reader = new BufferedReader(new FileReader(cfgFile))) {
             String line;
@@ -151,7 +152,7 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private List<ArtifactGroupEnum> getArtifactGroupsToEmptyClassifierAfterIntake() {
-        return List.of();
+        return artifactGroupsToEmptyClassifierAfterIntake;
     }
 
     @Override
