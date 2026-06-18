@@ -87,47 +87,33 @@ public abstract class BaseAuto extends LinearOpMode {
     private Thread aprilTagEngineThread;
     private Follower follower;
     private PathSupplier pathSupplier;
-    private final Iterator<ArtifactGroupEnum> artifactGroupIterator =
-            getArtifactGroupExecutionOrder().iterator();
+    private List<ArtifactGroupEnum> artifactGroupExecutionOrder = null;
+    private Iterator<ArtifactGroupEnum> artifactGroupIterator = null;
     private ArtifactGroupEnum currentArtifactGroup;
     private AutonomousStateEnum currentState;
     private Double shootTime = null;
     private Double preShotTimestamp = null;
     boolean tagDetected = false;
-
-    private List<ArtifactGroupEnum> artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
-
+    protected List<ArtifactGroupEnum> artifactGroupsToEmptyClassifierAfterIntake = null;
     private List<ArtifactGroupEnum> getArtifactGroupExecutionOrder() {
-        File sdcard = new File("/sdcard/FIRST/config");
-        //NEAR
-        if(NEAR == getStartPosition()) {
-            File file = new File(sdcard, "near.cfg");
-            return readCfgFile(file);
-//            return List.of(
-//                    PRELOAD,
-//                    ARTIFACT_GROUP_1,
-//                    ARTIFACT_GROUP_2,
-//                    ARTIFACT_GROUP_3,
-//                    ARTIFACT_GROUP_4
-//            );
+        if(artifactGroupExecutionOrder == null) {
+            File configFile;
+            //NEAR
+            if(NEAR == getStartPosition()) {
+                configFile = new File("/sdcard/FIRST/config/near.cfg");
             //FAR
-        } else {
-            File file = new File(sdcard, "far.cfg");
-            return readCfgFile(file);
-//            return List.of(
-//                    PRELOAD,
-//                    ARTIFACT_GROUP_3,
-//                    ARTIFACT_GROUP_2,
-//                    ARTIFACT_GROUP_1,
-//                    ARTIFACT_GROUP_4
-//            );
+            } else {
+                configFile = new File("/sdcard/FIRST/config/far.cfg");
+            }
+            artifactGroupExecutionOrder = readCfgFile(configFile);
         }
+        return artifactGroupExecutionOrder;
     }
 
-    private List<ArtifactGroupEnum> readCfgFile(File cfgFile) {
-        List<ArtifactGroupEnum> enumList = new ArrayList<>();
-        artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
+    protected List<ArtifactGroupEnum> readCfgFile(File cfgFile) {
         // Attempt to open and read the text file line-by-line
+        artifactGroupExecutionOrder = new ArrayList<>();
+        artifactGroupsToEmptyClassifierAfterIntake = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(cfgFile))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -139,7 +125,7 @@ public abstract class BaseAuto extends LinearOpMode {
                     if (originalLine.endsWith("+OPEN_CLASSIFIER")) {
                         artifactGroupsToEmptyClassifierAfterIntake.add(state);
                     }
-                    enumList.add(state);
+                    artifactGroupExecutionOrder.add(state);
                 } catch (IllegalArgumentException e) {
                     // Ignore text lines that do not match a valid enum constant
                     telemetry.addData("Invalid enum value found in file: ", trimmedLine);
@@ -148,7 +134,7 @@ public abstract class BaseAuto extends LinearOpMode {
         } catch (IOException e) {
             telemetry.addData("Error: ", e);
         }
-        return enumList;
+        return artifactGroupExecutionOrder;
     }
 
     private List<ArtifactGroupEnum> getArtifactGroupsToEmptyClassifierAfterIntake() {
@@ -189,6 +175,7 @@ public abstract class BaseAuto extends LinearOpMode {
     }
 
     private void initialize() {
+        artifactGroupIterator = getArtifactGroupExecutionOrder().iterator();
         hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
         aprilTagEngine = new AprilTagEngine(hardwareManager, getTargetAprilTag());
         aprilTagEngineThread = new Thread(aprilTagEngine);
@@ -643,7 +630,8 @@ public abstract class BaseAuto extends LinearOpMode {
         telemetry.addData("Tag detected", tagDetected);
         telemetry.addData("Target april tag", getTargetAprilTag().name());
         telemetry.addData("Start position", getStartPosition().name());
-        telemetry.addData("Artifact group execution order", getArtifactGroupExecutionOrder().toString());
+        telemetry.addData("Artifact group execution order", getArtifactGroupExecutionOrder());
+        telemetry.addData("Artifact groups to open classifier", artifactGroupsToEmptyClassifierAfterIntake);
         telemetry.addData("Current artifact group", currentArtifactGroup.name());
         telemetry.addData("Current state", currentState.name());
         telemetry.addData("Follower busy", follower.isBusy());

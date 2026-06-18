@@ -22,6 +22,11 @@ android {
         jniLibs.useLegacyPackaging true
         exclude '**/ignore/**'
     }
+    sourceSets {
+        test {
+            resources.srcDirs = ['src/test/resources']
+        }
+    }
 }
 
 repositories {
