@@ -9,17 +9,18 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.metalBenders.season.decode.hardware.HardwareManager;
 import org.firstinspires.ftc.teamcode.metalBenders.season.decode.i2c.AS5600;
 
-@Disabled
+//@Disabled
 @TeleOp(name="As5600Test", group="Sample")
 public class As5600Test extends LinearOpMode {
 
-    private HardwareManager hardwareManager;
     private double turretMotorEncoderZero = 0;
+    private AS5600 turretEncoder;
+    private DcMotorEx turretMotor;
 
     @Override
     public void runOpMode() {
@@ -33,7 +34,7 @@ public class As5600Test extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            telemetry.addData("Encoder Angle (deg)", hardwareManager.getTurretEncoder().getAngleDeg(true));
+            telemetry.addData("Encoder Angle (deg)", turretEncoder.getAngleDeg(true));
             telemetry.addData("Turret Angle (deg)", getTurretAngleFromEncoder());
             telemetry.update();
             sleep(20);
@@ -43,20 +44,21 @@ public class As5600Test extends LinearOpMode {
     }
 
     private void initialize() {
-        hardwareManager = new HardwareManager(hardwareMap, gamepad1, gamepad2);
+        turretMotor = hardwareMap.get(DcMotorEx .class, "turretMotor");
+        turretEncoder = hardwareMap.get(AS5600.class, "turretEncoder");
         setTurretEncoderToMotorEncoderOffset();
     }
 
     private void setTurretEncoderToMotorEncoderOffset() {
-        long currentTurretMotorEncoderValue = hardwareManager.getTurretMotor().getCurrentPosition();
-        double currentTurretEncoderRawPosition = hardwareManager.getTurretEncoder().getAngleDeg(true);
+        long currentTurretMotorEncoderValue = turretMotor.getCurrentPosition();
+        double currentTurretEncoderRawPosition = turretEncoder.getAngleDeg(true);
         double currentTurretEncoderAdjustedPosition = AngleUnit.normalizeDegrees(TURRET_ENCODER_ROBOT_POSE_ZERO - currentTurretEncoderRawPosition);
         double currentTurretActualPosition = AngleUnit.normalizeDegrees(currentTurretEncoderAdjustedPosition / TURRET_ENCODER_DEGREES_TO_ACTUAL);
         turretMotorEncoderZero = currentTurretMotorEncoderValue - (long)(currentTurretActualPosition * TURRET_TICKS_PER_DEGREE);
     }
 
     private double getTurretAngleFromEncoder() {
-        long currentTurretMotorEncoderValue = hardwareManager.getTurretMotor().getCurrentPosition();
+        long currentTurretMotorEncoderValue = turretMotor.getCurrentPosition();
         return (currentTurretMotorEncoderValue - turretMotorEncoderZero) / TURRET_TICKS_PER_DEGREE;
     }
 

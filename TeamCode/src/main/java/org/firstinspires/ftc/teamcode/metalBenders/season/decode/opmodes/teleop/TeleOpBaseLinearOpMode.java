@@ -130,6 +130,15 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double gamepad1LSY = 0;
     private double gamepad1RSX = 0;
     private double gamepad1RSY = 0;
+    private boolean gamepad2A = false;
+    private boolean gamepad2B = false;
+    private boolean gamepad2X = false;
+    private boolean gamepad2Y = false;
+    private boolean gamepad2YWasReleased = false;
+    private boolean gamepad2DU = false;
+    private boolean gamepad2DD = false;
+    private boolean gamepad2DL = false;
+    private boolean gamepad2DR = false;
 
     // END HARDWARE READ VARIABLES
 
@@ -499,50 +508,61 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
 
     private void gamepad2() {
 
-        if (gamepad2.a) {
+        if (gamepad2A) {
             telemetry.addData("Editing", "Camera Gain");
-            if (gamepad2.dpad_up && lastbuttonstate == 0) {
+            if (gamepad2DU && lastbuttonstate == 0) {
                 lastbuttonstate = 1;
                 CAMERA_GAIN += 1;
                 setExposureAndGain();
-            } else if (gamepad2.dpad_down && lastbuttonstate == 0) {
+            } else if (gamepad2DD && lastbuttonstate == 0) {
                 lastbuttonstate = 1;
                 CAMERA_GAIN -= 1;
                 setExposureAndGain();
+            } else if (gamepad2DL && lastbuttonstate == 0) {
+                lastbuttonstate = 1;
+                CAMERA_GAIN = 5;
+                setExposureAndGain();
             }
         }
 
-        if (gamepad2.x) {
+        if (gamepad2X) {
             telemetry.addData("Editing", "Camera Exposure");
-            if (gamepad2.dpad_up && lastbuttonstate2 == 0) {
+            if (gamepad2DU && lastbuttonstate2 == 0) {
                 lastbuttonstate2 = 1;
                 CAMERA_EXPOSURE += 1;
                 setExposureAndGain();
-            } else if (gamepad2.dpad_down && lastbuttonstate2 == 0) {
+            } else if (gamepad2DD && lastbuttonstate2 == 0) {
                 lastbuttonstate2 = 1;
                 CAMERA_EXPOSURE -= 1;
+                setExposureAndGain();
+            } else if (gamepad2DL && lastbuttonstate == 0) {
+                lastbuttonstate2 = 1;
+                CAMERA_EXPOSURE = 7;
                 setExposureAndGain();
             }
         }
 
-        if (gamepad2.b) {
+        if (gamepad2B) {
             telemetry.addData("Editing", "Flywheel Offset");
-            if (gamepad2.dpad_up && lastbuttonstate3 == 0) {
+            if (gamepad2DU && lastbuttonstate3 == 0) {
                 lastbuttonstate3 = 1;
                 flywheelspeedoffset += 10;
-            } else if (gamepad2.dpad_down && lastbuttonstate3 == 0) {
+            } else if (gamepad2DD && lastbuttonstate3 == 0) {
                 lastbuttonstate3 = 1;
                 flywheelspeedoffset -= 10;
+            } else if (gamepad2DL && lastbuttonstate3 == 0) {
+                lastbuttonstate3 = 1;
+                flywheelspeedoffset = 0;
             }
         }
 
-        if (!gamepad2.dpad_down && !gamepad2.dpad_up) {
+        if (!gamepad2DD && !gamepad2DU) {
             lastbuttonstate = 0;
             lastbuttonstate2 = 0;
             lastbuttonstate3 = 0;
         }
 
-        if(gamepad2.yWasReleased()) {
+        if(gamepad2YWasReleased) {
             flywheelConstantSpeedActive = !flywheelConstantSpeedActive;
         }
     }
@@ -573,6 +593,15 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         gamepad1LSY = hardwareManager.getGamepad1().left_stick_y;
         gamepad1RSX = hardwareManager.getGamepad1().right_stick_x;
         gamepad1RSY = hardwareManager.getGamepad1().right_stick_y;
+        gamepad2A = hardwareManager.getGamepad2().a;
+        gamepad2B = hardwareManager.getGamepad2().b;
+        gamepad2X = hardwareManager.getGamepad2().x;
+        gamepad2Y = hardwareManager.getGamepad2().y;
+        gamepad2YWasReleased = hardwareManager.getGamepad2().yWasReleased();
+        gamepad2DU = hardwareManager.getGamepad2().dpad_up;
+        gamepad2DD = hardwareManager.getGamepad2().dpad_down;
+        gamepad2DL = hardwareManager.getGamepad2().dpad_left;
+        gamepad2DR = hardwareManager.getGamepad2().dpad_right;
     }
 
     private void cacheHardwareWrite() {
