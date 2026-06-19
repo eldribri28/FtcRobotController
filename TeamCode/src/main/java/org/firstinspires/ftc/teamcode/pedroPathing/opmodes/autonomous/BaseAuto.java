@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.pedroPathing.opmodes.autonomous;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.FAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.enums.StartPositionEnum.NEAR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.AGED_DATA_LIMIT_MILLISECONDS;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.INTAKE_IDLE_POWER;
@@ -581,7 +582,11 @@ public abstract class BaseAuto extends LinearOpMode {
 
     public boolean preShotTimer() {
         if( preShotTimestamp == null) {
-            preShotTimestamp = getRuntime();
+            if(currentArtifactGroup == PRELOAD && getStartPosition() == FAR) {
+                preShotTimestamp = getRuntime() + 1;
+            } else {
+                preShotTimestamp = getRuntime();
+            }
         }
         if (preShotTimestamp <= getRuntime()) {
             preShotTimestamp = null;
