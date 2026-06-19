@@ -145,6 +145,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double setLaunchServo = 0;
     private double setAngleServo = 0;
     private double setIndicatorLed = IndicatorLedEnum.RED.getLedValue();
+    private boolean flywheelConstantSpeedActive = false;
     // END HARDWARE WRITE VARIABLES
 
     @Override
@@ -541,6 +542,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             lastbuttonstate3 = 0;
         }
 
+        if(gamepad2.yWasReleased()) {
+            flywheelConstantSpeedActive = !flywheelConstantSpeedActive;
+        }
     }
 
 
@@ -577,9 +581,16 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             hardwareManager.getLeftFrontMotor().setPower(setLeftFrontMotorPower);
             hardwareManager.getLeftRearMotor().setPower(setLeftRearMotorPower);
             hardwareManager.getTurretMotor().setTargetPosition(turretEncoderTarget);
-            hardwareManager.getTurretMotor().setMode(RUN_TO_POSITION);
-            hardwareManager.getTurretMotor().setPower(setTurretMotorPower);
-            hardwareManager.getLauncherMotor().setVelocity(setLauncherMotorVelocity);
+
+            if(flywheelConstantSpeedActive) {
+                hardwareManager.getTurretMotor().setMode(RUN_USING_ENCODER);
+                hardwareManager.getTurretMotor().setPower(0);
+                hardwareManager.getLauncherMotor().setVelocity((double) (2200 * 28)/60);
+            } else {
+                hardwareManager.getTurretMotor().setMode(RUN_TO_POSITION);
+                hardwareManager.getTurretMotor().setPower(setTurretMotorPower);
+                hardwareManager.getLauncherMotor().setVelocity(setLauncherMotorVelocity);
+            }
             hardwareManager.getIntakeMotor().setPower(setIntakeMotorPower);
             hardwareManager.getLaunchServo().setPosition(setLaunchServo);
             hardwareManager.getAngleServo().setPosition(setAngleServo);
