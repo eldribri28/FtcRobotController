@@ -31,11 +31,11 @@ public class Constants {
     //public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.5, 3);
 
     public static PathConstraints pathConstraints = new PathConstraints(
-            0.99, // tValueConstraint
+            0.97, // tValueConstraint
             0.5,   // velocityConstraint
-            1.5,   // translationalConstraint (Distance from target in inches)
+            2,   // translationalConstraint (Distance from target in inches)
             Math.toRadians(5), // headingConstraint (Rotation error in radians)
-            55,    // timeoutConstraint (ms)
+            100,    // timeoutConstraint (ms)
             1.25,  // brakingStrength
             10,    // BEZIER_CURVE_SEARCH_LIMIT
             1      // brakingStart

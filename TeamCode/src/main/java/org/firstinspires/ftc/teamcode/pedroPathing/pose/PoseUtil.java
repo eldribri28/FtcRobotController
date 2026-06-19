@@ -26,7 +26,7 @@ public class PoseUtil {
       }
       previousPose = pose;
     }
-    pathBuilder.setTimeoutConstraint(TIMEOUT_CONSTRAINT).setGlobalDeceleration(GLOBAL_DECELERATION);
+//    pathBuilder.setTimeoutConstraint(TIMEOUT_CONSTRAINT).setGlobalDeceleration(GLOBAL_DECELERATION);
     return pathBuilder.build();
   }
 

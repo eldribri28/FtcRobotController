@@ -23,11 +23,11 @@ public abstract class AbstractPoseSupplier {
   protected static final double BLUE_FAR_START_X_POSITION = 54;
   protected static final double BLUE_ARTIFACT_GROUP_START_X_POSITION = 44;
   protected static final double BLUE_ARTIFACT_GROUP_4_X_POSITION = 2;
-  protected static final double BLUE_ARTIFACT_GROUP_4_DIRECT_X_POSITION = 28;
+  protected static final double BLUE_ARTIFACT_GROUP_4_DIRECT_X_POSITION = 29;
   protected static final double BLUE_NEAR_LAUNCH_X_POSITION = 53;
   protected static final double BLUE_FAR_LAUNCH_X_POSITION = 52;
-  protected static final Pose BLUE_FAR_END_POSE = new Pose(48, 126, BLUE_DEFAULT_HEADING);
-  protected static final Pose BLUE_NEAR_END_POSE = new Pose(37, 32, BLUE_DEFAULT_HEADING);
+  protected static final Pose BLUE_FAR_END_POSE = new Pose(38, 13, BLUE_DEFAULT_HEADING);
+  protected static final Pose BLUE_NEAR_END_POSE = new Pose(50, 126, BLUE_DEFAULT_HEADING);
   protected static final Pose BLUE_CLASSIFIER_GATE_POSE = new Pose(BLUE_ARTIFACT_GROUP_START_X_POSITION, CLASSIFIER_Y_POSITION, Math.toRadians(CLASSIFIER_OPEN_HEADING));
   protected static final Pose BLUE_CLASSIFIER_GATE_OPEN_POSE = new Pose(BLUE_ARTIFACT_GROUP_START_X_POSITION - DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1, CLASSIFIER_Y_POSITION, Math.toRadians(CLASSIFIER_OPEN_HEADING));
 
@@ -35,16 +35,16 @@ public abstract class AbstractPoseSupplier {
   //RED SPECIFIC
   protected static final double RED_DEFAULT_HEADING = Math.toRadians(0);
   protected static final double RED_NEAR_START_X_POSITION = 118;
-  protected static final double RED_FAR_START_X_POSITION = 86;
-  protected static final double RED_ARTIFACT_GROUP_START_X_POSITION = 93;
+  protected static final double RED_FAR_START_X_POSITION = 88;
+  protected static final double RED_ARTIFACT_GROUP_START_X_POSITION = 96;
   protected static final double RED_ARTIFACT_GROUP_4_X_POSITION = 136;
   protected static final double RED_ARTIFACT_GROUP_4_DIRECT_X_POSITION = 108;
   protected static final double RED_NEAR_LAUNCH_X_POSITION = 82;
   protected static final double RED_FAR_LAUNCH_X_POSITION = 90;
-  protected static final Pose RED_NEAR_END_POSE = new Pose(96, 126, RED_DEFAULT_HEADING);
-  protected static final Pose RED_FAR_END_POSE = new Pose(107, 32, RED_DEFAULT_HEADING);
+  protected static final Pose RED_NEAR_END_POSE = new Pose(92, 126, RED_DEFAULT_HEADING);
+  protected static final Pose RED_FAR_END_POSE = new Pose(104, 13, RED_DEFAULT_HEADING);
   protected static final Pose RED_CLASSIFIER_GATE_POSE = new Pose(RED_ARTIFACT_GROUP_START_X_POSITION, CLASSIFIER_Y_POSITION, Math.toRadians(CLASSIFIER_OPEN_HEADING));
-  protected static final Pose RED_CLASSIFIER_GATE_OPEN_POSE = new Pose(RED_ARTIFACT_GROUP_START_X_POSITION + DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1, CLASSIFIER_Y_POSITION, Math.toRadians(CLASSIFIER_OPEN_HEADING));
+  protected static final Pose RED_CLASSIFIER_GATE_OPEN_POSE = new Pose(RED_ARTIFACT_GROUP_START_X_POSITION + DISTANCE_TO_TRAVEL_DURING_INTAKE_GROUP1 + 12, CLASSIFIER_Y_POSITION, Math.toRadians(CLASSIFIER_OPEN_HEADING));
 
 
   //NEAR SPECIFIC

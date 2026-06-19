@@ -103,7 +103,7 @@ public class HardwareManager {
         for(DcMotorEx motor : List.of(turretMotor)) {
             motor.setMode(STOP_AND_RESET_ENCODER);
             motor.setMode(RUN_USING_ENCODER);
-            motor.setTargetPositionTolerance(1);
+            motor.setTargetPositionTolerance(2);
             motor.setZeroPowerBehavior(BRAKE);
             motor.setDirection(DcMotorSimple.Direction.FORWARD);
         }

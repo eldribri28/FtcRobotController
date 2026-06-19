@@ -526,10 +526,10 @@ public abstract class BaseAuto extends LinearOpMode {
 
         if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
             goalX = -1.680;
-            goalY = -1.680;
+            goalY = -1.780;
         } else {
             goalX = -1.680;
-            goalY = 1.680;
+            goalY = 1.780;
         }
 
         // Robot field angle to goal
@@ -582,7 +582,7 @@ public abstract class BaseAuto extends LinearOpMode {
 
     public boolean preShotTimer() {
         if( preShotTimestamp == null) {
-            if(currentArtifactGroup == PRELOAD && getStartPosition() == FAR) {
+            if(getStartPosition() == FAR) {
                 preShotTimestamp = getRuntime() + 1;
             } else {
                 preShotTimestamp = getRuntime();

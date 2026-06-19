@@ -614,7 +614,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             if(flywheelConstantSpeedActive) {
                 hardwareManager.getTurretMotor().setMode(RUN_USING_ENCODER);
                 hardwareManager.getTurretMotor().setPower(0);
-                hardwareManager.getLauncherMotor().setVelocity((double) (2200 * 28)/60);
+                hardwareManager.getLauncherMotor().setVelocity((double) (2400 * 28)/60);
             } else {
                 hardwareManager.getTurretMotor().setMode(RUN_TO_POSITION);
                 hardwareManager.getTurretMotor().setPower(setTurretMotorPower);
