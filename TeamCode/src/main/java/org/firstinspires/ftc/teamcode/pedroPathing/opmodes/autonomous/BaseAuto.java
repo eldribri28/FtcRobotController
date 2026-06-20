@@ -528,7 +528,7 @@ public abstract class BaseAuto extends LinearOpMode {
             goalX = -1.680;
             goalY = -1.780;
         } else {
-            goalX = -1.680;
+            goalX = -1.740;
             goalY = 1.780;
         }
 

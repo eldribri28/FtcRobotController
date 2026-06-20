@@ -405,9 +405,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         //double angularMovementCompensation = robotAngularRateToTarget(robotPose, follower, getTargetAprilTag());
         double turretErrorRad = turretError;
         if (getTargetAprilTag() == AprilTagEnum.BLUE_TARGET) {
-            turretErrorRad = AngleUnit.normalizeRadians(calculateTurretError(turretPose, BLUE_GOAL_POSE));
+            turretErrorRad = calculateTurretError(turretPose, BLUE_GOAL_POSE);
         } else {
-            turretErrorRad = AngleUnit.normalizeRadians(calculateTurretError(turretPose, RED_GOAL_POSE));
+            turretErrorRad = calculateTurretError(turretPose, RED_GOAL_POSE);
         }
         turretError = turretErrorSmoothing(Math.toDegrees(turretErrorRad)); // Try to smooth out jitter
         double turretAngle = getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero);
@@ -482,7 +482,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             if (targetDistance < 3) {
                 setIntakeMotorPower = INTAKE_POWER_IN;
             } else {
-                setIntakeMotorPower = INTAKE_POWER_IN * 0.8;
+                setIntakeMotorPower = INTAKE_POWER_IN * 0.7;
             }
 
         }

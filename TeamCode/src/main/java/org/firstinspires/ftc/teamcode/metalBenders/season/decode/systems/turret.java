@@ -69,8 +69,8 @@ public class turret {
         double turretErrorTicks = turretError * TURRET_TICKS_PER_DEGREE;
         double turretSetEncoder = turretMotorEncoder + turretErrorTicks;
         double turretAngleRequired = -turretAngleDeg + turretError;
-        if (turretAngleRequired < -86) { turretSetEncoder = -86 * TURRET_TICKS_PER_DEGREE; }
-        if (turretAngleRequired > 88) { turretSetEncoder = 88 * TURRET_TICKS_PER_DEGREE; }
+        //if (turretAngleRequired < -86) { turretSetEncoder = -86 * TURRET_TICKS_PER_DEGREE; }
+        //if (turretAngleRequired > 88) { turretSetEncoder = 88 * TURRET_TICKS_PER_DEGREE; }
         return (int) turretSetEncoder;
     }
 
