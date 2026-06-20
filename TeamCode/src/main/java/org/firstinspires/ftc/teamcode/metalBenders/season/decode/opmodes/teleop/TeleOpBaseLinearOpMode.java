@@ -87,6 +87,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     private double targetRPM = 0;
     private double turretError = 0;
     private double lastTurretError = 0;
+    private double lastLastTurretError = 0;
+    private long lastDetectionAge = 0;
 
     private long turretMotorEncoderZero = 0;
     private boolean launchSolution = false;
@@ -355,7 +357,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
             AprilTagDetection targetDetection = timedDetection.getDetection();
             long detectionAge = timedDetection.getAgeInMillis();
             telemetry.addData("Target detection age(millisecond)", detectionAge);
-            if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
+            //if (detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
+            if (detectionAge != lastDetectionAge && detectionAge < AGED_DATA_LIMIT_MILLISECONDS) {
                 CAMERA_FIELD_X = targetDetection.robotPose.getPosition().x;
                 CAMERA_FIELD_Y = targetDetection.robotPose.getPosition().y;
                 CAMERA_FIELD_H = AngleUnit.normalizeRadians(targetDetection.robotPose.getOrientation().getYaw(AngleUnit.RADIANS));
@@ -363,7 +366,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 turretPose = cameraPose;
                 robotPose = turretFieldPoseToRobotFieldPose(turretPose, TURRET_ROBOT_POSE_OFFSET, getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero));
                 updatePedroFromRobotPose(follower, aprilTagLatencyCompensatedPose(targetDetection.frameAcquisitionNanoTime, robotPose), InvertedFTCCoordinates.INSTANCE);
+                updateTurretFieldPose(robotPose);
                 robotPoseSetFlag = true;
+                lastDetectionAge = detectionAge;
             } else {
                 setNoTagDetected();
             }
@@ -382,7 +387,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private double turretErrorSmoothing(double turretError) {
-        double smoothError = (turretError * (1 - TURRET_ERROR_SMOOTHING_FACTOR)) + (lastTurretError * TURRET_ERROR_SMOOTHING_FACTOR);
+        double smoothError = (turretError * (0.9 - TURRET_ERROR_SMOOTHING_FACTOR)) + (((lastTurretError + lastLastTurretError) / 2) * TURRET_ERROR_SMOOTHING_FACTOR);
+        lastLastTurretError = lastTurretError;
         lastTurretError = turretError;
         return smoothError;
     }

@@ -98,16 +98,19 @@ public class AprilTagEngine implements Runnable {
             exposureControl.setMode(ExposureControl.Mode.Manual);
             try {
                 Thread.sleep(50);
-            } catch (InterruptedException e){}
+            } catch (InterruptedException e) {
+            }
             exposureControl.setAePriority(false);
             try {
-                Thread.sleep(20);
-            } catch (InterruptedException e){}
-            exposureControl.setExposure(CAMERA_EXPOSURE, TimeUnit.MILLISECONDS);
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+            exposureControl.setExposure(CAMERA_EXPOSURE, TimeUnit.MICROSECONDS);
             gainControl.setGain(CAMERA_GAIN);
             try {
-                Thread.sleep(20);
-            } catch (InterruptedException e){}
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
             CAMERA_GAIN_SET = true;
         }
     }

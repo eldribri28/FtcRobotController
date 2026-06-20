@@ -31,7 +31,7 @@ public final class Constants {
     /*
     AprilTag
      */
-    public static final long AGED_DATA_LIMIT_MILLISECONDS = 50;
+    public static final long AGED_DATA_LIMIT_MILLISECONDS = 75;
     public static final long TURRET_AGE_DATA_LIMIT_MILLISECONDS = 100;
     public static final double MAX_LAUNCHER_RPM_DIFF_TARGET_TO_ACTUAL = 150;
     public static final Pose2D TURRET_ROBOT_POSE_OFFSET = new Pose2D(DistanceUnit.METER, -0.040, 0, AngleUnit.RADIANS, 0);
