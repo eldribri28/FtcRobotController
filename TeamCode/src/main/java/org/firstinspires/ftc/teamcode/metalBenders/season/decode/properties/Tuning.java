@@ -25,6 +25,6 @@ public class Tuning {
     Camera Settings
     */
     public static int CAMERA_GAIN = 0;
-    public static long CAMERA_EXPOSURE = 1500; // In milliseconds
+    public static long CAMERA_EXPOSURE = 2000; // In microseconds
 
 }

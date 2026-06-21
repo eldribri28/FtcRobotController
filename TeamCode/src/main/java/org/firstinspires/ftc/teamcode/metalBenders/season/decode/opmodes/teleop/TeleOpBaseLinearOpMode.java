@@ -108,9 +108,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     double lastbuttonstate3 = 0;
     double flywheelspeedoffset = 0;
 
-    boolean lastGamepad1DD = false;
     boolean dropHoodFlag = false;
-    private Double dropHoodTimestamp = getRuntime();
 
 
 
@@ -496,16 +494,8 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     }
 
     private void dropHood() {
-        if (gamepad1DD && !lastGamepad1DD && !dropHoodFlag && dropHoodTimestamp < getRuntime()) {
-            dropHoodTimestamp = getRuntime() + 0.2;
-            dropHoodFlag = true;
-            lastGamepad1DD = true;
-        } else if (gamepad1DD && !lastGamepad1DD && dropHoodFlag && dropHoodTimestamp < getRuntime()) {
-            dropHoodTimestamp = getRuntime() + 0.2;
-            dropHoodFlag = false;
-            lastGamepad1DD = true;
-        } else {
-            lastGamepad1DD = false;
+        if(gamepad1DD) {
+            dropHoodFlag = !dropHoodFlag;
         }
         if (dropHoodFlag) {
             setAngleServo = HOOD_SERVO_MIN_VALUE;
@@ -612,7 +602,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         gamepad1X = hardwareManager.getGamepad1().x;
         gamepad1Y = hardwareManager.getGamepad1().y;
         gamepad1DU = hardwareManager.getGamepad1().dpad_up;
-        gamepad1DD = hardwareManager.getGamepad1().dpad_down;
+        gamepad1DD = hardwareManager.getGamepad1().dpadDownWasReleased();
         gamepad1DL = hardwareManager.getGamepad1().dpad_left;
         gamepad1DR = hardwareManager.getGamepad1().dpad_right;
         gamepad1RB = hardwareManager.getGamepad1().right_bumper;
