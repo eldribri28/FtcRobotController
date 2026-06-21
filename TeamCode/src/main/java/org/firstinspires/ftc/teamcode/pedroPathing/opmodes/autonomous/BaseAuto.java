@@ -543,7 +543,7 @@ public abstract class BaseAuto extends LinearOpMode {
         while (relativeAngleToGoal > 180) relativeAngleToGoal -= 360;
         while (relativeAngleToGoal < -180) relativeAngleToGoal += 360;
 
-        return relativeAngleToGoal * 0.85;
+        return relativeAngleToGoal;
 
     }
 

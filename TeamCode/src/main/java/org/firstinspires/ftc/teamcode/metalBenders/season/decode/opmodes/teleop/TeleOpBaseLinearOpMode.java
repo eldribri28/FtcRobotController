@@ -10,6 +10,7 @@ import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properti
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.CAMERA_GAIN;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.RED_GOAL_POSE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Constants.TURRET_ROBOT_POSE_OFFSET;
+import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.HOOD_SERVO_MIN_VALUE;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.LAUNCH_VELO_PID;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.TURRET_ERROR_SMOOTHING_FACTOR;
 import static org.firstinspires.ftc.teamcode.metalBenders.season.decode.properties.Tuning.TURRET_VELO_PID;
@@ -107,6 +108,10 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     double lastbuttonstate3 = 0;
     double flywheelspeedoffset = 0;
 
+    boolean lastGamepad1DD = false;
+    boolean dropHoodFlag = false;
+    private Double dropHoodTimestamp = getRuntime();
+
 
 
     // START HARDWARE READ VARIABLES
@@ -182,6 +187,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 gamepad2();
                 gamepadLaunchArtifact();
                 tuningMode(tuningEnabled);
+                dropHood();
                 cacheHardwareWrite();
 
             }
@@ -274,6 +280,7 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         telemetry.addData("camera exposure value", CAMERA_EXPOSURE);
         telemetry.addData("camera gain value", CAMERA_GAIN);
         telemetry.addData("fly wheel offset", flywheelspeedoffset);
+        telemetry.addData("Drop Hood", dropHoodFlag);
 
         aprilTagEngine.getTelemetry().forEach((k, v) -> telemetry.addData(k, v));
     }
@@ -324,9 +331,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     public static boolean isTurretAngleWithinThreshold(double turretError, double targetDistance) {
         double bearing = Math.abs(turretError);
         if(targetDistance > 2.0) {
-            return bearing <= 0.65;
+            return bearing <= 0.85;
         }
-        return bearing <= 1.0;
+        return bearing <= 2.0;
     }
 
     public boolean readyToShoot() {
@@ -485,6 +492,23 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
                 setIntakeMotorPower = INTAKE_POWER_IN * 0.7;
             }
 
+        }
+    }
+
+    private void dropHood() {
+        if (gamepad1DD && !lastGamepad1DD && !dropHoodFlag && dropHoodTimestamp < getRuntime()) {
+            dropHoodTimestamp = getRuntime() + 0.2;
+            dropHoodFlag = true;
+            lastGamepad1DD = true;
+        } else if (gamepad1DD && !lastGamepad1DD && dropHoodFlag && dropHoodTimestamp < getRuntime()) {
+            dropHoodTimestamp = getRuntime() + 0.2;
+            dropHoodFlag = false;
+            lastGamepad1DD = true;
+        } else {
+            lastGamepad1DD = false;
+        }
+        if (dropHoodFlag) {
+            setAngleServo = HOOD_SERVO_MIN_VALUE;
         }
     }
 
