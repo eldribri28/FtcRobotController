@@ -302,9 +302,9 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
         //telemetry.addData("---TURRET INFO--------------------------","");
         telemetry.addData("Turret Error", turretError);
         telemetry.addData("Turret Power", setTurretMotorPower);
-        telemetry.addData("Turret Angle", 0);
-        telemetry.addData("Turret Encoder Target", 0);
-        telemetry.addData("Turret Encoder Current", 0);
+        telemetry.addData("Turret Angle", Math.toDegrees(getTurretAngleFromEncoder(turretMotorEncoder, turretMotorEncoderZero)));
+        telemetry.addData("Turret Encoder Target", turretEncoderTarget);
+        telemetry.addData("Turret Encoder Current", turretMotorEncoder);
         //telemetry.addData("---LAUNCHER INFO--------------------------", "");
         telemetry.addData("Launch Angle", launchAngle);
         telemetry.addData("Launcher RPM (Target)", targetRPM);
@@ -324,14 +324,14 @@ public abstract class TeleOpBaseLinearOpMode extends LinearOpMode {
     public static boolean isTurretAngleWithinThreshold(double turretError, double targetDistance) {
         double bearing = Math.abs(turretError);
         if(targetDistance > 2.0) {
-            return bearing <= 0.25;
+            return bearing <= 0.65;
         }
-        return bearing <= 0.5;
+        return bearing <= 1.0;
     }
 
     public boolean readyToShoot() {
         return isTurretAngleWithinThreshold(turretError, targetDistance)
-                && isLaunchMotorVelocityWithinThreshold()
+                //&& isLaunchMotorVelocityWithinThreshold()
                 && launchSolution;
     }
 

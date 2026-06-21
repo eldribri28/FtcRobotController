@@ -161,7 +161,7 @@ public class localization {
 
     public static double calculateTurretError(Pose2D turretPose, Pose2D targetPose) {
         double turretHeadingRad = turretPose.getHeading(AngleUnit.RADIANS);
-        double absoluteGoalRad = convertToTwoPi(calculateAngleBetweenPose2D(turretPose, targetPose));
+        double absoluteGoalRad = AngleUnit.normalizeRadians(calculateAngleBetweenPose2D(turretPose, targetPose));
         return AngleUnit.normalizeRadians(absoluteGoalRad - turretHeadingRad);
     }
 
